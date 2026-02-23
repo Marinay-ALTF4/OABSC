@@ -1,0 +1,40 @@
+# Dependency / vendor directories
+/vendor/
+/node_modules/
+
+# Composer locks (optional, keep if you want reproducible installs)
+composer.phar
+
+# Environment & config secrets
+/.env
+/.env.*
+
+# Writable/runtime data
+/writable/*
+!/writable/index.html
+!/writable/.htaccess
+
+# Logs
+*.log
+/logs/
+
+# Cache
+/.cache/
+/.phpunit.cache/
+
+# IDE / editor files
+/.vscode/
+/.idea/
+/.history/
+/.DS_Store
+Thumbs.db
+
+# OS / misc
+*.tmp
+*.swp
+*.swo
+
+# JSON data/config files you don't want in git
+*.local.json
+*.backup.json
+
