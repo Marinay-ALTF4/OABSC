@@ -7,6 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Auth::login');        // visiting http://localhost/OABSC/ shows login
 $routes->get('/dashboard', 'Home::index');
+$routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::attemptLogin');
 $routes->get('/logout', 'Auth::logout');
