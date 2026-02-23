@@ -34,16 +34,10 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
         }
-        .brand-pill span.icon {
-            width: 22px;
-            height: 22px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at 30% 0, #38bdf8, #1d4ed8);
-            color: #eff6ff;
-            font-size: 0.9rem;
+        .brand-pill img.logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
         }
         .form-label {
             font-weight: 600;
@@ -88,7 +82,7 @@
     <div class="login-card bg-white p-4 p-md-5 mx-auto">
         <div class="mb-3 text-center">
             <div class="brand-pill mb-2">
-                <span class="icon">+</span>
+                <img src="/OABSC/images/logo.png" alt="Clinic Logo" class="logo">
                 <span>Clinic Appointment Portal</span>
             </div>
             <h1 class="h4 fw-bold text-slate-900 mb-1">Login</h1>

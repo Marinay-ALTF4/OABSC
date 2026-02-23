@@ -3,13 +3,11 @@ $role = session('user_role') ?? 'guest';
 $name = session('user_name') ?? 'User';
 ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-    <div class="container-fluid px-4 d-flex align-items-center">
-        <div class="d-flex align-items-center gap-2">
-            <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="<?= site_url('/dashboard') ?>">
-                <span class="badge bg-primary rounded-circle">+</span>
-                <span>Clinic Appointment System</span>
-            </a>
-        </div>
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= site_url('/dashboard') ?>">
+            <img src="/OABSC/images/logo.png" alt="Clinic Logo" style="width: 32px; height: 32px; object-fit: contain;">
+            <span>Clinic Appointment System</span>
+        </a>
 
         <?php if ($role === 'admin') : ?>
             <ul class="navbar-nav mb-0 ms-4">
