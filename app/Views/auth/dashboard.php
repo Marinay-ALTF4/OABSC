@@ -14,8 +14,8 @@ $name = session('user_name') ?? 'User';
 <?= view('header') ?>
 
 <div class="container py-4">
-    <?php if (in_array($role, ['admin', 'staff', 'reception', 'doctor'], true)) : ?>
-        <!-- Admin / Staff Dashboard -->
+    <?php if ($role === 'admin') : ?>
+        <!-- Admin Dashboard -->
         <div class="row g-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm mb-3">
@@ -80,14 +80,14 @@ $name = session('user_name') ?? 'User';
         </div>
 
     <?php else : ?>
-        <!-- Client / Patient Dashboard -->
+        <!-- Client Dashboard -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body">
                         <h5 class="card-title mb-1">Welcome to our clinic</h5>
                         <p class="text-muted small mb-0">
-                            From here you can request or review your appointments with our doctors.
+                            From here you can request or review your appointments.
                         </p>
                     </div>
                 </div>

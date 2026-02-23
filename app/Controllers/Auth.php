@@ -41,7 +41,7 @@ class Auth extends BaseController
         session()->set([
             'user_id'   => $user['id'],
             'user_name' => $user['name'] ?? '',
-            'user_role' => $user['role'] ?? 'staff',
+            'user_role' => $user['role'] ?? 'client',
             'isLoggedIn'=> true,
         ]);
 
@@ -52,6 +52,45 @@ class Auth extends BaseController
     {
         session()->destroy();
         return redirect()->to('/login');
+    }
+
+    public function register()
+    {
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to('/dashboard');
+        }
+
+        if ($this->request->getMethod() === 'post') {
+            $rules = [
+                'name'              => 'required|min_length[3]',
+                'email'             => 'required|valid_email|is_unique[users.email]',
+                'password'          => 'required|min_length[6]',
+                'password_confirm'  => 'required|matches[password]',
+            ];
+
+            if (! $this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            $userModel = new UserModel();
+            $userId    = $userModel->insert([
+                'name'          => $this->request->getPost('name'),
+                'email'         => $this->request->getPost('email'),
+                'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'role'          => 'client',
+            ]);
+
+            session()->set([
+                'user_id'   => $userId,
+                'user_name' => $this->request->getPost('name'),
+                'user_role' => 'client',
+                'isLoggedIn'=> true,
+            ]);
+
+            return redirect()->to('/dashboard');
+        }
+
+        return view('auth/register');
     }
 }
 

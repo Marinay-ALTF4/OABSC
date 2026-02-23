@@ -3,14 +3,16 @@ $role = session('user_role') ?? 'guest';
 $name = session('user_name') ?? 'User';
 ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= site_url('/dashboard') ?>">
-            <span class="badge bg-primary rounded-circle">+</span>
-            <span>Clinic Appointment System</span>
-        </a>
+    <div class="container-fluid px-4 d-flex align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="<?= site_url('/dashboard') ?>">
+                <span class="badge bg-primary rounded-circle">+</span>
+                <span>Clinic Appointment System</span>
+            </a>
+        </div>
 
         <?php if ($role === 'admin') : ?>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-4">
+            <ul class="navbar-nav mb-0 ms-4">
                 <li class="nav-item">
                     <a class="nav-link <?= current_url() === site_url('/dashboard') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
                         Dashboard
