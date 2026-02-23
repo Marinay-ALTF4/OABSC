@@ -17,7 +17,7 @@ class UserModel extends Model
         'password_hash',
         'role',
     ];
-
-    protected bool $useTimestamps = false;
+    
+    protected $useTimestamps = false;
 }
 
