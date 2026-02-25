@@ -101,7 +101,7 @@ $name = session('user_name') ?? 'User';
                                 <p class="card-text small text-muted">
                                     Choose your doctor, date, and time that works best for you.
                                 </p>
-                                <a href="#" class="btn btn-sm btn-primary disabled">Book appointment (todo)</a>
+                                <a href="<?= site_url('/appointments/book') ?>" class="btn btn-sm btn-primary">Book appointment</a>
                             </div>
                         </div>
                     </div>

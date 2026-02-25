@@ -5,10 +5,13 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Auth::login');        // visiting http://localhost/OABSC/ shows login
-$routes->get('/dashboard', 'Home::index');
-$routes->get('/admin/patients', 'Admin::patients');
+$routes->get('/', 'Auth::login');
 $routes->get('/login', 'Auth::login');
+$routes->get('/admin/login', 'Auth::adminLogin');
 $routes->post('/login', 'Auth::attemptLogin');
 $routes->match(['get','post'], '/register', 'Auth::register');
 $routes->get('/logout', 'Auth::logout');
+$routes->get('/dashboard', 'Home::index');
+$routes->get('/admin/patients', 'Admin::patients');
+$routes->get('/appointments/book', 'Appointment::book');
+$routes->post('/appointments/store', 'Appointment::store');
