@@ -7,8 +7,46 @@ $name = session('user_name') ?? 'User';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clinic Dashboards</title>
+    <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f8fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: 1px solid #e1e8ed;
+            border-left: 4px solid #4a90e2;
+            background: white;
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+        .btn-primary {
+            background: #4a90e2;
+            border: none;
+            font-weight: 500;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #357abd;
+            color: white;
+        }
+        .btn-outline-primary {
+            border: 1px solid #4a90e2;
+            color: #4a90e2;
+            font-weight: 500;
+            background: transparent;
+        }
+        .btn-outline-primary:hover {
+            background: #4a90e2;
+            border-color: #4a90e2;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 <?= view('header') ?>

@@ -10,10 +10,6 @@
             background: #f5f8fa;
             min-height: 100vh;
         }
-        .navbar {
-            background: #4a90e2 !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
         .card {
             border: 1px solid #e1e8ed;
             border-left: 4px solid #4a90e2;
