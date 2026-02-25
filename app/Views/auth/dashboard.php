@@ -152,7 +152,7 @@ $name = session('user_name') ?? 'User';
                                 <p class="card-text small text-muted">
                                     View or cancel your upcoming visits and see past appointments.
                                 </p>
-                                <a href="#" class="btn btn-sm btn-outline-primary disabled">View my appointments (todo)</a>
+                                <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm btn-outline-primary">View my appointments</a>
                             </div>
                         </div>
                     </div>

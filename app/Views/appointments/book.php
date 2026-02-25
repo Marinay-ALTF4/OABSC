@@ -42,7 +42,11 @@
         }
         .btn-secondary {
             border-radius: 8px;
-            padding: 0.65rem 1.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .btn-secondary svg {
+            vertical-align: middle;
         }
         .doctor-card {
             padding: 0.75rem;
