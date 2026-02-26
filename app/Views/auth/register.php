@@ -11,92 +11,87 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #dbeafe;
+            background: radial-gradient(circle at top left, #e0f2ff, #f9fbff);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
         .auth-card {
             max-width: 420px;
             width: 100%;
             background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.3);
             overflow: hidden;
         }
         .brand-badge {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.3rem 0.85rem;
             border-radius: 999px;
-            background-color: #1e3a5f;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
+            background: rgba(59, 130, 246, 0.08);
+            color: #1d4ed8;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
         }
         .brand-badge img.logo {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
-            filter: brightness(0) invert(1);
         }
         .brand-badge .icon-fallback {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         .form-label {
-            font-weight: 400;
-            font-size: 0.95rem;
-            color: #1f2937;
+            font-weight: 600;
+            font-size: 0.86rem;
+            color: #0f172a;
         }
         .form-control {
-            border-radius: 10px;
-            padding: 0.65rem 0.9rem;
-            font-size: 0.95rem;
-            border: 1px solid #d1d5db;
-            background: #fff;
+            border-radius: 0.8rem;
+            padding: 0.7rem 0.9rem;
+            border-color: rgba(148, 163, 184, 0.6);
         }
         .form-control::placeholder {
             color: #9ca3af;
         }
         .form-control:focus {
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
             outline: none;
         }
         .btn-register {
             width: 100%;
-            border-radius: 10px;
-            padding: 0.75rem 1.25rem;
-            font-weight: 700;
-            font-size: 0.85rem;
+            border-radius: 999px;
+            padding: 0.7rem 1.3rem;
+            font-weight: 600;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
-            background-color: #2563eb;
+            letter-spacing: 0.03em;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
             border: none;
             color: #fff;
-            transition: background-color 0.2s;
+            transition: background 0.2s;
         }
         .btn-register:hover {
-            background-color: #1d4ed8;
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
             color: #fff;
         }
         .footer-link {
-            color: #374151;
-            font-size: 0.9rem;
+            color: #6b7280;
+            font-size: 0.78rem;
         }
         .footer-link a {
             color: #2563eb;
-            text-decoration: underline;
-            font-weight: 500;
+            font-weight: 600;
         }
         .footer-link a:hover {
             color: #1d4ed8;
