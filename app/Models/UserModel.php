@@ -9,13 +9,14 @@ class UserModel extends Model
     protected $table            = 'users';
     protected $primaryKey       = 'id';
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
 
     protected $allowedFields    = [
         'name',
         'email',
         'password_hash',
         'role',
+        'deleted_at',
     ];
     
     protected $useTimestamps = true;
