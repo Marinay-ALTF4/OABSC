@@ -155,7 +155,7 @@ $formErr = $errors['_form'] ?? null;
             </div>
         <?php endif; ?>
 
-        <form action="<?= site_url('/register') ?>" method="post">
+        <form action="<?= site_url('/register') ?>" method="post" id="registerForm" novalidate>
             <?= csrf_field() ?>
 
             <div class="mb-3">
@@ -168,12 +168,13 @@ $formErr = $errors['_form'] ?? null;
                     placeholder="Enter your full name"
                     value="<?= old('name') ?>"
                     required
-                    pattern="[A-Za-z\s]+"
-                    title="Letters and spaces only"
+                    pattern="[A-Za-zÑñ\s]+"
+                    title="Letters, spaces, and ñ only"
                 >
                 <?php if ($nameErr): ?>
                     <div class="invalid-feedback d-block"><?= esc($nameErr) ?></div>
                 <?php endif; ?>
+                <div id="nameLiveError" class="invalid-feedback" style="display:none;">Name allows letters and spaces only (ñ is allowed).</div>
             </div>
 
             <div class="mb-3">
@@ -190,6 +191,7 @@ $formErr = $errors['_form'] ?? null;
                 <?php if ($emailErr): ?>
                     <div class="invalid-feedback d-block"><?= esc($emailErr) ?></div>
                 <?php endif; ?>
+                <div id="emailLiveError" class="invalid-feedback" style="display:none;">Email allows maximum 5 numbers and 3 special characters before @.</div>
             </div>
 
             <div class="mb-3">
@@ -203,9 +205,11 @@ $formErr = $errors['_form'] ?? null;
                     minlength="8"
                     required
                 >
+                <div class="form-text">Reminder: Password must be at least 8 characters.</div>
                 <?php if ($passwordErr): ?>
                     <div class="invalid-feedback d-block"><?= esc($passwordErr) ?></div>
                 <?php endif; ?>
+                <div id="passwordLiveError" class="invalid-feedback" style="display:none;">Password must be at least 8 characters.</div>
             </div>
 
             <div class="mb-4">
@@ -221,6 +225,7 @@ $formErr = $errors['_form'] ?? null;
                 <?php if ($passwordConfirmErr): ?>
                     <div class="invalid-feedback d-block"><?= esc($passwordConfirmErr) ?></div>
                 <?php endif; ?>
+                <div id="passwordConfirmLiveError" class="invalid-feedback" style="display:none;">Please confirm your password.</div>
             </div>
 
             <div class="d-grid mb-3">
@@ -237,9 +242,151 @@ $formErr = $errors['_form'] ?? null;
 (function() {
     var img = document.querySelector('.brand-badge .logo');
     var fallback = document.querySelector('.brand-badge .icon-fallback');
-    if (img && fallback && !img.complete || img.naturalWidth === 0) {
+    if (img && fallback && (!img.complete || img.naturalWidth === 0)) {
         img.style.display = 'none';
         fallback.style.display = 'inline-flex';
+    }
+
+    var form = document.getElementById('registerForm');
+    var nameInput = document.getElementById('name');
+    var emailInput = document.getElementById('email');
+    var passwordInput = document.getElementById('password');
+    var passwordConfirmInput = document.getElementById('password_confirm');
+
+    var nameLiveError = document.getElementById('nameLiveError');
+    var emailLiveError = document.getElementById('emailLiveError');
+    var passwordLiveError = document.getElementById('passwordLiveError');
+    var passwordConfirmLiveError = document.getElementById('passwordConfirmLiveError');
+
+    function toggleError(input, errorEl, isInvalid, message) {
+        if (!input || !errorEl) {
+            return;
+        }
+
+        if (isInvalid) {
+            input.classList.add('is-invalid');
+            if (message) {
+                errorEl.textContent = message;
+            }
+            errorEl.style.display = 'block';
+        } else {
+            input.classList.remove('is-invalid');
+            errorEl.style.display = 'none';
+        }
+    }
+
+    function validateName(force) {
+        var value = (nameInput.value || '').trim();
+        if (force && value === '') {
+            toggleError(nameInput, nameLiveError, true, 'Full name is required.');
+            return false;
+        }
+
+        if (value.length > 0 && value.length < 3) {
+            toggleError(nameInput, nameLiveError, true, 'Full name must be at least 3 characters.');
+            return false;
+        }
+
+        var valid = /^[A-Za-zÑñ\s]+$/.test(value);
+        var isInvalid = value.length > 0 && !valid;
+        toggleError(nameInput, nameLiveError, isInvalid, 'Name allows letters and spaces only (ñ is allowed).');
+        return !isInvalid;
+    }
+
+    function validateEmailLimits(force) {
+        var value = (emailInput.value || '').trim();
+
+        if (force && value === '') {
+            toggleError(emailInput, emailLiveError, true, 'Email is required.');
+            return false;
+        }
+
+        if (value.length > 0 && value.indexOf('@') === -1) {
+            toggleError(emailInput, emailLiveError, true, 'Please enter a valid email address.');
+            return false;
+        }
+
+        if (value === '') {
+            toggleError(emailInput, emailLiveError, false);
+            return true;
+        }
+
+        var localPart = value.split('@')[0] || '';
+        var numberCount = (localPart.match(/\d/g) || []).length;
+        var specialCount = (localPart.match(/[^a-z0-9]/gi) || []).length;
+        var isInvalid = numberCount > 5 || specialCount > 3;
+        toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
+        return !isInvalid;
+    }
+
+    function validatePassword(force) {
+        var value = passwordInput.value || '';
+
+        if (force && value === '') {
+            toggleError(passwordInput, passwordLiveError, true, 'Password is required.');
+            return false;
+        }
+
+        var isInvalid = value.length > 0 && value.length < 8;
+        toggleError(passwordInput, passwordLiveError, isInvalid, 'Password must be at least 8 characters.');
+        return !isInvalid;
+    }
+
+    function validatePasswordConfirm(force) {
+        var value = passwordConfirmInput.value || '';
+        var passwordValue = passwordInput.value || '';
+
+        if (force && value === '') {
+            toggleError(passwordConfirmInput, passwordConfirmLiveError, true, 'Please confirm your password.');
+            return false;
+        }
+
+        if (value.length > 0 && value !== passwordValue) {
+            toggleError(passwordConfirmInput, passwordConfirmLiveError, true, 'Confirm password must match password.');
+            return false;
+        }
+
+        toggleError(passwordConfirmInput, passwordConfirmLiveError, false);
+        return true;
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('input', function() {
+            validateName(false);
+        });
+    }
+
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            validateEmailLimits(false);
+        });
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            validatePassword(false);
+            validatePasswordConfirm(false);
+        });
+    }
+
+    if (passwordConfirmInput) {
+        passwordConfirmInput.addEventListener('input', function() {
+            validatePasswordConfirm(false);
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            var okName = validateName(true);
+            var okEmail = validateEmailLimits(true);
+            var okPassword = validatePassword(true);
+            var okPasswordConfirm = validatePasswordConfirm(true);
+
+            if (!okName || !okEmail || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
     }
 })();
 </script>

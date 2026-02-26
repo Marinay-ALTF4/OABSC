@@ -18,6 +18,6 @@ class UserModel extends Model
         'role',
     ];
     
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 }
 

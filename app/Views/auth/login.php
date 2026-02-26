@@ -95,6 +95,12 @@
             </div>
         <?php endif; ?>
 
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success small-text py-2 mb-3">
+                <?= esc(session()->getFlashdata('success')) ?>
+            </div>
+        <?php endif; ?>
+
         <form action="<?= site_url('/login') ?>" method="post" class="mt-2">
             <?= csrf_field() ?>
 

@@ -9,7 +9,7 @@ $routes->get('/', 'Auth::login');
 $routes->get('/login', 'Auth::login');
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->post('/login', 'Auth::attemptLogin');
-$routes->match(['get','post'], '/register', 'Auth::register');
+$routes->match(['GET','POST'], '/register', 'Auth::register');
 $routes->get('/logout', 'Auth::logout');
 $routes->get('/dashboard', 'Home::index');
 $routes->get('/admin/patients', 'Admin::patients');
