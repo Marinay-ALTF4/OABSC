@@ -20,3 +20,9 @@ $routes->get('/dashboard', 'Home::index');
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/admin/patients/list', 'Admin::patientList');
+
+// API (Postman)
+$routes->get('/api/health', 'Api::health');
+$routes->post('/api/register', 'Api::register');
+$routes->post('/api/login', 'Api::login');
+$routes->get('/api/users', 'Api::users');
