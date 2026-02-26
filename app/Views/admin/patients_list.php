@@ -16,7 +16,10 @@
                 All registered users including admin accounts.
             </p>
         </div>
-        <a href="<?= site_url('/admin/patients') ?>" class="btn btn-sm btn-outline-secondary mt-3 mt-md-0">Back</a>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="<?= site_url('/admin/patients/add') ?>" class="btn btn-sm btn-primary">Add User</a>
+            <a href="<?= site_url('/admin/patients') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
+        </div>
     </header>
 
     <section class="mb-3">

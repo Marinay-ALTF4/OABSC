@@ -68,7 +68,13 @@ class Auth extends BaseController
                 'password_confirm'  => 'required|matches[password]',
             ];
 
-            if (! $this->validate($rules)) {
+            $messages = [
+                'email' => [
+                    'is_unique' => 'This email is already taken.',
+                ],
+            ];
+
+            if (! $this->validate($rules, $messages)) {
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 

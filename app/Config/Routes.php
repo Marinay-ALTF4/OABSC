@@ -20,6 +20,8 @@ $routes->get('/dashboard', 'Home::index');
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/admin/patients/list', 'Admin::patientList');
+$routes->get('/admin/patients/add', 'Admin::addUser');
+$routes->post('/admin/patients/add', 'Admin::addUser');
 $routes->get('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
 $routes->post('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
 $routes->post('/admin/patients/delete/(:num)', 'Admin::deleteUser/$1');

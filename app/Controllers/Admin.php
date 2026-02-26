@@ -40,6 +40,65 @@ class Admin extends BaseController
         ]);
     }
 
+    public function addUser()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) {
+            return $access;
+        }
+
+        if ($this->request->is('post')) {
+            $rules = [
+                'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
+                'email' => 'required|valid_email|is_unique[users.email]',
+                'role' => 'required|in_list[admin,client]',
+                'password' => 'required|min_length[8]',
+                'password_confirm' => 'required|matches[password]',
+            ];
+
+            $messages = [
+                'email' => [
+                    'is_unique' => 'This email is already taken.',
+                ],
+            ];
+
+            if (! $this->validate($rules, $messages)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            $name = trim((string) $this->request->getPost('name'));
+            $email = strtolower(trim((string) $this->request->getPost('email')));
+            $role = (string) $this->request->getPost('role');
+            $password = (string) $this->request->getPost('password');
+
+            $emailLocalPart = explode('@', $email)[0] ?? '';
+            $emailNumberCount = preg_match_all('/\d/', $emailLocalPart);
+            $emailSpecialCount = preg_match_all('/[^a-z0-9]/i', $emailLocalPart);
+
+            if ($emailNumberCount > 5 || $emailSpecialCount > 3) {
+                return redirect()->back()->withInput()->with('errors', [
+                    'email' => 'Email allows maximum 5 numbers and 3 special characters before @.',
+                ]);
+            }
+
+            $userModel = new UserModel();
+            $created = $userModel->insert([
+                'name' => $name,
+                'email' => $email,
+                'role' => $role,
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            ]);
+
+            if (! $created) {
+                return redirect()->back()->withInput()->with('error', 'Unable to add user.');
+            }
+
+            return redirect()->to('/admin/patients/list')->with('success', 'New user added successfully.');
+        }
+
+        return view('admin/add_user');
+    }
+
     public function editUser(int $id)
     {
         $access = $this->ensureAdminAccess();
@@ -63,7 +122,13 @@ class Admin extends BaseController
                 'password_confirm' => 'permit_empty|matches[password]',
             ];
 
-            if (! $this->validate($rules)) {
+            $messages = [
+                'email' => [
+                    'is_unique' => 'This email is already taken.',
+                ],
+            ];
+
+            if (! $this->validate($rules, $messages)) {
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
