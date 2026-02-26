@@ -25,6 +25,10 @@ $name = session('user_name') ?? 'User';
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
         }
+        .card.no-hover:hover {
+            transform: none;
+            box-shadow: none !important;
+        }
         .btn-primary {
             background: #4a90e2;
             border: none;
@@ -56,7 +60,7 @@ $name = session('user_name') ?? 'User';
         <!-- Admin Dashboard -->
         <div class="row g-4">
             <div class="col-12">
-                <div class="card border-0 shadow-sm mb-3">
+                <div class="card border-0 shadow-sm mb-3 no-hover">
                     <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                         <div>
                             <h5 class="card-title mb-1">
@@ -139,7 +143,7 @@ $name = session('user_name') ?? 'User';
                                 <p class="card-text small text-muted">
                                     Choose your doctor, date, and time that works best for you.
                                 </p>
-                                <a href="<?= site_url('/appointments/book') ?>" class="btn btn-sm btn-primary">Book appointment</a>
+                                <button class="btn btn-sm btn-primary" disabled>Book appointment</button>
                             </div>
                         </div>
                     </div>
@@ -152,7 +156,7 @@ $name = session('user_name') ?? 'User';
                                 <p class="card-text small text-muted">
                                     View or cancel your upcoming visits and see past appointments.
                                 </p>
-                                <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm btn-outline-primary">View my appointments</a>
+                                <button class="btn btn-sm btn-outline-primary" disabled>View my appointments</button>
                             </div>
                         </div>
                     </div>

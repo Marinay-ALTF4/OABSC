@@ -17,7 +17,6 @@
                 Manage patient records: view list, search, and review appointment history.
             </p>
         </div>
-        
     </header>
 
     <section class="mb-3">
@@ -32,7 +31,7 @@
                             <p class="small text-muted mb-2">
                                 See all patients registered in the clinic.
                             </p>
-                            <button class="btn btn-sm btn-outline-primary" disabled>Open (soon)</button>
+                            <a href="<?= site_url('/admin/patients/list') ?>" class="btn btn-sm btn-outline-primary">Open</a>
                         </div>
                     </div>
 
@@ -65,6 +64,7 @@
                             <button class="btn btn-sm btn-outline-primary" disabled>Edit (soon)</button>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
