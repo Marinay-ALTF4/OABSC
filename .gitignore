@@ -1,13 +1,12 @@
+# Environment (secrets, local overrides)
+.env
+
 # Dependency / vendor directories
 /vendor/
 /node_modules/
 
 # Composer locks (optional, keep if you want reproducible installs)
 composer.phar
-
-# Environment & config secrets
-/.env
-/.env.*
 
 # Writable/runtime data
 /writable/*
