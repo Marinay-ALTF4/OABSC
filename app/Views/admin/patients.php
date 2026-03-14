@@ -26,7 +26,7 @@
 
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <div class="border rounded-3 p-3 h-100 bg-white">
+                        <div class="mini-card p-3 h-100 bg-white">
                             <h6 class="mb-1">View patient list</h6>
                             <p class="small text-muted mb-2">
                                 See all patients registered in the clinic.
@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <div class="border rounded-3 p-3 h-100 bg-white">
+                        <div class="mini-card p-3 h-100 bg-white">
                             <h6 class="mb-1">Search patient</h6>
                             <p class="small text-muted mb-2">
                                 Quickly find a patient by name or ID.
@@ -46,7 +46,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <div class="border rounded-3 p-3 h-100 bg-white">
+                        <div class="mini-card p-3 h-100 bg-white">
                             <h6 class="mb-1">View appointment history</h6>
                             <p class="small text-muted mb-2">
                                 Review a patient’s visit and booking history.
@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <div class="border rounded-3 p-3 h-100 bg-white">
+                        <div class="mini-card p-3 h-100 bg-white">
                             <h6 class="mb-1">Edit patient info</h6>
                             <p class="small text-muted mb-2">
                                 Update contact details and basic information.
@@ -65,12 +65,51 @@
                         </div>
                     </div>
                 </div>
-                </div>
             </div>
         </div>
     </section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f5f8fa;
+        min-height: 100vh;
+    }
+    .card {
+        border: 1px solid #e1e8ed;
+        border-left: 4px solid #4a90e2;
+        background: white;
+        border-radius: 12px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+    .mini-card {
+        border: 1px solid #e1e8ed;
+        border-radius: 10px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .mini-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .btn-outline-primary {
+        border: 1px solid #4a90e2;
+        color: #4a90e2;
+        font-weight: 500;
+        background: transparent;
+    }
+    .btn-outline-primary:hover {
+        background: #4a90e2;
+        border-color: #4a90e2;
+        color: white;
+    }
+</style>
 </body>
 </html>

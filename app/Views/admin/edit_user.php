@@ -66,6 +66,8 @@ if (! is_array($errors)) {
                     <label for="role" class="form-label">Role</label>
                     <select id="role" name="role" class="form-select <?= isset($errors['role']) ? 'is-invalid' : '' ?>" required>
                         <option value="client" <?= old('role', $user['role'] ?? 'client') === 'client' ? 'selected' : '' ?>>Client</option>
+                        <option value="secretary" <?= old('role', $user['role'] ?? 'client') === 'secretary' ? 'selected' : '' ?>>Secretary</option>
+                        <option value="doctor" <?= old('role', $user['role'] ?? 'client') === 'doctor' ? 'selected' : '' ?>>Doctor</option>
                         <option value="admin" <?= old('role', $user['role'] ?? 'client') === 'admin' ? 'selected' : '' ?>>Admin</option>
                     </select>
                     <?php if (isset($errors['role'])): ?>

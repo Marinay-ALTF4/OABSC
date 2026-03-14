@@ -51,7 +51,7 @@ class Admin extends BaseController
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
                 'email' => 'required|valid_email|is_unique[users.email]',
-                'role' => 'required|in_list[admin,client]',
+                'role' => 'required|in_list[admin,client,secretary,doctor]',
                 'password' => 'required|min_length[8]',
                 'password_confirm' => 'required|matches[password]',
             ];
@@ -117,7 +117,7 @@ class Admin extends BaseController
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
                 'email' => 'required|valid_email|is_unique[users.email,id,' . $id . ']',
-                'role' => 'required|in_list[admin,client]',
+                'role' => 'required|in_list[admin,client,secretary,doctor]',
                 'password' => 'permit_empty|min_length[8]',
                 'password_confirm' => 'permit_empty|matches[password]',
             ];
