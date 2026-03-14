@@ -24,13 +24,16 @@ class BrandPill extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Text(
-            'CLINIC APPOINTMENT PORTAL',
-            style: TextStyle(
-              color: Color(0xFF1D4ED8),
-              fontWeight: FontWeight.w600,
-              fontSize: 10,
-              letterSpacing: 0.8,
+          const Flexible(
+            child: Text(
+              'CLINIC APPOINTMENT PORTAL',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Color(0xFF1D4ED8),
+                fontWeight: FontWeight.w600,
+                fontSize: 10,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
         ],
