@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'brand_pill.dart';
 import 'gradient_button.dart';
 import 'input_field.dart';
+import 'register.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +28,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       // TODO: send credentials to API
     }
+  }
+
+  void _openRegister() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+    );
   }
 
   @override
@@ -118,14 +125,22 @@ class _LoginScreenState extends State<LoginScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Don't have an account?  ", style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                GestureDetector(
-                  onTap: () {
-                    // TODO: navigate to register screen
-                  },
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600, fontSize: 12),
+                const Text(
+                  "Don't have an account?  ",
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                ),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: _openRegister,
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        color: Color(0xFF2563EB),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
