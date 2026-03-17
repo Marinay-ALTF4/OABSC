@@ -16,6 +16,11 @@ $routes->get('/logout', 'Auth::logout');
 // Dashboard
 $routes->get('/dashboard', 'Home::index');
 
+// Client Appointments
+$routes->get('/appointments/new', 'Appointments::new');
+$routes->post('/appointments', 'Appointments::create');
+$routes->get('/appointments/my', 'Appointments::my');
+
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');

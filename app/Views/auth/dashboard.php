@@ -351,7 +351,7 @@ $name = session('user_name') ?? 'User';
                             <p class="card-text small text-muted">
                                 Choose your doctor, date, and time that works best for you.
                             </p>
-                            <button class="btn btn-sm btn-primary" disabled>Book appointment (soon)</button>
+                            <a href="<?= site_url('/appointments/new') ?>" class="btn btn-sm btn-primary">Book appointment</a>
                         </div>
                     </div>
                 </div>
@@ -363,7 +363,7 @@ $name = session('user_name') ?? 'User';
                             <p class="card-text small text-muted">
                                 View or cancel your upcoming visits and see past appointments.
                             </p>
-                            <button class="btn btn-sm btn-outline-primary" disabled>View appointments (soon)</button>
+                            <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm btn-outline-primary">View appointments</a>
                         </div>
                     </div>
                 </div>

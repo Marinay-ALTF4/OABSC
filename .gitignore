@@ -1,6 +1,3 @@
-# Environment (secrets, local overrides)
-.env
-
 # Dependency / vendor directories
 /vendor/
 /node_modules/
