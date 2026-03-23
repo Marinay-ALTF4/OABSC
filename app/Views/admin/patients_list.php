@@ -18,7 +18,7 @@
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             <a href="<?= site_url('/admin/patients/add') ?>" class="btn btn-sm btn-primary">Add User</a>
-            <a href="<?= site_url('/admin/patients') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
+            <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
         </div>
     </header>
 
@@ -61,6 +61,16 @@
                                 <?php foreach ($users as $user): ?>
                                     <?php $isCurrentAdmin = ((int) ($user['id'] ?? 0) === $currentAdminId); ?>
                                     <?php $isDeleted = ! empty($user['deleted_at']); ?>
+                                    <?php
+                                        $role = strtolower((string) ($user['role'] ?? 'client'));
+                                        $roleBadgeClass = match ($role) {
+                                            'admin' => 'bg-danger text-white',
+                                            'doctor' => 'bg-info text-dark',
+                                            'secretary' => 'bg-primary text-white',
+                                            'client' => 'bg-success text-white',
+                                            default => 'bg-secondary text-white',
+                                        };
+                                    ?>
                                     <tr>
                                         <td><?= esc((string) ($user['id'] ?? '')) ?></td>
                                         <td>
@@ -71,8 +81,8 @@
                                         </td>
                                         <td><?= esc($user['email'] ?? '') ?></td>
                                         <td>
-                                            <span class="badge <?= ($user['role'] ?? '') === 'admin' ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary' ?>">
-                                                <?= esc(ucfirst($user['role'] ?? 'client')) ?>
+                                            <span class="badge <?= $roleBadgeClass ?>">
+                                                <?= esc(ucfirst($role)) ?>
                                             </span>
                                         </td>
                                         <td>

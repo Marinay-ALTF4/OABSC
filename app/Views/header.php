@@ -18,11 +18,7 @@ $isPatientsPage = url_is('admin/patients*');
                         Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= $isPatientsPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/admin/patients') ?>">
-                        Patients
-                    </a>
-                </li>
+                
             </ul>
         <?php elseif ($role === 'secretary') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
