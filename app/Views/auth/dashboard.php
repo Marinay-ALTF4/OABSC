@@ -308,7 +308,7 @@ $name = session('user_name') ?? 'User';
         </div>
         <div class="col-md-4">
             <div class="action-card">
-                <div class="action-icon bg-pink-soft"><i class="bi bi-capsule"></i></div>
+                <div class="action-icon bg-slate-soft"><i class="bi bi-capsule"></i></div>
                 <div class="action-tag">Prescription</div>
                 <div class="action-title">Prescriptions</div>
                 <div class="action-desc">Issue and manage prescriptions for your patients.</div>
@@ -371,7 +371,7 @@ $name = session('user_name') ?? 'User';
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     html, body {
-        background: #fce8ec !important;
+        background: #edf2f7 !important;
         min-height: 100vh;
         font-family: 'Inter', sans-serif;
         margin: 0;
@@ -392,44 +392,44 @@ $name = session('user_name') ?? 'User';
         flex-wrap: wrap;
         gap: 12px;
         border: 1px solid rgba(255,255,255,0.85);
-        box-shadow: 0 4px 20px rgba(220,130,160,0.1);
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
     }
-    .banner-admin     { background: linear-gradient(135deg, #fde8f0 0%, #f3e8fd 100%); }
-    .banner-secretary { background: linear-gradient(135deg, #fde8f0 0%, #fce4f6 100%); }
-    .banner-doctor    { background: linear-gradient(135deg, #fde8f0 0%, #ffeef5 100%); }
-    .banner-client    { background: linear-gradient(135deg, #fde8f0 0%, #fff0f8 100%); }
+    .banner-admin     { background: linear-gradient(135deg, #e8eff7 0%, #dbe7f4 100%); }
+    .banner-secretary { background: linear-gradient(135deg, #e7eef5 0%, #d9e5f0 100%); }
+    .banner-doctor    { background: linear-gradient(135deg, #eaf0f6 0%, #dce6f1 100%); }
+    .banner-client    { background: linear-gradient(135deg, #e9eff6 0%, #dce7f3 100%); }
 
     .welcome-label {
         font-size: 10.5px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1.3px;
-        color: #c47a95;
+        color: #475569;
         margin-bottom: 5px;
     }
     .welcome-name {
         font-size: 1.4rem;
         font-weight: 700;
-        color: #3d1a28;
+        color: #0f172a;
         margin: 0 0 5px;
         letter-spacing: -0.3px;
     }
     .welcome-sub {
         font-size: 0.84rem;
-        color: #9e6070;
+        color: #64748b;
         margin: 0;
     }
     .welcome-date {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #9e6070;
+        color: #475569;
         background: rgba(255,255,255,0.8);
         padding: 8px 18px;
         border-radius: 20px;
         white-space: nowrap;
         backdrop-filter: blur(6px);
         border: 1px solid rgba(255,255,255,0.95);
-        box-shadow: 0 2px 8px rgba(220,130,160,0.1);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
    
@@ -438,22 +438,22 @@ $name = session('user_name') ?? 'User';
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        color: #c9a0b0;
+        color: #64748b;
     }
 
     .stat-card {
         background: #ffffff;
         border-radius: 18px;
         padding: 20px 18px;
-        box-shadow: 0 2px 8px rgba(220,130,160,0.08), 0 1px 2px rgba(220,130,160,0.05);
-        border: 1px solid #f5dde6;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+        border: 1px solid #dbe4ef;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
     }
     .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(220,130,160,0.15);
-        border-color: #f0c8d8;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+        border-color: #c6d4e4;
     }
     .stat-icon {
         width: 40px;
@@ -468,7 +468,7 @@ $name = session('user_name') ?? 'User';
     .stat-value {
         font-size: 2rem;
         font-weight: 700;
-        color: #3d1a28;
+        color: #0f172a;
         line-height: 1;
         margin-bottom: 5px;
         letter-spacing: -0.5px;
@@ -477,7 +477,7 @@ $name = session('user_name') ?? 'User';
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.7px;
-        color: #c9a0b0;
+        color: #64748b;
         font-weight: 600;
     }
 
@@ -486,8 +486,8 @@ $name = session('user_name') ?? 'User';
         background: #ffffff;
         border-radius: 18px;
         padding: 24px 22px;
-        box-shadow: 0 2px 8px rgba(220,130,160,0.08), 0 1px 2px rgba(220,130,160,0.05);
-        border: 1px solid #f5dde6;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+        border: 1px solid #dbe4ef;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         display: flex;
@@ -495,8 +495,8 @@ $name = session('user_name') ?? 'User';
     }
     .action-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(220,130,160,0.15);
-        border-color: #f0c8d8;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+        border-color: #c6d4e4;
     }
     .action-icon {
         width: 44px;
@@ -513,19 +513,19 @@ $name = session('user_name') ?? 'User';
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1.2px;
-        color: #c9a0b0;
+        color: #64748b;
         margin-bottom: 5px;
     }
     .action-title {
         font-size: 0.95rem;
         font-weight: 700;
-        color: #3d1a28;
+        color: #0f172a;
         margin-bottom: 7px;
         letter-spacing: -0.1px;
     }
     .action-desc {
         font-size: 0.8rem;
-        color: #9e6070;
+        color: #475569;
         flex: 1;
         margin-bottom: 18px;
         line-height: 1.55;
@@ -545,51 +545,51 @@ $name = session('user_name') ?? 'User';
     }
     .action-btn:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(214,90,140,0.25);
+        box-shadow: 0 4px 14px rgba(30, 64, 175, 0.22);
     }
     .btn-filled {
-        background: linear-gradient(135deg, #e8608a 0%, #d44a78 100%);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
         color: #fff;
-        box-shadow: 0 2px 10px rgba(214,90,140,0.3);
+        box-shadow: 0 2px 10px rgba(30, 64, 175, 0.3);
     }
     .btn-filled:hover:not(:disabled) {
-        background: linear-gradient(135deg, #d44a78 0%, #c03a68 100%);
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
     }
     .btn-outline {
-        background: #fff0f5;
-        color: #d44a78;
-        border: 1.5px solid #f5c0d0 !important;
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1.5px solid #bfdbfe !important;
     }
     .btn-outline:hover:not(:disabled) {
-        background: #ffe4ee;
-        border-color: #f0a8c0 !important;
+        background: #dbeafe;
+        border-color: #93c5fd !important;
     }
     .btn-disabled {
-        background: #fdf5f7;
-        color: #d4a8b8;
+        background: #f1f5f9;
+        color: #94a3b8;
         cursor: not-allowed;
-        border: 1px solid #f5dde6 !important;
+        border: 1px solid #dbe4ef !important;
     }
 
   
     .bg-blue-soft   { background: #e8f0fe; color: #3b6fd4; }
     .bg-teal-soft   { background: #d6f5f0; color: #0d9488; }
-    .bg-purple-soft { background: #f3e8fd; color: #9333ea; }
+    .bg-purple-soft { background: #e0ecff; color: #1e3a8a; }
     .bg-green-soft  { background: #d9f5e5; color: #16a34a; }
     .bg-orange-soft { background: #fff0e0; color: #d97706; }
-    .bg-pink-soft   { background: #fde8f0; color: #e05585; }
+    .bg-slate-soft  { background: #e2e8f0; color: #334155; }
 
     /* ══════════════════════════════════════
        ADMIN — Steel Blue/Teal Theme
     ══════════════════════════════════════ */
     .adm-wrapper {
-        background: #4e8a9e;
+        background: #dce6ef;
         border-radius: 24px;
         padding: 28px;
         margin: -12px;
     }
     .adm-banner {
-        background: linear-gradient(135deg, #5a9aae 0%, #3d7a8e 100%);
+        background: linear-gradient(135deg, #c8d8e6 0%, #b7c8d8 100%);
         border-radius: 20px;
         padding: 28px 32px;
         display: flex;
@@ -597,48 +597,48 @@ $name = session('user_name') ?? 'User';
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        border: 1px solid rgba(255,255,255,0.2);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.55);
+        box-shadow: 0 3px 14px rgba(15, 23, 42, 0.08);
     }
-    .adm-banner-label { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:1.3px; color:#b8dce8; margin-bottom:5px; }
-    .adm-banner-name  { font-size:1.4rem; font-weight:700; color:#ffffff; margin:0 0 5px; letter-spacing:-0.3px; }
-    .adm-banner-sub   { font-size:0.84rem; color:#c8e8f4; margin:0; }
-    .adm-banner-date  { font-size:0.8rem; font-weight:500; color:#e0f4fa; background:rgba(255,255,255,0.15); padding:8px 18px; border-radius:20px; white-space:nowrap; border:1px solid rgba(255,255,255,0.25); }
-    .adm-section-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#c8e8f4; }
+    .adm-banner-label { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:1.3px; color:#51657a; margin-bottom:5px; }
+    .adm-banner-name  { font-size:1.4rem; font-weight:700; color:#0f172a; margin:0 0 5px; letter-spacing:-0.3px; }
+    .adm-banner-sub   { font-size:0.84rem; color:#334155; margin:0; }
+    .adm-banner-date  { font-size:0.8rem; font-weight:500; color:#1e293b; background:rgba(255,255,255,0.72); padding:8px 18px; border-radius:20px; white-space:nowrap; border:1px solid rgba(148,163,184,0.35); }
+    .adm-section-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#475569; }
     .adm-stat-card {
-        background: rgba(255,255,255,0.92);
+        background: rgba(255,255,255,0.96);
         border-radius: 18px; padding: 20px 18px;
-        border: 1px solid rgba(255,255,255,0.6);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #d5e0ea;
+        box-shadow: 0 2px 7px rgba(15, 23, 42, 0.07);
         transition: transform 0.2s ease, box-shadow 0.2s ease; height: 100%;
     }
-    .adm-stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.14); }
+    .adm-stat-card:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(15, 23, 42, 0.12); }
     .adm-stat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; margin-bottom:14px; }
-    .adm-stat-value { font-size:2rem; font-weight:700; color:#0d2a35; line-height:1; margin-bottom:5px; letter-spacing:-0.5px; }
-    .adm-stat-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.7px; color:#4e8a9e; font-weight:600; }
+    .adm-stat-value { font-size:2rem; font-weight:700; color:#0f172a; line-height:1; margin-bottom:5px; letter-spacing:-0.5px; }
+    .adm-stat-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.7px; color:#5a7288; font-weight:600; }
     .adm-card {
-        background: rgba(255,255,255,0.92);
+        background: rgba(255,255,255,0.96);
         border-radius: 18px; padding: 24px 22px;
-        border: 1px solid rgba(255,255,255,0.6);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #d5e0ea;
+        box-shadow: 0 2px 7px rgba(15, 23, 42, 0.07);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%; display: flex; flex-direction: column;
     }
-    .adm-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.14); }
+    .adm-card:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(15, 23, 42, 0.12); }
     .adm-card-icon { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:14px; }
-    .adm-card-tag   { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#4e8a9e; margin-bottom:5px; }
-    .adm-card-title { font-size:0.95rem; font-weight:700; color:#0d2a35; margin-bottom:7px; }
-    .adm-card-desc  { font-size:0.8rem; color:#2a5a6e; flex:1; margin-bottom:18px; line-height:1.55; }
+    .adm-card-tag   { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#5a7288; margin-bottom:5px; }
+    .adm-card-title { font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:7px; }
+    .adm-card-desc  { font-size:0.8rem; color:#334155; flex:1; margin-bottom:18px; line-height:1.55; }
     .adm-btn { font-size:0.78rem; font-weight:600; padding:7px 18px; border-radius:10px; border:none; cursor:pointer; align-self:flex-start; transition:all 0.18s ease; text-decoration:none; display:inline-block; }
-    .adm-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,0.2); }
-    .adm-btn-filled  { background:linear-gradient(135deg,#4e8a9e 0%,#3a7088 100%); color:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
-    .adm-btn-filled:hover:not(:disabled) { background:linear-gradient(135deg,#3a7088 0%,#2a5a6e 100%); }
-    .adm-btn-outline { background:#eaf4f8; color:#2a5a6e; border:1.5px solid #a4ccd8 !important; }
-    .adm-btn-outline:hover:not(:disabled) { background:#d4eaf4; border-color:#7ab4c8 !important; }
-    .adm-btn-disabled { background:#f0f4f6; color:#8ab0be; cursor:not-allowed; border:1px solid #c8dce4 !important; }
+    .adm-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 3px 10px rgba(15, 23, 42, 0.18); }
+    .adm-btn-filled  { background:linear-gradient(135deg,#3b556e 0%,#2e445a 100%); color:#fff; box-shadow:0 2px 8px rgba(15, 23, 42, 0.18); }
+    .adm-btn-filled:hover:not(:disabled) { background:linear-gradient(135deg,#32495f 0%,#24394d 100%); }
+    .adm-btn-outline { background:#edf3f9; color:#334155; border:1.5px solid #c4d3e2 !important; }
+    .adm-btn-outline:hover:not(:disabled) { background:#e2ebf4; border-color:#a9bfd4 !important; }
+    .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
 
     .sec-wrapper {
-        background: #fdf0f3;
+        background: #ecf4ef;
         border-radius: 24px;
         padding: 28px;
         margin: -12px;
