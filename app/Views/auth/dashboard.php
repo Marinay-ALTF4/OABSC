@@ -25,7 +25,7 @@ $name = session('user_name') ?? 'User';
     <div class="adm-banner mb-4">
         <div>
             <div class="adm-banner-label">Admin Panel</div>
-            <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?> 👋</h4>
+            <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?></h4>
             <p class="adm-banner-sub">Quick overview of your clinic's activity today.</p>
         </div>
         <div class="adm-banner-date">
@@ -229,7 +229,7 @@ $name = session('user_name') ?? 'User';
     <div class="welcome-banner banner-doctor mb-4">
         <div>
             <div class="welcome-label">Doctor Panel</div>
-            <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?> 👋</h4>
+            <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
             <p class="welcome-sub">Here is your clinical overview for today.</p>
         </div>
         <div class="welcome-date">
@@ -329,10 +329,11 @@ $name = session('user_name') ?? 'User';
     <?php else : ?>
     <!-- ==================== CLIENT ==================== -->
 
+<<<<<<< HEAD
     <div class="welcome-banner banner-client mb-4">
         <div>
             <div class="welcome-label">Patient Portal</div>
-            <h4 class="welcome-name">Welcome, <?= esc($name) ?> 👋</h4>
+            <h4 class="welcome-name">Welcome, <?= esc($name) ?></h4>
             <p class="welcome-sub">From here you can request or review your appointments.</p>
         </div>
         <div class="welcome-date">
@@ -358,6 +359,33 @@ $name = session('user_name') ?? 'User';
                 <div class="action-title">My Appointments</div>
                 <div class="action-desc">View or cancel your upcoming visits and see past appointments.</div>
                 <button class="action-btn btn-outline" disabled>View Appointments (soon)</button>
+=======
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="text-uppercase text-muted small mb-2">Book</h6>
+                            <h5 class="card-title">New Appointment</h5>
+                            <p class="card-text small text-muted">
+                                Choose your doctor, date, and time that works best for you.
+                            </p>
+                            <a href="<?= site_url('/appointments/new') ?>" class="btn btn-sm btn-primary">Book appointment</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="text-uppercase text-muted small mb-2">My Visits</h6>
+                            <h5 class="card-title">My Appointments</h5>
+                            <p class="card-text small text-muted">
+                                View or cancel your upcoming visits and see past appointments.
+                            </p>
+                            <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm btn-outline-primary">View appointments</a>
+                        </div>
+                    </div>
+                </div>
+>>>>>>> de3177a21583bdf9d1fc0cc5f6b67040f4e8c61b
             </div>
         </div>
     </div>
