@@ -42,10 +42,9 @@ $isPatientsPage = url_is('admin/patients*');
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">My Schedule</a>
+                    
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">Patients</a>
                 </li>
             </ul>
         <?php endif; ?>

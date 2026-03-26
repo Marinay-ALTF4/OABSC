@@ -35,5 +35,5 @@ $routes->post('/admin/patients/restore/(:num)', 'Admin::restoreUser/$1');
 // API (Postman)
 $routes->get('/api/health', 'Api::health');
 $routes->post('/api/register', 'Api::register');
-$routes->post('/api/login', 'Api::login');
 $routes->get('/api/users', 'Api::users');
+$routes->post('/api/login', 'Auth::apiLogin');   // ✅ used by Android app

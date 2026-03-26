@@ -48,6 +48,43 @@ class Auth extends BaseController
         return redirect()->to('/dashboard');
     }
 
+    // ✅ NEW: API login for Android app — returns JSON instead of redirect
+    public function apiLogin()
+{
+    if (! $this->request->is('POST')) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Method not allowed.'
+        ]);
+    }
+
+    $email    = $this->request->getPost('email');
+    $password = $this->request->getPost('password');
+
+    if (! $email || ! $password) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Email and password are required.'
+        ]);
+    }
+
+    $userModel = new UserModel();
+    $user      = $userModel->where('email', $email)->first();
+
+    if (! $user || ! password_verify($password, $user['password_hash'] ?? '')) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Invalid email or password.'
+        ]);
+    }
+
+    return $this->response->setJSON([
+        'status' => 'success',
+        'role'   => $user['role'] ?? 'client',
+        'name'   => $user['name'] ?? '',
+    ]);
+}
+
     public function logout()
     {
         session()->destroy();
@@ -116,4 +153,3 @@ class Auth extends BaseController
         return view('auth/register');
     }
 }
-
