@@ -7,12 +7,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
+import com.android.volley.DefaultRetryPolicy;   // ✅ Fix 1: added
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.NetworkError;          // ✅ Fix 2: added for better error info
+import com.android.volley.TimeoutError;          // ✅ Fix 2: added for better error info
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.oabsc_mobile.R;
@@ -28,8 +30,11 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     TextView tvRegister;
 
-    // 🔴 Replace with your PC's IPv4 address (run ipconfig in CMD)
-    String BASE_URL = "http://192.168.1.145:8080/OABSC/api/login";
+    // 🔴 Replace with your PC's IPv4 address (run `ipconfig` in CMD)
+    // ⚠️ Make sure AndroidManifest.xml has:
+    //    android:usesCleartextTraffic="true"
+    //    <uses-permission android:name="android.permission.INTERNET" />
+    String BASE_URL = "http://10.17.116.129:8080/api/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +116,8 @@ public class LoginActivity extends AppCompatActivity {
 
                         } catch (Exception e) {
                             Toast.makeText(LoginActivity.this,
-                                    "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    "Error parsing response: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
                 },
@@ -120,9 +126,20 @@ public class LoginActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         btnLogin.setEnabled(true);
                         btnLogin.setText("SIGN IN TO CLINIC PORTAL");
-                        Toast.makeText(LoginActivity.this,
-                                "Connection failed. Check your IP address.",
-                                Toast.LENGTH_LONG).show();
+
+                        // ✅ Fix 2: specific error messages instead of generic one
+                        String errorMsg;
+                        if (error instanceof TimeoutError) {
+                            errorMsg = "Connection timed out. Check your IP address or server.";
+                        } else if (error instanceof NetworkError) {
+                            errorMsg = "Network error. Make sure you're on the same Wi-Fi as your PC.";
+                        } else if (error.networkResponse != null) {
+                            errorMsg = "Server error: HTTP " + error.networkResponse.statusCode;
+                        } else {
+                            errorMsg = "Connection failed. Check IP address and server status.";
+                        }
+
+                        Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                     }
                 }) {
             @Override
@@ -133,6 +150,13 @@ public class LoginActivity extends AppCompatActivity {
                 return params;
             }
         };
+
+        // ✅ Fix 1: timeout policy — 15 seconds, no retry, prevents ANR
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                15000,
+                0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
