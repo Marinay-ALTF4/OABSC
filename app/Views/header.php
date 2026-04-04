@@ -50,12 +50,16 @@ $isPatientsPage = url_is('admin/patients*');
         <?php endif; ?>
 
         <div class="d-flex align-items-center gap-3 ms-auto">
-            <span class="badge bg-secondary-subtle text-secondary role-badge">
-                <?= esc(strtoupper($role)) ?>
-            </span>
-            <a href="<?= site_url('/logout') ?>" class="btn btn-outline-danger btn-sm">
-                Logout
-            </a>
+            <div class="dropdown">
+                <button class="btn btn-account btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <?= esc(ucfirst($role)) ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end account-menu">
+                    <li><a class="dropdown-item" href="#" onclick="return false;">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="<?= site_url('/logout') ?>">Logout</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>
@@ -94,27 +98,36 @@ $isPatientsPage = url_is('admin/patients*');
     .nav-link.active.fw-semibold {
         font-weight: 600 !important;
     }
-    .role-badge {
-        font-size: 0.68rem;
-        font-weight: 700;
-        letter-spacing: 0.8px;
-        background: #eaf0ff !important;
-        color: #1e3a8a !important;
-        border-radius: 6px;
-        padding: 5px 10px !important;
-        border: 1px solid #bfd0ff;
-    }
-    .btn-outline-danger {
+    .btn-account {
         font-size: 0.78rem;
         font-weight: 600;
         border-radius: 8px;
         padding: 5px 14px;
         border-color: #93b0f2;
         color: #1e3a8a;
+        background: #ffffff;
     }
-    .btn-outline-danger:hover {
+    .btn-account:hover,
+    .btn-account:focus,
+    .btn-account:active,
+    .btn-account.show {
         background: #eaf0ff;
         border-color: #6f94ea;
         color: #1e40af;
+    }
+    .account-menu {
+        border-radius: 10px;
+        border: 1px solid #dbe4ef;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+        padding: 0.35rem;
+    }
+    .account-menu .dropdown-item {
+        font-size: 0.84rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    .account-menu .dropdown-item:hover {
+        background: #eef3ff;
+        color: #1e3a8a;
     }
 </style>
