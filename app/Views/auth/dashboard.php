@@ -17,7 +17,7 @@ $name = session('user_name') ?? 'User';
 <div class="dashboard-wrapper">
 <div class="container py-5">
 
-    <?php if ($role === 'admin') : ?>
+    <?php if ($role === 'admin' || $role === 'assistant_admin') : ?>
     <!-- ==================== ADMIN ==================== -->
     <div class="adm-wrapper">
 

@@ -1,6 +1,10 @@
 <?php
 $role = session('user_role') ?? 'guest';
 $name = session('user_name') ?? 'User';
+$roleLabel = ucfirst((string) $role);
+if ($role === 'assistant_admin') {
+    $roleLabel = 'Assistant Admin';
+}
 $isDashboardPage = url_is('dashboard');
 $isPatientsPage = url_is('admin/patients*');
 ?>
@@ -19,6 +23,20 @@ $isPatientsPage = url_is('admin/patients*');
                     </a>
                 </li>
                 
+            </ul>
+        <?php elseif ($role === 'assistant_admin') : ?>
+            <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
+                <li class="nav-item">
+                    <a class="nav-link px-2 <?= $isDashboardPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2" href="#" onclick="return false;">Appointments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2" href="#" onclick="return false;">Patients</a>
+                </li>
             </ul>
         <?php elseif ($role === 'secretary') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
@@ -52,7 +70,7 @@ $isPatientsPage = url_is('admin/patients*');
         <div class="d-flex align-items-center gap-3 ms-auto">
             <div class="dropdown">
                 <button class="btn btn-account btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <?= esc(ucfirst($role)) ?>
+                    <?= esc($roleLabel) ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end account-menu">
                     <li><a class="dropdown-item" href="#" onclick="return false;">Settings</a></li>

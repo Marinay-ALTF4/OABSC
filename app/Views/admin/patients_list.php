@@ -63,8 +63,13 @@
                                     <?php $isDeleted = ! empty($user['deleted_at']); ?>
                                     <?php
                                         $role = strtolower((string) ($user['role'] ?? 'client'));
+                                        $roleLabel = match ($role) {
+                                            'assistant_admin' => 'Assistant Admin',
+                                            default => ucfirst($role),
+                                        };
                                         $roleBadgeClass = match ($role) {
                                             'admin' => 'bg-danger text-white',
+                                            'assistant_admin' => 'bg-warning text-dark',
                                             'doctor' => 'bg-info text-dark',
                                             'secretary' => 'bg-primary text-white',
                                             'client' => 'bg-success text-white',
@@ -82,7 +87,7 @@
                                         <td><?= esc($user['email'] ?? '') ?></td>
                                         <td>
                                             <span class="badge <?= $roleBadgeClass ?>">
-                                                <?= esc(ucfirst($role)) ?>
+                                                <?= esc($roleLabel) ?>
                                             </span>
                                         </td>
                                         <td>

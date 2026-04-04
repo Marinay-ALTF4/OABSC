@@ -8,7 +8,8 @@ class Admin extends BaseController
 {
     private function ensureAdminAccess()
     {
-        if (session()->get('user_role') !== 'admin') {
+        $role = (string) session()->get('user_role');
+        if ($role !== 'admin' && $role !== 'assistant_admin') {
             return redirect()->to('/dashboard');
         }
 
@@ -51,7 +52,7 @@ class Admin extends BaseController
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
                 'email' => 'required|valid_email|is_unique[users.email]',
-                'role' => 'required|in_list[admin,client,secretary,doctor]',
+                'role' => 'required|in_list[admin,assistant_admin,client,secretary,doctor]',
                 'password' => 'required|min_length[8]',
                 'password_confirm' => 'required|matches[password]',
             ];
@@ -117,7 +118,7 @@ class Admin extends BaseController
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
                 'email' => 'required|valid_email|is_unique[users.email,id,' . $id . ']',
-                'role' => 'required|in_list[admin,client,secretary,doctor]',
+                'role' => 'required|in_list[admin,assistant_admin,client,secretary,doctor]',
                 'password' => 'permit_empty|min_length[8]',
                 'password_confirm' => 'permit_empty|matches[password]',
             ];
