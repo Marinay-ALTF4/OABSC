@@ -3,108 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | Clinic Appointment Portal</title>
+    <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at top left, #e0f2ff, #f9fbff);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        .auth-card {
-            max-width: 420px;
-            width: 100%;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            overflow: hidden;
-        }
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0.85rem;
-            border-radius: 999px;
-            background: rgba(59, 130, 246, 0.08);
-            color: #1d4ed8;
-            font-weight: 600;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
-        .brand-badge img.logo {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-        }
-        .brand-badge .icon-fallback {
-            width: 32px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-        .form-label {
-            font-weight: 600;
-            font-size: 0.86rem;
-            color: #0f172a;
-        }
-        .form-control {
-            border-radius: 0.8rem;
-            padding: 0.7rem 0.9rem;
-            border-color: rgba(148, 163, 184, 0.6);
-        }
-        .form-control::placeholder {
-            color: #9ca3af;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
-            border-color: #2563eb;
-            outline: none;
-        }
-        .btn-register {
-            width: 100%;
-            border-radius: 999px;
-            padding: 0.7rem 1.3rem;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            background: linear-gradient(135deg, #30374f, #23293a);
-            box-shadow: 0 14px 28px rgba(35, 41, 58, 0.35);
-            border: none;
-            color: #fff;
-            transition: background 0.2s;
-        }
-        .btn-register:hover {
-            background: linear-gradient(135deg, #23293a, #171c28);
-            color: #fff;
-        }
-        .footer-link {
-            color: #6b7280;
-            font-size: 0.78rem;
-        }
-        .footer-link a {
-            color: #2563eb;
-            font-weight: 600;
-        }
-        .footer-link a:hover {
-            color: #1d4ed8;
-        }
-        .form-control.is-invalid {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
-        }
-        .invalid-feedback {
-            color: #dc3545;
-            font-size: 0.85rem;
-        }
-    </style>
+
 </head>
 <body>
 <?php
@@ -234,6 +135,106 @@ $formErr = $errors['_form'] ?? null;
             </p>
         </form>
     </div>
+        <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top left, #e0f2ff, #f9fbff);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .auth-card {
+            max-width: 420px;
+            width: 100%;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            overflow: hidden;
+        }
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.08);
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .brand-badge img.logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+        .brand-badge .icon-fallback {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.86rem;
+            color: #0f172a;
+        }
+        .form-control {
+            border-radius: 0.8rem;
+            padding: 0.7rem 0.9rem;
+            border-color: rgba(148, 163, 184, 0.6);
+        }
+        .form-control::placeholder {
+            color: #9ca3af;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+            border-color: #2563eb;
+            outline: none;
+        }
+        .btn-register {
+            width: 100%;
+            border-radius: 999px;
+            padding: 0.7rem 1.3rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: linear-gradient(135deg, #30374f, #23293a);
+            box-shadow: 0 14px 28px rgba(35, 41, 58, 0.35);
+            border: none;
+            color: #fff;
+            transition: background 0.2s;
+        }
+        .btn-register:hover {
+            background: linear-gradient(135deg, #23293a, #171c28);
+            color: #fff;
+        }
+        .footer-link {
+            color: #6b7280;
+            font-size: 0.78rem;
+        }
+        .footer-link a {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .footer-link a:hover {
+            color: #1d4ed8;
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.85rem;
+        }
+    </style>
 <script>
 (function() {
     var img = document.querySelector('.brand-badge .logo');
