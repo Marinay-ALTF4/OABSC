@@ -60,11 +60,11 @@
             letter-spacing: 0.03em;
             text-transform: uppercase;
             font-size: 0.8rem;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
+            background: linear-gradient(135deg, #30374f, #23293a);
+            box-shadow: 0 14px 28px rgba(35, 41, 58, 0.35);
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            background: linear-gradient(135deg, #23293a, #171c28);
         }
         .badge-role {
             font-size: 0.7rem;

@@ -75,14 +75,14 @@
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
+            background: linear-gradient(135deg, #30374f, #23293a);
+            box-shadow: 0 14px 28px rgba(35, 41, 58, 0.35);
             border: none;
             color: #fff;
             transition: background 0.2s;
         }
         .btn-register:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            background: linear-gradient(135deg, #23293a, #171c28);
             color: #fff;
         }
         .footer-link {
@@ -187,6 +187,7 @@ $formErr = $errors['_form'] ?? null;
                     <div class="invalid-feedback d-block"><?= esc($emailErr) ?></div>
                 <?php endif; ?>
                 <div id="emailLiveError" class="invalid-feedback" style="display:none;">Email allows maximum 5 numbers and 3 special characters before @.</div>
+                <div class="form-text">We will send a 6-digit verification code to this email before creating the account.</div>
             </div>
 
             <div class="mb-3">
@@ -224,7 +225,7 @@ $formErr = $errors['_form'] ?? null;
             </div>
 
             <div class="d-grid mb-3">
-                <button type="submit" class="btn btn-register">Register for Clinic Portal</button>
+                <button type="submit" class="btn btn-register">Send Verification Code</button>
             </div>
 
             <p class="text-center footer-link mb-0">
@@ -309,7 +310,7 @@ $formErr = $errors['_form'] ?? null;
         var localPart = value.split('@')[0] || '';
         var numberCount = (localPart.match(/\d/g) || []).length;
         var specialCount = (localPart.match(/[^a-z0-9]/gi) || []).length;
-        var isInvalid = numberCount > 5 || specialCount > 3;
+        var isInvalid = numberCount > 10 || specialCount > 3;
         toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
         return !isInvalid;
     }

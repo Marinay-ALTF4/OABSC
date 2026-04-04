@@ -11,6 +11,10 @@ $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::attemptLogin');
 $routes->get('/register', 'Auth::register');
 $routes->post('/register', 'Auth::register');
+$routes->get('/register/verify', 'Auth::verifyRegistration');
+$routes->post('/register/verify', 'Auth::verifyRegistration');
+$routes->post('/register/resend-code', 'Auth::resendVerificationCode');
+$routes->get('/register/reset', 'Auth::resetRegistration');
 $routes->get('/logout', 'Auth::logout');
 
 // Dashboard
