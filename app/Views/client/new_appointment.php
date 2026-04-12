@@ -206,6 +206,10 @@ $bookedSlots = $bookedSlots ?? [];
                     <span class="profile-label">About</span>
                     <span id="modalDoctorBio" class="profile-value"></span>
                 </div>
+                <div class="profile-row">
+                    <span class="profile-label"><i class="bi bi-telephone-fill me-1"></i>Contact</span>
+                    <span id="modalDoctorPhone" class="profile-value"></span>
+                </div>
                 <!-- Location Row -->
                 <div class="profile-row border-0 pb-0">
                     <span class="profile-label"><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location</span>
@@ -328,6 +332,7 @@ $bookedSlots = $bookedSlots ?? [];
         document.getElementById('modalDoctorSpecFull').textContent= p.spec;
         document.getElementById('modalDoctorBio').textContent     = p.bio;
         document.getElementById('modalDoctorLocation').textContent= location;
+        document.getElementById('modalDoctorPhone').textContent   = p.phone || 'Not provided';
 
         // Embed map
         document.getElementById('modalDoctorMap').src = mapData.embed;

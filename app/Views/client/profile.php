@@ -37,10 +37,16 @@
                     </div>
                 <?php endif; ?>
                 <div class="profile-card-name" id="sidebarName"><?= esc(session('user_name') ?? 'User') ?></div>
-                <div class="profile-card-role"><?= esc(ucfirst(session('user_role') ?? 'user')) ?></div>
+                <div class="profile-card-role"><?= esc(strtoupper(session('user_role') ?? 'user')) ?></div>
                 <hr class="my-3">
                 <div class="profile-card-meta" id="sidebarEmail">
                     <i class="bi bi-envelope me-2 text-primary"></i><?= esc(session('user_email') ?? '—') ?>
+                </div>
+                <div class="profile-card-meta mt-2" id="sidebarPhone">
+                    <i class="bi bi-telephone me-2 text-primary"></i><span id="sidebarPhoneVal"><?= esc($user['phone'] ?? '—') ?></span>
+                </div>
+                <div class="profile-card-meta mt-2" id="sidebarAddress">
+                    <i class="bi bi-geo-alt me-2 text-primary"></i><span id="sidebarAddressVal"><?= esc($user['address'] ?? '—') ?></span>
                 </div>
             </div>
         </div>
@@ -108,24 +114,27 @@
                                 <label class="field-label">Phone Number</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-telephone input-icon"></i>
-                                    <input type="tel" class="field-input" id="fieldPhone"
-                                        placeholder="+63 9XX XXX XXXX">
+                                    <input type="tel" name="phone" class="field-input" id="fieldPhone"
+                                        placeholder="+63 9XX XXX XXXX"
+                                        value="<?= esc($user['phone'] ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="field-label">City / Municipality</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-geo-alt input-icon"></i>
-                                    <input type="text" class="field-input" id="fieldCity"
-                                        placeholder="e.g. General Santos City">
+                                    <input type="text" name="city" class="field-input" id="fieldCity"
+                                        placeholder="e.g. General Santos City"
+                                        value="<?= esc($user['city'] ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <label class="field-label">Home Address</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-house input-icon"></i>
-                                    <input type="text" class="field-input" id="fieldAddress"
-                                        placeholder="Street, Barangay, City">
+                                    <input type="text" name="address" class="field-input" id="fieldAddress"
+                                        placeholder="Street, Barangay, City"
+                                        value="<?= esc($user['address'] ?? '') ?>">
                                 </div>
                             </div>
 

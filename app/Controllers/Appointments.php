@@ -68,6 +68,7 @@ class Appointments extends BaseController
                 'exp'    => $d['experience'] ?? 'N/A',
                 'degree' => $d['degree'] ?? 'MD',
                 'bio'    => $d['bio'] ?? 'Experienced medical professional.',
+                'phone'  => $d['phone'] ?? null,
             ];
         }
 

@@ -28,11 +28,17 @@ class Profile extends BaseController
         $userModel = new UserModel();
         $data = [];
 
-        $name = trim((string) $this->request->getPost('name'));
+        $name  = trim((string) $this->request->getPost('name'));
         $email = trim((string) $this->request->getPost('email'));
+        $phone = trim((string) $this->request->getPost('phone'));
+        $city  = trim((string) $this->request->getPost('city'));
+        $addr  = trim((string) $this->request->getPost('address'));
 
-        if ($name !== '') $data['name'] = $name;
-        if ($email !== '') $data['email'] = $email;
+        if ($name !== '')  $data['name']    = $name;
+        if ($email !== '') $data['email']   = $email;
+        if ($phone !== '') $data['phone']   = $phone;
+        if ($city !== '')  $data['city']    = $city;
+        if ($addr !== '')  $data['address'] = $addr;
 
         // Doctor-specific fields
         if (session('user_role') === 'doctor') {
