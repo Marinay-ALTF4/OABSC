@@ -221,7 +221,7 @@ $isPatientsPage = url_is('admin/patients*');
 
     function renderNotifItem(n, isRead) {
         return `
-        <div class="notif-item ${isRead ? 'notif-read' : ''}" id="notif-item-${n.id}" onclick="markOneRead(${n.id})">
+        <div class="notif-item ${isRead ? 'notif-read' : ''}" id="notif-item-${n.id}" onclick="openNotification(${n.id})">
             <div class="notif-item-icon" style="background:${n.bg};color:${n.color};">
                 <i class="bi ${n.icon}"></i>
             </div>
@@ -229,6 +229,9 @@ $isPatientsPage = url_is('admin/patients*');
                 <div class="notif-item-title">${n.title}${!isRead ? '<span class="notif-unread-dot"></span>' : ''}</div>
                 <div class="notif-item-text">${n.body}</div>
                 <div class="notif-item-time">${n.time}</div>
+            </div>
+            <div class="notif-item-action">
+                <button type="button" class="notif-item-btn" onclick="event.stopPropagation(); openNotification(${n.id})">View</button>
             </div>
         </div>`;
     }
@@ -265,6 +268,25 @@ $isPatientsPage = url_is('admin/patients*');
     window.markOneRead = function(id) {
         const readIds = getReadIds();
         if (!readIds.includes(id)) { readIds.push(id); saveReadIds(readIds); renderAll(); }
+    };
+
+    window.openNotification = function(id) {
+        markOneRead(id);
+        const notif = defaultNotifs.find(n => n.id === id);
+        if (!notif) return;
+
+        const modal = document.getElementById('notif-modal');
+        if (!modal) return;
+
+        document.getElementById('notif-modal-title').textContent = notif.title;
+        document.getElementById('notif-modal-time').textContent = notif.time;
+        document.getElementById('notif-modal-body').textContent = notif.body;
+        modal.classList.remove('d-none');
+    };
+
+    window.closeNotifModal = function() {
+        const modal = document.getElementById('notif-modal');
+        if (modal) modal.classList.add('d-none');
     };
 
     window.markAllRead = function() {

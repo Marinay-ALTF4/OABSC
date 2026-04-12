@@ -470,6 +470,21 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+
+    <div id="notif-modal" class="notif-modal d-none">
+        <div class="notif-modal-backdrop" onclick="closeNotifModal()"></div>
+        <div class="notif-modal-card">
+            <div class="notif-modal-card-header">
+                <div>
+                    <div class="notif-modal-heading">Notification</div>
+                    <div id="notif-modal-time" class="notif-modal-time"></div>
+                </div>
+                <button type="button" class="notif-modal-close" onclick="closeNotifModal()">×</button>
+            </div>
+            <div id="notif-modal-title" class="notif-modal-title"></div>
+            <div id="notif-modal-body" class="notif-modal-body"></div>
+        </div>
+    </div>
     <?php endif; ?>
 
 </div>
