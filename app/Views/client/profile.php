@@ -54,12 +54,17 @@
             <ul class="nav profile-tabs mb-4">
                 <li class="nav-item">
                     <button class="profile-tab active" onclick="switchTab('personal', this)">
-                        <i class="bi bi-person me-1"></i> Personal Info
+                        <i class="bi bi-person me-1"></i> <span data-t="tab_personal">Personal Info</span>
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="profile-tab" onclick="switchTab('security', this)">
-                        <i class="bi bi-shield-lock me-1"></i> Security
+                        <i class="bi bi-shield-lock me-1"></i> <span data-t="tab_security">Security</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="profile-tab" onclick="switchTab('language', this)" id="tab-btn-language">
+                        <i class="bi bi-translate me-1"></i> <span data-t="tab_language">Language</span>
                     </button>
                 </li>
             </ul>
@@ -196,7 +201,41 @@
                 </div>
             </div>
 
-        </div>
+            <!-- ── Language Tab ── -->
+            <div id="tab-language" class="tab-section d-none">
+                <div class="section-card">
+                    <div class="section-card-title" data-t="lang_title">Language Preference</div>
+                    <div class="section-card-sub" data-t="lang_sub">Choose the language used across the patient portal.</div>
+                    <hr class="my-3">
+                    <div class="lang-options">
+                        <label class="lang-option" id="lang-opt-en">
+                            <input type="radio" name="lang" value="en" onchange="setLanguage('en')" checked>
+                            <div class="lang-option-inner">
+                                <span class="lang-flag">🇺🇸</span>
+                                <div>
+                                    <div class="lang-name">English</div>
+                                    <div class="lang-desc">Use the portal in English</div>
+                                </div>
+                                <i class="bi bi-check-circle-fill lang-check ms-auto"></i>
+                            </div>
+                        </label>
+                        <label class="lang-option" id="lang-opt-fil">
+                            <input type="radio" name="lang" value="fil" onchange="setLanguage('fil')">
+                            <div class="lang-option-inner">
+                                <span class="lang-flag">🇵🇭</span>
+                                <div>
+                                    <div class="lang-name">Filipino</div>
+                                    <div class="lang-desc">Gamitin ang portal sa Filipino</div>
+                                </div>
+                                <i class="bi bi-check-circle-fill lang-check ms-auto"></i>
+                            </div>
+                        </label>
+                    </div>
+                    <p class="lang-note mt-3" data-t="lang_note">Changes apply immediately across all client pages.</p>
+                </div>
+            </div>
+
+        </div><!-- end right col -->
     </div>
 </div>
 </div>

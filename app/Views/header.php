@@ -289,3 +289,52 @@ $isPatientsPage = url_is('admin/patients*');
     document.addEventListener('DOMContentLoaded', renderAll);
 })();
 </script>
+<script>
+const CLIENT_LANG_KEY = 'oabsc_client_lang';
+const CLIENT_TRANSLATIONS = {
+    en: {
+        tab_personal: 'Personal Info',
+        tab_security: 'Security',
+        tab_language: 'Language',
+        lang_title: 'Language Preference',
+        lang_sub: 'Choose the language used across the patient portal.',
+        lang_note: 'Changes apply immediately across all client pages.',
+    },
+    fil: {
+        tab_personal: 'Personal na Impormasyon',
+        tab_security: 'Seguridad',
+        tab_language: 'Wika',
+        lang_title: 'Piling Wika',
+        lang_sub: 'Piliin ang wika na gagamitin sa portal ng pasyente.',
+        lang_note: 'Awtomatikong nalalapat ang mga pagbabago sa lahat ng client na pahina.',
+    },
+};
+
+function translateClientText(lang) {
+    const translations = CLIENT_TRANSLATIONS[lang] || CLIENT_TRANSLATIONS.en;
+    document.querySelectorAll('[data-t]').forEach((el) => {
+        const key = el.getAttribute('data-t');
+        if (translations[key]) {
+            el.textContent = translations[key];
+        }
+    });
+    document.documentElement.lang = lang === 'fil' ? 'fil' : 'en';
+}
+
+function setLanguage(lang) {
+    if (!CLIENT_TRANSLATIONS[lang]) {
+        lang = 'en';
+    }
+    localStorage.setItem(CLIENT_LANG_KEY, lang);
+    translateClientText(lang);
+    const selectedInput = document.querySelector(`input[name="lang"][value="${lang}"]`);
+    if (selectedInput) selectedInput.checked = true;
+}
+
+function loadClientLanguage() {
+    const savedLang = localStorage.getItem(CLIENT_LANG_KEY) || 'en';
+    setLanguage(savedLang);
+}
+
+document.addEventListener('DOMContentLoaded', loadClientLanguage);
+</script>
