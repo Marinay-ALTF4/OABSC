@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin · Patients List</title>
+    <title>Admin · Users List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -11,7 +11,7 @@
 <div class="container py-4">
     <header class="page-header mb-4 pb-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
         <div>
-            <h1 class="h4 mb-1">Patient List</h1>
+            <h1 class="h4 mb-1">Users List</h1>
             <p class="text-muted small mb-0">
                 All registered users including admin accounts.
             </p>

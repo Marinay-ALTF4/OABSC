@@ -8,7 +8,8 @@ $doctorErr = $errors['doctor_name'] ?? null;
 $dateErr = $errors['appointment_date'] ?? null;
 $timeErr = $errors['appointment_time'] ?? null;
 $reasonErr = $errors['reason'] ?? null;
-$doctorOptions = $doctorOptions ?? ['Dr. Santos', 'Dr. Reyes', 'Dr. Cruz', 'Dr. Garcia'];
+$doctorOptions = $doctorOptions ?? [];
+$doctorProfiles = $doctorProfiles ?? [];
 $bookedSlots = $bookedSlots ?? [];
 ?>
 <!DOCTYPE html>
@@ -57,38 +58,6 @@ $bookedSlots = $bookedSlots ?? [];
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label">Select Your Doctor</label>
-                                <?php
-                                $doctorProfiles = [
-                                    'Dr. Santos' => [
-                                        'avatar'  => 'https://i.pravatar.cc/150?img=12',
-                                        'spec'    => 'General Practitioner',
-                                        'exp'     => '12 years',
-                                        'degree'  => 'MD, University of Santo Tomas',
-                                        'bio'     => 'Specializes in preventive care and chronic disease management.',
-                                    ],
-                                    'Dr. Reyes' => [
-                                        'avatar'  => 'https://i.pravatar.cc/150?img=5',
-                                        'spec'    => 'Cardiologist',
-                                        'exp'     => '18 years',
-                                        'degree'  => 'MD, UP College of Medicine',
-                                        'bio'     => 'Expert in heart disease prevention and cardiovascular treatment.',
-                                    ],
-                                    'Dr. Cruz' => [
-                                        'avatar'  => 'https://i.pravatar.cc/150?img=33',
-                                        'spec'    => 'Pediatrician',
-                                        'exp'     => '9 years',
-                                        'degree'  => 'MD, Ateneo School of Medicine',
-                                        'bio'     => 'Dedicated to child health and development. Great with kids!',
-                                    ],
-                                    'Dr. Garcia' => [
-                                        'avatar'  => 'https://i.pravatar.cc/150?img=9',
-                                        'spec'    => 'Dermatologist',
-                                        'exp'     => '14 years',
-                                        'degree'  => 'MD, Far Eastern University',
-                                        'bio'     => 'Specializes in skin conditions, cosmetic procedures, and skin cancer screening.',
-                                    ],
-                                ];
-                                ?>
                                 <input type="hidden" id="doctor_name" name="doctor_name" value="<?= esc(old('doctor_name')) ?>" required>
                                 <?php if ($doctorErr): ?>
                                     <div class="text-danger small mb-2"><?= esc($doctorErr) ?></div>
@@ -109,7 +78,13 @@ $bookedSlots = $bookedSlots ?? [];
                                             <div class="doctor-card <?= old('doctor_name') === $doctor ? 'selected' : '' ?>"
                                                  data-doctor="<?= esc($doctor) ?>"
                                                  onclick="selectDoctor(this)">
-                                                <img src="<?= $profile['avatar'] ?>" alt="<?= esc($doctor) ?>" class="doctor-avatar">
+                                                <?php if (!empty($profile['avatar'])): ?>
+                                                    <img src="<?= esc($profile['avatar']) ?>" alt="<?= esc($doctor) ?>" class="doctor-avatar">
+                                                <?php else: ?>
+                                                    <div class="doctor-avatar d-flex align-items-center justify-content-center fw-bold text-white" style="background:linear-gradient(135deg,#1d4ed8,#6d28d9);font-size:1.2rem;">
+                                                        <?= strtoupper(substr(str_replace('Dr. ', '', $doctor), 0, 2)) ?>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <div class="doctor-name"><?= esc($doctor) ?></div>
                                                 <div class="doctor-spec"><?= esc($profile['spec']) ?></div>
                                                 <div class="doctor-exp">
@@ -299,36 +274,25 @@ $bookedSlots = $bookedSlots ?? [];
         array_map(fn($d) => $doctorProfiles[$d] ?? ['avatar'=>'https://i.pravatar.cc/150?img=1','spec'=>'Specialist','exp'=>'N/A','degree'=>'MD','bio'=>'Experienced medical professional.'], $doctorOptions)
     ), JSON_UNESCAPED_UNICODE) ?>;
 
-    // Doctor → Clinic location map (General Santos City)
-    const doctorLocations = {
-        'Dr. Santos' : 'Mindanao Medical Center, Brgy. Lagao, General Santos City',
-        'Dr. Reyes'  : 'Notre Dame Hospital, Makar Road, General Santos City',
-        'Dr. Cruz'   : 'Sarangani Provincial Hospital, Alabel, General Santos City',
-        'Dr. Garcia' : 'South Cotabato Provincial Hospital, Koronadal, General Santos City',
-    };
+    // Override with doctor's own saved profile from localStorage if available
+    const savedDoctorProfile = JSON.parse(localStorage.getItem('oabsc_profile') || '{}');
+    Object.keys(doctorProfiles).forEach(function(name) {
+        if (savedDoctorProfile.spec)   doctorProfiles[name].spec   = savedDoctorProfile.spec;
+        if (savedDoctorProfile.exp)    doctorProfiles[name].exp    = savedDoctorProfile.exp;
+        if (savedDoctorProfile.degree) doctorProfiles[name].degree = savedDoctorProfile.degree;
+        if (savedDoctorProfile.bio)    doctorProfiles[name].bio    = savedDoctorProfile.bio;
+        if (savedDoctorProfile.avatar) doctorProfiles[name].avatar = savedDoctorProfile.avatar;
+    });
+
+    // Doctor → Clinic location map (dynamic, no hardcoded names)
+    const doctorLocations = {};
 
     function getDoctorLocation(name) {
         return doctorLocations[name] || 'General Santos City Medical Center';
     }
 
-    // Doctor → Google Maps embed + directions
+    // Doctor → Google Maps embed + directions (default only)
     const doctorMapData = {
-        'Dr. Santos': {
-            embed:      'https://www.google.com/maps?q=Mindanao+Medical+Center+General+Santos+City&output=embed',
-            directions: 'https://www.google.com/maps/dir/?api=1&destination=Mindanao+Medical+Center+General+Santos+City',
-        },
-        'Dr. Reyes': {
-            embed:      'https://www.google.com/maps?q=Notre+Dame+Hospital+General+Santos+City&output=embed',
-            directions: 'https://www.google.com/maps/dir/?api=1&destination=Notre+Dame+Hospital+General+Santos+City',
-        },
-        'Dr. Cruz': {
-            embed:      'https://www.google.com/maps?q=Sarangani+Provincial+Hospital+Alabel+General+Santos&output=embed',
-            directions: 'https://www.google.com/maps/dir/?api=1&destination=Sarangani+Provincial+Hospital+Alabel',
-        },
-        'Dr. Garcia': {
-            embed:      'https://www.google.com/maps?q=South+Cotabato+Provincial+Hospital+Koronadal&output=embed',
-            directions: 'https://www.google.com/maps/dir/?api=1&destination=South+Cotabato+Provincial+Hospital+Koronadal',
-        },
         'default': {
             embed:      'https://www.google.com/maps?q=General+Santos+City&output=embed',
             directions: 'https://www.google.com/maps/dir/?api=1&destination=General+Santos+City',

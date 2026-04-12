@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AppointmentModel;
+use App\Models\UserModel;
 use Config\Database;
 
 class Appointments extends BaseController
@@ -56,16 +57,24 @@ class Appointments extends BaseController
             }, $bookedSlots);
         }
 
-        $doctorOptions = [
-            'Dr. Santos',
-            'Dr. Reyes',
-            'Dr. Cruz',
-            'Dr. Garcia',
-        ];
+        $userModel    = new UserModel();
+        $doctorUsers  = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
+        $doctorOptions = array_map(fn($d) => 'Dr. ' . $d['name'], $doctorUsers);
+        $doctorProfiles = [];
+        foreach ($doctorUsers as $d) {
+            $doctorProfiles['Dr. ' . $d['name']] = [
+                'avatar' => ! empty($d['profile_photo']) ? base_url($d['profile_photo']) : null,
+                'spec'   => $d['specialization'] ?? 'Specialist',
+                'exp'    => $d['experience'] ?? 'N/A',
+                'degree' => $d['degree'] ?? 'MD',
+                'bio'    => $d['bio'] ?? 'Experienced medical professional.',
+            ];
+        }
 
         return view('client/new_appointment', [
-            'bookedSlots' => $bookedSlots,
-            'doctorOptions' => $doctorOptions,
+            'bookedSlots'    => $bookedSlots,
+            'doctorOptions'  => $doctorOptions,
+            'doctorProfiles' => $doctorProfiles,
         ]);
     }
 

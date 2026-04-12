@@ -16,6 +16,11 @@ class UserModel extends Model
         'email',
         'password_hash',
         'role',
+        'profile_photo',
+        'specialization',
+        'experience',
+        'degree',
+        'bio',
         'deleted_at',
     ];
     

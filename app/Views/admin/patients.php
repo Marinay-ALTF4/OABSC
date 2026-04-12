@@ -34,7 +34,7 @@
                     <div class="adm-card-tag">Records</div>
                     <div class="adm-card-title">View Patient List</div>
                     <div class="adm-card-desc">See all patients registered in the clinic.</div>
-                    <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">Open</a>
+                    <a href="<?= site_url('/admin/patients/clients') ?>" class="adm-btn adm-btn-filled">Open</a>
                 </div>
             </div>
             <div class="col-md-3">

@@ -227,15 +227,33 @@ $name = session('user_name') ?? 'User';
     <!-- ==================== DOCTOR ==================== -->
 
     <div class="welcome-banner banner-doctor mb-4">
-        <div>
-            <div class="welcome-label">Doctor Panel</div>
-            <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
-            <p class="welcome-sub">Here is your clinical overview for today.</p>
+        <div class="d-flex align-items-center gap-3">
+            <div id="doctorAvatarBanner" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;background-size:cover;background-position:center;">
+                <?= strtoupper(substr($name ?? 'D', 0, 2)) ?>
+            </div>
+            <div>
+                <div class="welcome-label">Doctor Panel</div>
+                <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
+                <p class="welcome-sub">Here is your clinical overview for today.</p>
+            </div>
         </div>
         <div class="welcome-date">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
         </div>
     </div>
+    <script>
+        (function() {
+            const key = 'oabsc_profile';
+            const data = JSON.parse(localStorage.getItem(key) || '{}');
+            if (data.avatar) {
+                const el = document.getElementById('doctorAvatarBanner');
+                el.style.backgroundImage = `url('${data.avatar}')`;
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'center';
+                el.textContent = '';
+            }
+        })();
+    </script>
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">

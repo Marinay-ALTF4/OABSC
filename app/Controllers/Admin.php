@@ -26,6 +26,21 @@ class Admin extends BaseController
         return view('admin/patients');
     }
 
+    public function clientList()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) {
+            return $access;
+        }
+
+        $userModel = new UserModel();
+        $users = $userModel->withDeleted()->where('role', 'client')->orderBy('id', 'DESC')->findAll();
+
+        return view('admin/client_list', [
+            'users' => $users,
+        ]);
+    }
+
     public function patientList()
     {
         $access = $this->ensureAdminAccess();
