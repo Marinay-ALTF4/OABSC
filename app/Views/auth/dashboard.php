@@ -360,6 +360,22 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+
+    <!-- Notifications Section -->
+    <div class="section-label mt-4 mb-3">
+        <i class="bi bi-bell me-1"></i> Notifications &amp; Alerts
+    </div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="notif-panel">
+                <div class="notif-panel-header">
+                    <span id="notif-count-label">Loading...</span>
+                    <button class="notif-mark-all" onclick="markAllRead()">Mark all as read</button>
+                </div>
+                <div id="notif-list"></div>
+            </div>
+        </div>
+    </div>
     <?php endif; ?>
 
 </div>
@@ -579,6 +595,46 @@ $name = session('user_name') ?? 'User';
     .bg-orange-soft { background: #fff0e0; color: #d97706; }
     .bg-slate-soft  { background: #e2e8f0; color: #334155; }
 
+    /* ── Notifications Panel ── */
+    .notif-panel {
+        background: white; border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        overflow: hidden;
+    }
+    .notif-panel-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+        font-size: 0.82rem; font-weight: 600; color: #475569;
+    }
+    .notif-mark-all {
+        background: none; border: none; color: #3b82f6;
+        font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;
+    }
+    .notif-mark-all:hover { text-decoration: underline; }
+    .notif-item {
+        display: flex; align-items: flex-start; gap: 0.85rem;
+        padding: 0.9rem 1.25rem; border-bottom: 1px solid #f8fafc;
+        cursor: pointer; transition: background 0.15s;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.notif-read { opacity: 0.6; }
+    .notif-item-icon {
+        width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .notif-item-body { flex: 1; min-width: 0; }
+    .notif-item-title {
+        font-size: 0.85rem; font-weight: 700; color: #0f172a;
+        margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
+    }
+    .notif-unread-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #3b82f6; display: inline-block; flex-shrink: 0;
+    }
+    .notif-item-text { font-size: 0.8rem; color: #475569; line-height: 1.45; margin-bottom: 3px; }
+    .notif-item-time { font-size: 0.72rem; color: #94a3b8; }
     /* ══════════════════════════════════════
        ADMIN — Steel Blue/Teal Theme
     ══════════════════════════════════════ */
