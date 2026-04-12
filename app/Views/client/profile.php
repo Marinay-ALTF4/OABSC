@@ -32,6 +32,10 @@
                 <div class="avatar-circle mx-auto mb-3" id="avatarCircle">
                     <span id="avatarInitials"><?= strtoupper(substr(session('user_name') ?? 'U', 0, 2)) ?></span>
                 </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mb-3" onclick="document.getElementById('profileImageInput').click()">
+                    <i class="bi bi-camera"></i> Change Photo
+                </button>
+                <input type="file" id="profileImageInput" accept="image/*" class="d-none" onchange="handleProfileImage(event)">
                 <div class="profile-card-name" id="sidebarName"><?= esc(session('user_name') ?? 'User') ?></div>
                 <div class="profile-card-role">Patient</div>
                 <hr class="my-3">
@@ -254,9 +258,41 @@ const PROFILE_KEY = 'oabsc_profile';
 })();
 
 function updateSidebar(data) {
-    if (data.name)    { document.getElementById('sidebarName').textContent = data.name; document.getElementById('avatarInitials').textContent = data.name.substring(0,2).toUpperCase(); }
+    const avatar = document.getElementById('avatarCircle');
+    const initials = document.getElementById('avatarInitials');
+
+    if (data.avatar) {
+        avatar.style.backgroundImage = `url('${data.avatar}')`;
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+        initials.style.display = 'none';
+    } else {
+        avatar.style.backgroundImage = 'none';
+        initials.style.display = 'inline-block';
+    }
+
+    if (data.name) {
+        document.getElementById('sidebarName').textContent = data.name;
+        initials.textContent = data.name.substring(0,2).toUpperCase();
+    }
     if (data.phone)   document.getElementById('sidebarPhoneVal').textContent    = data.phone;
     if (data.address) document.getElementById('sidebarAddressVal').textContent  = data.address || data.city || '—';
+}
+
+function handleProfileImage(event) {
+    const file = event.target.files[0];
+    if (!file || !file.type.startsWith('image/')) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function () {
+        const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+        saved.avatar = reader.result;
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(saved));
+        updateSidebar(saved);
+    };
+    reader.readAsDataURL(file);
 }
 
 function switchTab(tab, btn) {
@@ -288,7 +324,8 @@ function savePersonal(e) {
 
     if (!name || !email) { showAlert('Name and email are required.', 'error'); return; }
 
-    const data = { name, email, phone, city, address };
+    const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    const data = { name, email, phone, city, address, avatar: saved.avatar || null };
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     updateSidebar(data);
     showAlert('Profile updated successfully!', 'success');
@@ -301,6 +338,10 @@ function resetPersonal() {
     document.getElementById('fieldAddress').value = '';
     document.getElementById('sidebarPhoneVal').textContent   = '—';
     document.getElementById('sidebarAddressVal').textContent = '—';
+    const avatar = document.getElementById('avatarCircle');
+    const initials = document.getElementById('avatarInitials');
+    avatar.style.backgroundImage = 'none';
+    initials.style.display = 'inline-block';
     showAlert('Profile reset to defaults.', 'info');
 }
 
