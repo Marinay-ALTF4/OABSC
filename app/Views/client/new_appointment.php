@@ -207,7 +207,7 @@ $bookedSlots = $bookedSlots ?? [];
 
 <!-- Doctor Profile Modal -->
 <div class="modal fade" id="doctorProfileModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 overflow-hidden">
             <div class="doctor-modal-header">
                 <img id="modalDoctorAvatar" src="" alt="" class="modal-doctor-avatar">
@@ -227,9 +227,36 @@ $bookedSlots = $bookedSlots ?? [];
                     <span class="profile-label">Specialization</span>
                     <span id="modalDoctorSpecFull" class="profile-value"></span>
                 </div>
-                <div class="profile-row border-0 pb-0">
+                <div class="profile-row">
                     <span class="profile-label">About</span>
                     <span id="modalDoctorBio" class="profile-value"></span>
+                </div>
+                <!-- Location Row -->
+                <div class="profile-row border-0 pb-0">
+                    <span class="profile-label"><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location</span>
+                    <span id="modalDoctorLocation" class="profile-value" style="color:#1e40af;text-align:right;"></span>
+                </div>
+
+                <!-- Map -->
+                <div class="mt-3">
+                    <div class="map-label mb-2">
+                        <i class="bi bi-map me-1 text-primary"></i>
+                        <strong>Clinic Direction</strong>
+                        <span class="map-sublabel">— tap the map to get directions from your location</span>
+                    </div>
+                    <div class="map-wrapper">
+                        <iframe
+                            id="modalDoctorMap"
+                            class="clinic-map"
+                            src=""
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                        <a id="modalDoctorDirections" href="#" target="_blank" class="map-directions-btn">
+                            <i class="bi bi-signpost-2-fill me-1"></i> Get Directions
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0">
@@ -284,6 +311,30 @@ $bookedSlots = $bookedSlots ?? [];
         return doctorLocations[name] || 'General Santos City Medical Center';
     }
 
+    // Doctor → Google Maps embed + directions
+    const doctorMapData = {
+        'Dr. Santos': {
+            embed:      'https://www.google.com/maps?q=Mindanao+Medical+Center+General+Santos+City&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=Mindanao+Medical+Center+General+Santos+City',
+        },
+        'Dr. Reyes': {
+            embed:      'https://www.google.com/maps?q=Notre+Dame+Hospital+General+Santos+City&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=Notre+Dame+Hospital+General+Santos+City',
+        },
+        'Dr. Cruz': {
+            embed:      'https://www.google.com/maps?q=Sarangani+Provincial+Hospital+Alabel+General+Santos&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=Sarangani+Provincial+Hospital+Alabel',
+        },
+        'Dr. Garcia': {
+            embed:      'https://www.google.com/maps?q=South+Cotabato+Provincial+Hospital+Koronadal&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=South+Cotabato+Provincial+Hospital+Koronadal',
+        },
+        'default': {
+            embed:      'https://www.google.com/maps?q=General+Santos+City&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=General+Santos+City',
+        },
+    };
+
     let currentProfileDoctor = null;
 
     window.selectDoctor = function(card) {
@@ -301,13 +352,25 @@ $bookedSlots = $bookedSlots ?? [];
         const p = doctorProfiles[doctorName];
         if (!p) return;
         currentProfileDoctor = doctorName;
-        document.getElementById('modalDoctorAvatar').src = p.avatar;
-        document.getElementById('modalDoctorName').textContent = doctorName;
-        document.getElementById('modalDoctorSpec').textContent = p.spec;
-        document.getElementById('modalDoctorDegree').textContent = p.degree;
-        document.getElementById('modalDoctorExp').textContent = p.exp;
-        document.getElementById('modalDoctorSpecFull').textContent = p.spec;
-        document.getElementById('modalDoctorBio').textContent = p.bio;
+
+        const location = getDoctorLocation(doctorName);
+        const mapData  = doctorMapData[doctorName] || doctorMapData['default'];
+
+        document.getElementById('modalDoctorAvatar').src          = p.avatar;
+        document.getElementById('modalDoctorName').textContent    = doctorName;
+        document.getElementById('modalDoctorSpec').textContent    = p.spec;
+        document.getElementById('modalDoctorDegree').textContent  = p.degree;
+        document.getElementById('modalDoctorExp').textContent     = p.exp;
+        document.getElementById('modalDoctorSpecFull').textContent= p.spec;
+        document.getElementById('modalDoctorBio').textContent     = p.bio;
+        document.getElementById('modalDoctorLocation').textContent= location;
+
+        // Embed map
+        document.getElementById('modalDoctorMap').src = mapData.embed;
+
+        // Directions link — uses Google Maps directions with destination pre-filled
+        document.getElementById('modalDoctorDirections').href = mapData.directions;
+
         new bootstrap.Modal(document.getElementById('doctorProfileModal')).show();
     };
 
@@ -791,6 +854,46 @@ $bookedSlots = $bookedSlots ?? [];
         font-size: 0.85rem;
         color: #333;
         text-align: right;
+    }
+    /* Map */
+    .map-label {
+        font-size: 0.82rem;
+        color: #334155;
+    }
+    .map-sublabel {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 400;
+    }
+    .map-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .clinic-map {
+        width: 100%;
+        height: 220px;
+        border: none;
+        display: block;
+    }
+    .map-directions-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #1e40af;
+        color: white;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(30,64,175,0.35);
+        transition: background 0.15s;
+    }
+    .map-directions-btn:hover {
+        background: #1d4ed8;
+        color: white;
     }
 
     @media (max-width: 992px) {
