@@ -329,12 +329,97 @@ $name = session('user_name') ?? 'User';
     <?php else : ?>
     <!-- ==================== CLIENT ==================== -->
     <div class="welcome-banner banner-client mb-4">
-        <div>
+        <!-- Illustration -->
+        <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+            <!-- Building body -->
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad)"/>
+            <!-- Building top / roof line -->
+            <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+            <!-- Windows row 1 -->
+            <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <!-- Windows row 2 -->
+            <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <!-- Door -->
+            <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+            <!-- Cross sign on building -->
+            <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+            <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+            <!-- Flagpole -->
+            <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+            <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+
+            <!-- Doctor cartoon -->
+            <!-- Body coat -->
+            <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+            <!-- Coat lapels -->
+            <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+            <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+            <!-- Stethoscope -->
+            <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+            <!-- Shirt & tie -->
+            <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+            <!-- Head -->
+            <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+            <!-- Hair -->
+            <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+            <!-- Eyes -->
+            <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+            <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+            <!-- Smile -->
+            <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Ears -->
+            <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <!-- Clipboard -->
+            <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+            <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+            <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+            <!-- Legs -->
+            <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <!-- Shoes -->
+            <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+            <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+
+            <!-- Ground line -->
+            <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+            <!-- Small tree left -->
+            <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+            <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+            <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+            <!-- Small tree right -->
+            <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+            <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+            <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+            <!-- Clouds -->
+            <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+            <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+            <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+            <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+            <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+
+            <defs>
+                <linearGradient id="bldg-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d6e8f8"/>
+                    <stop offset="100%" stop-color="#b8d0ee"/>
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <div style="position:relative;z-index:2;">
             <div class="welcome-label">Patient Portal</div>
             <h4 class="welcome-name">Welcome, <?= esc($name) ?></h4>
             <p class="welcome-sub">From here you can request or review your appointments.</p>
         </div>
-        <div class="welcome-date">
+        <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
         </div>
     </div>
@@ -722,12 +807,12 @@ $name = session('user_name') ?? 'User';
 </style>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
     html, body {
         background: #edf2f7 !important;
         min-height: 100vh;
-        font-family: 'Inter', sans-serif;
+        font-family: 'DM Sans', sans-serif;
         margin: 0;
         padding: 0;
     }
@@ -751,29 +836,50 @@ $name = session('user_name') ?? 'User';
     .banner-admin     { background: linear-gradient(135deg, #e8eff7 0%, #dbe7f4 100%); }
     .banner-secretary { background: linear-gradient(135deg, #e7eef5 0%, #d9e5f0 100%); }
     .banner-doctor    { background: linear-gradient(135deg, #eaf0f6 0%, #dce6f1 100%); }
-    .banner-client    { background: linear-gradient(135deg, #e9eff6 0%, #dce7f3 100%); }
+    .banner-client    { background: linear-gradient(135deg, #e9eff6 0%, #dce7f3 100%); position: relative; overflow: hidden; min-height: 130px; }
+
+    .client-banner-illustration {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        height: 220px;
+        width: auto;
+        opacity: 0.55;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    @media (max-width: 576px) {
+        .client-banner-illustration { height: 140px; opacity: 0.3; }
+    }
 
     .welcome-label {
+        font-family: 'DM Sans', sans-serif;
         font-size: 10.5px;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1.3px;
-        color: #475569;
-        margin-bottom: 5px;
+        letter-spacing: 1.6px;
+        color: #64748b;
+        margin-bottom: 6px;
     }
     .welcome-name {
-        font-size: 1.4rem;
-        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
         color: #0f172a;
         margin: 0 0 5px;
-        letter-spacing: -0.3px;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
     }
     .welcome-sub {
-        font-size: 0.84rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
         color: #64748b;
         margin: 0;
+        font-weight: 400;
     }
     .welcome-date {
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.8rem;
         font-weight: 500;
         color: #475569;
@@ -788,10 +894,11 @@ $name = session('user_name') ?? 'User';
 
    
     .section-label {
-        font-size: 10.5px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 1.8px;
         color: #64748b;
     }
 
@@ -820,14 +927,16 @@ $name = session('user_name') ?? 'User';
         margin-bottom: 14px;
     }
     .stat-value {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 2rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #0f172a;
         line-height: 1;
         margin-bottom: 5px;
         letter-spacing: -0.5px;
     }
     .stat-label {
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.7px;
@@ -835,7 +944,6 @@ $name = session('user_name') ?? 'User';
         font-weight: 600;
     }
 
- 
     .action-card {
         background: #ffffff;
         border-radius: 18px;
@@ -863,31 +971,36 @@ $name = session('user_name') ?? 'User';
         margin-bottom: 14px;
     }
     .action-tag {
-        font-size: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 10.5px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.2px;
-        color: #64748b;
+        letter-spacing: 1.4px;
+        color: #94a3b8;
         margin-bottom: 5px;
     }
     .action-title {
-        font-size: 0.95rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
         font-weight: 700;
         color: #0f172a;
         margin-bottom: 7px;
-        letter-spacing: -0.1px;
+        letter-spacing: -0.2px;
     }
     .action-desc {
-        font-size: 0.8rem;
-        color: #475569;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.83rem;
+        color: #64748b;
         flex: 1;
         margin-bottom: 18px;
-        line-height: 1.55;
+        line-height: 1.6;
+        font-weight: 400;
     }
     .action-btn {
-        font-size: 0.78rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.82rem;
         font-weight: 600;
-        padding: 7px 18px;
+        padding: 8px 20px;
         border-radius: 10px;
         border: none;
         cursor: pointer;
@@ -943,10 +1056,12 @@ $name = session('user_name') ?? 'User';
     .notif-panel-header {
         display: flex; justify-content: space-between; align-items: center;
         padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.82rem; font-weight: 600; color: #475569;
     }
     .notif-mark-all {
         background: none; border: none; color: #3b82f6;
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;
     }
     .notif-mark-all:hover { text-decoration: underline; }
@@ -964,6 +1079,7 @@ $name = session('user_name') ?? 'User';
     }
     .notif-item-body { flex: 1; min-width: 0; }
     .notif-item-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 0.85rem; font-weight: 700; color: #0f172a;
         margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
     }
@@ -971,8 +1087,14 @@ $name = session('user_name') ?? 'User';
         width: 7px; height: 7px; border-radius: 50%;
         background: #3b82f6; display: inline-block; flex-shrink: 0;
     }
-    .notif-item-text { font-size: 0.8rem; color: #475569; line-height: 1.45; margin-bottom: 3px; }
-    .notif-item-time { font-size: 0.72rem; color: #94a3b8; }
+    .notif-item-text {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem; color: #475569; line-height: 1.5; margin-bottom: 3px;
+    }
+    .notif-item-time {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.72rem; color: #94a3b8;
+    }
     /* ══════════════════════════════════════
        ADMIN — Steel Blue/Teal Theme
     ══════════════════════════════════════ */
