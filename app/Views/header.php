@@ -97,6 +97,21 @@ $isPatientsPage = url_is('admin/patients*');
     </div>
 </nav>
 
+<div id="notif-modal" class="notif-modal d-none">
+    <div class="notif-modal-backdrop" onclick="closeNotifModal()"></div>
+    <div class="notif-modal-card">
+        <div class="notif-modal-card-header">
+            <div>
+                <div class="notif-modal-heading">Notification</div>
+                <div id="notif-modal-time" class="notif-modal-time"></div>
+            </div>
+            <button type="button" class="notif-modal-close" onclick="closeNotifModal()">×</button>
+        </div>
+        <div id="notif-modal-title" class="notif-modal-title"></div>
+        <div id="notif-modal-body" class="notif-modal-body"></div>
+    </div>
+</div>
+
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     html, body {
@@ -197,6 +212,90 @@ $isPatientsPage = url_is('admin/patients*');
         font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 0;
     }
     .notif-mark-all-sm:hover { text-decoration: underline; }
+    .notif-item-action {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    .notif-item-btn {
+        background: #1d4ed8;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .notif-item-btn:hover { background: #1e40af; }
+    .notif-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10500;
+        padding: 1rem;
+    }
+    .notif-modal.d-none {
+        display: none;
+    }
+    .notif-modal-card {
+        width: min(520px, 100%);
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+        overflow: hidden;
+        position: relative;
+    }
+    .notif-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+    }
+    .notif-modal-card-header {
+        position: relative;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        z-index: 1;
+        background: white;
+    }
+    .notif-modal-heading {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .notif-modal-time {
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+    .notif-modal-close {
+        border: none;
+        background: transparent;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        color: #475569;
+        padding: 0;
+    }
+    .notif-modal-title {
+        padding: 1.2rem 1.5rem 0.5rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        z-index: 1;
+    }
+    .notif-modal-body {
+        padding: 0 1.5rem 1.5rem;
+        color: #475569;
+        line-height: 1.7;
+        z-index: 1;
+    }
 </style>
 
 <script>
@@ -321,6 +420,58 @@ const CLIENT_TRANSLATIONS = {
         lang_title: 'Language Preference',
         lang_sub: 'Choose the language used across the patient portal.',
         lang_note: 'Changes apply immediately across all client pages.',
+        // Global UI
+        'Dashboard': 'Dashboard',
+        'Settings': 'Settings',
+        'Logout': 'Logout',
+        'Patient Portal': 'Patient Portal',
+        'From here you can request or review your appointments.': 'From here you can request or review your appointments.',
+        'Notifications & Alerts': 'Notifications & Alerts',
+        'My Appointments': 'My Appointments',
+        'View Appointments': 'View Appointments',
+        'Book Appointment': 'Book Appointment',
+        'Book New Appointment': 'Book New Appointment',
+        'Select doctor, date, and time slot, then confirm your booking.': 'Select doctor, date, and time slot, then confirm your booking.',
+        'Appointment submitted successfully.': 'Appointment submitted successfully.',
+        'Select Your Doctor': 'Select Your Doctor',
+        'Please select a doctor.': 'Please select a doctor.',
+        'Available Time Slots': 'Available Time Slots',
+        'Reason for Visit': 'Reason for Visit',
+        'Describe your concern or reason for consultation': 'Describe your concern or reason for consultation',
+        'Appointment Summary': 'Appointment Summary',
+        'Location:': 'Location:',
+        'Submit Appointment': 'Submit Appointment',
+        'Review and manage all your clinic appointments.': 'Review and manage all your clinic appointments.',
+        'No upcoming appointments': 'No upcoming appointments',
+        'You have no scheduled appointments. Book one now!': 'You have no scheduled appointments. Book one now!',
+        'No completed appointments': 'No completed appointments',
+        'Your completed appointments will appear here.': 'Your completed appointments will appear here.',
+        'No cancelled appointments': 'No cancelled appointments',
+        'You have no cancelled appointments.': 'You have no cancelled appointments.',
+        'Appointment Details': 'Appointment Details',
+        'Reschedule Appointment': 'Reschedule Appointment',
+        'Cancel Appointment?': 'Cancel Appointment?',
+        'You are about to cancel your appointment with:': 'You are about to cancel your appointment with:',
+        'This action cannot be undone.': 'This action cannot be undone.',
+        'Close': 'Close',
+        'Keep It': 'Keep It',
+        'Yes, Cancel': 'Yes, Cancel',
+        'Open Chat': 'Open Chat',
+        'Patient Portal': 'Patient Portal',
+        'New Appointment': 'New Appointment',
+        'Book New': 'Book New',
+        'Upcoming': 'Upcoming',
+        'Completed': 'Completed',
+        'Cancelled': 'Cancelled',
+        'Doctor': 'Doctor',
+        'Date': 'Date',
+        'Time': 'Time',
+        'Reason': 'Reason',
+        'Status': 'Status',
+        'Phone:': 'Phone:',
+        'Email:': 'Email:',
+        'Hours:': 'Hours:',
+        'Appointment to reschedule:': 'Appointment to reschedule:',
     },
     fil: {
         tab_personal: 'Personal na Impormasyon',
@@ -329,8 +480,99 @@ const CLIENT_TRANSLATIONS = {
         lang_title: 'Piling Wika',
         lang_sub: 'Piliin ang wika na gagamitin sa portal ng pasyente.',
         lang_note: 'Awtomatikong nalalapat ang mga pagbabago sa lahat ng client na pahina.',
+        // Global UI
+        'Dashboard': 'Dashboard',
+        'Settings': 'Mga Setting',
+        'Logout': 'Mag-logout',
+        'Patient Portal': 'Portal ng Pasyente',
+        'From here you can request or review your appointments.': 'Mula rito maaari kang mag-request o mag-review ng iyong mga appointment.',
+        'Notifications & Alerts': 'Mga Abiso at Alert',
+        'My Appointments': 'Aking Mga Appointment',
+        'View Appointments': 'Tingnan ang Mga Appointment',
+        'Book Appointment': 'Mag-book ng Appointment',
+        'Book New Appointment': 'Mag-book ng Bagong Appointment',
+        'Select doctor, date, and time slot, then confirm your booking.': 'Piliin ang doktor, petsa, at oras, pagkatapos ay kumpirmahin ang iyong booking.',
+        'Appointment submitted successfully.': 'Matagumpay na naisumite ang appointment.',
+        'Select Your Doctor': 'Piliin ang Iyong Doktor',
+        'Please select a doctor.': 'Mangyaring pumili ng doktor.',
+        'Available Time Slots': 'Mga Available na Oras',
+        'Reason for Visit': 'Dahilan ng Pagbisita',
+        'Describe your concern or reason for consultation': 'Ilarawan ang iyong alalahanin o dahilan sa konsultasyon',
+        'Appointment Summary': 'Buod ng Appointment',
+        'Location:': 'Lokasyon:',
+        'Submit Appointment': 'Isumite ang Appointment',
+        'Review and manage all your clinic appointments.': 'Suriin at pamahalaan ang lahat ng iyong mga appointment sa klinika.',
+        'No upcoming appointments': 'Walang paparating na appointment',
+        'You have no scheduled appointments. Book one now!': 'Wala kang naka-schedule na appointment. Mag-book na ngayon!',
+        'No completed appointments': 'Walang natapos na appointment',
+        'Your completed appointments will appear here.': 'Dito lalabas ang iyong mga natapos na appointment.',
+        'No cancelled appointments': 'Walang kinanselang appointment',
+        'You have no cancelled appointments.': 'Wala kang kinanselang appointment.',
+        'Appointment Details': 'Detalye ng Appointment',
+        'Reschedule Appointment': 'I-reschedule ang Appointment',
+        'Cancel Appointment?': 'Ikansela ang Appointment?',
+        'You are about to cancel your appointment with:': 'Malapit mo nang ikansela ang iyong appointment kay:',
+        'This action cannot be undone.': 'Hindi na ito mababawi.',
+        'Close': 'Isara',
+        'Keep It': 'Panatilihin',
+        'Yes, Cancel': 'Oo, Ikansela',
+        'Open Chat': 'Buksan ang Chat',
+        'New Appointment': 'Bagong Appointment',
+        'Book New': 'Mag-book ng Bago',
+        'Upcoming': 'Paparan',
+        'Completed': 'Natapos',
+        'Cancelled': 'Kinansela',
+        'Doctor': 'Doktor',
+        'Date': 'Petsa',
+        'Time': 'Oras',
+        'Reason': 'Dahilan',
+        'Status': 'Katayuan',
+        'Phone:': 'Telepono:',
+        'Email:': 'Email:',
+        'Hours:': 'Oras:',
+        'Appointment to reschedule:': 'Appointment na i-reschedule:',
     },
 };
+
+function translateTextNode(node, translations) {
+    const text = node.nodeValue.trim();
+    if (!text) return;
+    const translated = translations[text];
+    if (translated) {
+        node.nodeValue = node.nodeValue.replace(text, translated);
+    }
+}
+
+function translateTextNodes(root, translations) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+            const parentTag = node.parentNode && node.parentNode.nodeName;
+            if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+            if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEXTAREA'].includes(parentTag)) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    });
+
+    const nodes = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+    nodes.forEach(node => translateTextNode(node, translations));
+}
+
+function translateAttributes(root, translations) {
+    const attrNames = ['placeholder', 'title', 'aria-label', 'alt', 'value'];
+    root.querySelectorAll('*').forEach(el => {
+        attrNames.forEach(name => {
+            if (el.hasAttribute(name)) {
+                const value = el.getAttribute(name);
+                if (value && translations[value]) {
+                    el.setAttribute(name, translations[value]);
+                }
+            }
+        });
+    });
+}
 
 function translateClientText(lang) {
     const translations = CLIENT_TRANSLATIONS[lang] || CLIENT_TRANSLATIONS.en;
@@ -340,6 +582,20 @@ function translateClientText(lang) {
             el.textContent = translations[key];
         }
     });
+    translateTextNodes(document.body, translations);
+    translateAttributes(document.body, translations);
+    const titleMap = {
+        'Book Appointment': 'Book Appointment',
+        'My Appointments': 'My Appointments',
+        'Profile Settings': 'Profile Settings',
+        'Dashboard': 'Dashboard',
+    };
+    const pageTitle = document.title;
+    if (translations[pageTitle]) {
+        document.title = translations[pageTitle];
+    } else if (titleMap[pageTitle] && translations[titleMap[pageTitle]]) {
+        document.title = translations[titleMap[pageTitle]];
+    }
     document.documentElement.lang = lang === 'fil' ? 'fil' : 'en';
 }
 
