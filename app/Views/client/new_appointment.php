@@ -184,10 +184,14 @@ $bookedSlots = $bookedSlots ?? [];
                         </div>
 
                         <div class="summary-card mb-4" id="appointmentSummary">
-                            <h6 class="mb-2">Appointment Summary</h6>
+                            <h6 class="mb-3">Appointment Summary</h6>
                             <p class="mb-1"><strong>Doctor:</strong> <span data-summary="doctor">-</span></p>
                             <p class="mb-1"><strong>Date:</strong> <span data-summary="date">-</span></p>
-                            <p class="mb-0"><strong>Time:</strong> <span data-summary="time">-</span></p>
+                            <p class="mb-1"><strong>Time:</strong> <span data-summary="time">-</span></p>
+                            <p class="mb-0 location-line">
+                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                <strong>Location:</strong> <span data-summary="location">Select a doctor to see location</span>
+                            </p>
                         </div>
 
                         <div class="d-flex flex-wrap gap-2">
@@ -249,6 +253,7 @@ $bookedSlots = $bookedSlots ?? [];
                     <li><strong>Doctor:</strong> <span data-modal-summary="doctor">-</span></li>
                     <li><strong>Date:</strong> <span data-modal-summary="date">-</span></li>
                     <li><strong>Time:</strong> <span data-modal-summary="time">-</span></li>
+                    <li><strong><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location:</strong> <span id="modal-location" style="color:#1e40af;">-</span></li>
                 </ul>
             </div>
             <div class="modal-footer">
@@ -266,6 +271,18 @@ $bookedSlots = $bookedSlots ?? [];
         $doctorOptions,
         array_map(fn($d) => $doctorProfiles[$d] ?? ['avatar'=>'https://i.pravatar.cc/150?img=1','spec'=>'Specialist','exp'=>'N/A','degree'=>'MD','bio'=>'Experienced medical professional.'], $doctorOptions)
     ), JSON_UNESCAPED_UNICODE) ?>;
+
+    // Doctor → Clinic location map (General Santos City)
+    const doctorLocations = {
+        'Dr. Santos' : 'Mindanao Medical Center, Brgy. Lagao, General Santos City',
+        'Dr. Reyes'  : 'Notre Dame Hospital, Makar Road, General Santos City',
+        'Dr. Cruz'   : 'Sarangani Provincial Hospital, Alabel, General Santos City',
+        'Dr. Garcia' : 'South Cotabato Provincial Hospital, Koronadal, General Santos City',
+    };
+
+    function getDoctorLocation(name) {
+        return doctorLocations[name] || 'General Santos City Medical Center';
+    }
 
     let currentProfileDoctor = null;
 
@@ -398,9 +415,15 @@ $bookedSlots = $bookedSlots ?? [];
     }
 
     function updateSummary() {
-        summaryDoctor.textContent = doctorInput.value || '-';
-        summaryDate.textContent = dateInput.value || '-';
-        summaryTime.textContent = timeInput.value || '-';
+        const doctor = doctorInput.value || '-';
+        summaryDoctor.textContent = doctor;
+        summaryDate.textContent   = dateInput.value || '-';
+        summaryTime.textContent   = timeInput.value || '-';
+        const locEl = document.querySelector('[data-summary="location"]');
+        if (locEl) {
+            locEl.textContent = doctor !== '-' ? getDoctorLocation(doctor) : 'Select a doctor to see location';
+            locEl.style.color = doctor !== '-' ? '#1e40af' : '#94a3b8';
+        }
     }
 
     function setFieldState(input, isValid) {
@@ -513,9 +536,14 @@ $bookedSlots = $bookedSlots ?? [];
     }
 
     function setModalSummary() {
-        modalSummaryDoctor.textContent = doctorInput.value || '-';
-        modalSummaryDate.textContent = dateInput.value || '-';
-        modalSummaryTime.textContent = timeInput.value || '-';
+        const doctor = doctorInput.value || '-';
+        modalSummaryDoctor.textContent = doctor;
+        modalSummaryDate.textContent   = dateInput.value || '-';
+        modalSummaryTime.textContent   = timeInput.value || '-';
+        const modalLoc = document.getElementById('modal-location');
+        if (modalLoc) {
+            modalLoc.textContent = doctor !== '-' ? getDoctorLocation(doctor) : '-';
+        }
     }
 
     function reserveSlotClientSide() {
@@ -612,6 +640,11 @@ $bookedSlots = $bookedSlots ?? [];
         border-radius: 10px;
         padding: 14px 16px;
     }
+    .location-line {
+        color: #1e40af;
+        font-size: 0.875rem;
+    }
+    .location-line i { color: #ef4444; }
 
     .slot-grid {
         display: grid;
