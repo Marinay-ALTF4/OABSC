@@ -25,10 +25,15 @@ $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
 
+// Client Profile
+$routes->get('/profile', 'Profile::index');
+$routes->post('/profile/save', 'Profile::save');
+
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/admin/patients/list', 'Admin::patientList');
+$routes->get('/admin/patients/clients', 'Admin::clientList');
 $routes->get('/admin/patients/add', 'Admin::addUser');
 $routes->post('/admin/patients/add', 'Admin::addUser');
 $routes->get('/admin/patients/edit/(:num)', 'Admin::editUser/$1');

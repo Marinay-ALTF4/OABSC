@@ -28,4 +28,13 @@ class Home extends BaseController
 
         return view('auth/dashboard', $data);
     }
+
+    public function profile()
+    {
+        if (! session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        return view('client/profile');
+    }
 }

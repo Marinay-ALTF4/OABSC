@@ -8,7 +8,8 @@ $doctorErr = $errors['doctor_name'] ?? null;
 $dateErr = $errors['appointment_date'] ?? null;
 $timeErr = $errors['appointment_time'] ?? null;
 $reasonErr = $errors['reason'] ?? null;
-$doctorOptions = $doctorOptions ?? ['Dr. Santos', 'Dr. Reyes', 'Dr. Cruz', 'Dr. Garcia'];
+$doctorOptions = $doctorOptions ?? [];
+$doctorProfiles = $doctorProfiles ?? [];
 $bookedSlots = $bookedSlots ?? [];
 ?>
 <!DOCTYPE html>
@@ -55,26 +56,52 @@ $bookedSlots = $bookedSlots ?? [];
                         <?= csrf_field() ?>
 
                         <div class="row g-4">
-                            <div class="col-md-6">
-                                <label for="doctor_name" class="form-label">Doctor</label>
-                                <select
-                                    class="form-select <?= $doctorErr ? 'is-invalid' : '' ?>"
-                                    id="doctor_name"
-                                    name="doctor_name"
-                                    required
-                                >
-                                    <option value="">Select doctor</option>
-                                    <?php foreach ($doctorOptions as $doctor): ?>
-                                        <option value="<?= esc($doctor) ?>" <?= old('doctor_name') === $doctor ? 'selected' : '' ?>>
-                                            <?= esc($doctor) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <div class="col-12">
+                                <label class="form-label">Select Your Doctor</label>
+                                <input type="hidden" id="doctor_name" name="doctor_name" value="<?= esc(old('doctor_name')) ?>" required>
                                 <?php if ($doctorErr): ?>
-                                    <div class="invalid-feedback d-block"><?= esc($doctorErr) ?></div>
-                                <?php else: ?>
-                                    <div class="invalid-feedback" id="doctorClientError">Doctor is required.</div>
+                                    <div class="text-danger small mb-2"><?= esc($doctorErr) ?></div>
                                 <?php endif; ?>
+                                <div class="invalid-feedback" id="doctorClientError">Please select a doctor.</div>
+
+                                <div class="row g-3 mt-1" id="doctorCardGrid">
+                                    <?php foreach ($doctorOptions as $doctor):
+                                        $profile = $doctorProfiles[$doctor] ?? [
+                                            'avatar' => 'https://i.pravatar.cc/150?img=1',
+                                            'spec'   => 'Specialist',
+                                            'exp'    => 'N/A',
+                                            'degree' => 'MD',
+                                            'bio'    => 'Experienced medical professional.',
+                                        ];
+                                    ?>
+                                        <div class="col-6 col-md-3">
+                                            <div class="doctor-card <?= old('doctor_name') === $doctor ? 'selected' : '' ?>"
+                                                 data-doctor="<?= esc($doctor) ?>"
+                                                 onclick="selectDoctor(this)">
+                                                <?php if (!empty($profile['avatar'])): ?>
+                                                    <img src="<?= esc($profile['avatar']) ?>" alt="<?= esc($doctor) ?>" class="doctor-avatar">
+                                                <?php else: ?>
+                                                    <div class="doctor-avatar d-flex align-items-center justify-content-center fw-bold text-white" style="background:linear-gradient(135deg,#1d4ed8,#6d28d9);font-size:1.2rem;">
+                                                        <?= strtoupper(substr(str_replace('Dr. ', '', $doctor), 0, 2)) ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <div class="doctor-name"><?= esc($doctor) ?></div>
+                                                <div class="doctor-spec"><?= esc($profile['spec']) ?></div>
+                                                <div class="doctor-exp">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                                    </svg>
+                                                    <?= esc($profile['exp']) ?> experience
+                                                </div>
+                                                <button type="button"
+                                                    class="btn-view-profile"
+                                                    onclick="event.stopPropagation(); showProfile('<?= esc($doctor) ?>')"
+                                                >View Profile</button>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -132,10 +159,14 @@ $bookedSlots = $bookedSlots ?? [];
                         </div>
 
                         <div class="summary-card mb-4" id="appointmentSummary">
-                            <h6 class="mb-2">Appointment Summary</h6>
+                            <h6 class="mb-3">Appointment Summary</h6>
                             <p class="mb-1"><strong>Doctor:</strong> <span data-summary="doctor">-</span></p>
                             <p class="mb-1"><strong>Date:</strong> <span data-summary="date">-</span></p>
-                            <p class="mb-0"><strong>Time:</strong> <span data-summary="time">-</span></p>
+                            <p class="mb-1"><strong>Time:</strong> <span data-summary="time">-</span></p>
+                            <p class="mb-0 location-line">
+                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                <strong>Location:</strong> <span data-summary="location">Select a doctor to see location</span>
+                            </p>
                         </div>
 
                         <div class="d-flex flex-wrap gap-2">
@@ -144,6 +175,72 @@ $bookedSlots = $bookedSlots ?? [];
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Profile Modal -->
+<div class="modal fade" id="doctorProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 overflow-hidden">
+            <div class="doctor-modal-header">
+                <img id="modalDoctorAvatar" src="" alt="" class="modal-doctor-avatar">
+                <h5 id="modalDoctorName" class="mb-0 fw-bold"></h5>
+                <div id="modalDoctorSpec" class="small opacity-75 mt-1"></div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="profile-row">
+                    <span class="profile-label">Degree</span>
+                    <span id="modalDoctorDegree" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Experience</span>
+                    <span id="modalDoctorExp" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Specialization</span>
+                    <span id="modalDoctorSpecFull" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">About</span>
+                    <span id="modalDoctorBio" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label"><i class="bi bi-telephone-fill me-1"></i>Contact</span>
+                    <span id="modalDoctorPhone" class="profile-value"></span>
+                </div>
+                <!-- Location Row -->
+                <div class="profile-row border-0 pb-0">
+                    <span class="profile-label"><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location</span>
+                    <span id="modalDoctorLocation" class="profile-value" style="color:#1e40af;text-align:right;"></span>
+                </div>
+
+                <!-- Map -->
+                <div class="mt-3">
+                    <div class="map-label mb-2">
+                        <i class="bi bi-map me-1 text-primary"></i>
+                        <strong>Clinic Direction</strong>
+                        <span class="map-sublabel">— tap the map to get directions from your location</span>
+                    </div>
+                    <div class="map-wrapper">
+                        <iframe
+                            id="modalDoctorMap"
+                            class="clinic-map"
+                            src=""
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                        <a id="modalDoctorDirections" href="#" target="_blank" class="map-directions-btn">
+                            <i class="bi bi-signpost-2-fill me-1"></i> Get Directions
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" id="modalSelectBtn" onclick="selectDoctorFromModal()">Select This Doctor</button>
             </div>
         </div>
     </div>
@@ -162,6 +259,7 @@ $bookedSlots = $bookedSlots ?? [];
                     <li><strong>Doctor:</strong> <span data-modal-summary="doctor">-</span></li>
                     <li><strong>Date:</strong> <span data-modal-summary="date">-</span></li>
                     <li><strong>Time:</strong> <span data-modal-summary="time">-</span></li>
+                    <li><strong><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location:</strong> <span id="modal-location" style="color:#1e40af;">-</span></li>
                 </ul>
             </div>
             <div class="modal-footer">
@@ -175,7 +273,84 @@ $bookedSlots = $bookedSlots ?? [];
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function () {
-    const form = document.getElementById('appointmentForm');
+    const doctorProfiles = <?= json_encode(array_combine(
+        $doctorOptions,
+        array_map(fn($d) => $doctorProfiles[$d] ?? ['avatar'=>'https://i.pravatar.cc/150?img=1','spec'=>'Specialist','exp'=>'N/A','degree'=>'MD','bio'=>'Experienced medical professional.'], $doctorOptions)
+    ), JSON_UNESCAPED_UNICODE) ?>;
+
+    // Override with doctor's own saved profile from localStorage if available
+    const savedDoctorProfile = JSON.parse(localStorage.getItem('oabsc_profile') || '{}');
+    Object.keys(doctorProfiles).forEach(function(name) {
+        if (savedDoctorProfile.spec)   doctorProfiles[name].spec   = savedDoctorProfile.spec;
+        if (savedDoctorProfile.exp)    doctorProfiles[name].exp    = savedDoctorProfile.exp;
+        if (savedDoctorProfile.degree) doctorProfiles[name].degree = savedDoctorProfile.degree;
+        if (savedDoctorProfile.bio)    doctorProfiles[name].bio    = savedDoctorProfile.bio;
+        if (savedDoctorProfile.avatar) doctorProfiles[name].avatar = savedDoctorProfile.avatar;
+    });
+
+    // Doctor → Clinic location map (dynamic, no hardcoded names)
+    const doctorLocations = {};
+
+    function getDoctorLocation(name) {
+        return doctorLocations[name] || 'General Santos City Medical Center';
+    }
+
+    // Doctor → Google Maps embed + directions (default only)
+    const doctorMapData = {
+        'default': {
+            embed:      'https://www.google.com/maps?q=General+Santos+City&output=embed',
+            directions: 'https://www.google.com/maps/dir/?api=1&destination=General+Santos+City',
+        },
+    };
+
+    let currentProfileDoctor = null;
+
+    window.selectDoctor = function(card) {
+        document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('doctor_name').value = card.dataset.doctor;
+        document.getElementById('doctorClientError').style.display = 'none';
+        doctorInput.classList.remove('is-invalid');
+        timeInput.value = '';
+        renderSlots();
+        updateSummary();
+    };
+
+    window.showProfile = function(doctorName) {
+        const p = doctorProfiles[doctorName];
+        if (!p) return;
+        currentProfileDoctor = doctorName;
+
+        const location = getDoctorLocation(doctorName);
+        const mapData  = doctorMapData[doctorName] || doctorMapData['default'];
+
+        document.getElementById('modalDoctorAvatar').src          = p.avatar;
+        document.getElementById('modalDoctorName').textContent    = doctorName;
+        document.getElementById('modalDoctorSpec').textContent    = p.spec;
+        document.getElementById('modalDoctorDegree').textContent  = p.degree;
+        document.getElementById('modalDoctorExp').textContent     = p.exp;
+        document.getElementById('modalDoctorSpecFull').textContent= p.spec;
+        document.getElementById('modalDoctorBio').textContent     = p.bio;
+        document.getElementById('modalDoctorLocation').textContent= location;
+        document.getElementById('modalDoctorPhone').textContent   = p.phone || 'Not provided';
+
+        // Embed map
+        document.getElementById('modalDoctorMap').src = mapData.embed;
+
+        // Directions link — uses Google Maps directions with destination pre-filled
+        document.getElementById('modalDoctorDirections').href = mapData.directions;
+
+        new bootstrap.Modal(document.getElementById('doctorProfileModal')).show();
+    };
+
+    window.selectDoctorFromModal = function() {
+        if (!currentProfileDoctor) return;
+        const card = document.querySelector(`.doctor-card[data-doctor="${currentProfileDoctor}"]`);
+        if (card) selectDoctor(card);
+        bootstrap.Modal.getInstance(document.getElementById('doctorProfileModal')).hide();
+    };
+
+    // Override doctorInput reference for slot rendering
     const doctorInput = document.getElementById('doctor_name');
     const dateInput = document.getElementById('appointment_date');
     const timeInput = document.getElementById('appointment_time');
@@ -272,9 +447,15 @@ $bookedSlots = $bookedSlots ?? [];
     }
 
     function updateSummary() {
-        summaryDoctor.textContent = doctorInput.value || '-';
-        summaryDate.textContent = dateInput.value || '-';
-        summaryTime.textContent = timeInput.value || '-';
+        const doctor = doctorInput.value || '-';
+        summaryDoctor.textContent = doctor;
+        summaryDate.textContent   = dateInput.value || '-';
+        summaryTime.textContent   = timeInput.value || '-';
+        const locEl = document.querySelector('[data-summary="location"]');
+        if (locEl) {
+            locEl.textContent = doctor !== '-' ? getDoctorLocation(doctor) : 'Select a doctor to see location';
+            locEl.style.color = doctor !== '-' ? '#1e40af' : '#94a3b8';
+        }
     }
 
     function setFieldState(input, isValid) {
@@ -387,9 +568,14 @@ $bookedSlots = $bookedSlots ?? [];
     }
 
     function setModalSummary() {
-        modalSummaryDoctor.textContent = doctorInput.value || '-';
-        modalSummaryDate.textContent = dateInput.value || '-';
-        modalSummaryTime.textContent = timeInput.value || '-';
+        const doctor = doctorInput.value || '-';
+        modalSummaryDoctor.textContent = doctor;
+        modalSummaryDate.textContent   = dateInput.value || '-';
+        modalSummaryTime.textContent   = timeInput.value || '-';
+        const modalLoc = document.getElementById('modal-location');
+        if (modalLoc) {
+            modalLoc.textContent = doctor !== '-' ? getDoctorLocation(doctor) : '-';
+        }
     }
 
     function reserveSlotClientSide() {
@@ -486,6 +672,11 @@ $bookedSlots = $bookedSlots ?? [];
         border-radius: 10px;
         padding: 14px 16px;
     }
+    .location-line {
+        color: #1e40af;
+        font-size: 0.875rem;
+    }
+    .location-line i { color: #ef4444; }
 
     .slot-grid {
         display: grid;
@@ -533,6 +724,144 @@ $bookedSlots = $bookedSlots ?? [];
 
     .btn-primary:hover {
         background: #357abd;
+        color: white;
+    }
+
+    /* Doctor Cards */
+    .doctor-card {
+        border: 2px solid #e1e8ed;
+        border-radius: 12px;
+        padding: 1rem 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+        height: 100%;
+    }
+    .doctor-card:hover {
+        border-color: #4a90e2;
+        box-shadow: 0 4px 12px rgba(74,144,226,0.15);
+        transform: translateY(-2px);
+    }
+    .doctor-card.selected {
+        border-color: #4a90e2;
+        background: #f0f7ff;
+        box-shadow: 0 4px 14px rgba(74,144,226,0.2);
+    }
+    .doctor-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e1e8ed;
+        margin-bottom: 0.6rem;
+    }
+    .doctor-card.selected .doctor-avatar {
+        border-color: #4a90e2;
+    }
+    .doctor-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #222;
+        margin-bottom: 0.2rem;
+    }
+    .doctor-spec {
+        font-size: 0.78rem;
+        color: #4a90e2;
+        font-weight: 500;
+        margin-bottom: 0.35rem;
+    }
+    .doctor-exp {
+        font-size: 0.75rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+    }
+    .btn-view-profile {
+        background: none;
+        border: 1px solid #4a90e2;
+        color: #4a90e2;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .btn-view-profile:hover {
+        background: #4a90e2;
+        color: white;
+    }
+    /* Doctor Profile Modal */
+    .doctor-modal-header {
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        color: white;
+        padding: 1.75rem 1rem 1.25rem;
+        text-align: center;
+    }
+    .modal-doctor-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.7);
+        object-fit: cover;
+        margin-bottom: 0.75rem;
+    }
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        gap: 1rem;
+    }
+    .profile-label {
+        font-weight: 600;
+        font-size: 0.82rem;
+        color: #555;
+        min-width: 110px;
+    }
+    .profile-value {
+        font-size: 0.85rem;
+        color: #333;
+        text-align: right;
+    }
+    /* Map */
+    .map-label {
+        font-size: 0.82rem;
+        color: #334155;
+    }
+    .map-sublabel {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 400;
+    }
+    .map-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .clinic-map {
+        width: 100%;
+        height: 220px;
+        border: none;
+        display: block;
+    }
+    .map-directions-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #1e40af;
+        color: white;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(30,64,175,0.35);
+        transition: background 0.15s;
+    }
+    .map-directions-btn:hover {
+        background: #1d4ed8;
         color: white;
     }
 
