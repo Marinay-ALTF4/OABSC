@@ -46,10 +46,10 @@ $isPatientsPage = url_is('admin/patients*');
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">Appointments</a>
+                    <a class="nav-link px-2 <?= url_is('appointments*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/appointments/my') ?>">Appointments</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">Patients</a>
+                    <a class="nav-link px-2 <?= url_is('admin/patients*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/admin/patients') ?>">Patients</a>
                 </li>
             </ul>
         <?php elseif ($role === 'doctor') : ?>
