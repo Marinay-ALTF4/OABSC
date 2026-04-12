@@ -25,6 +25,9 @@ $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
 
+// Client Profile
+$routes->get('/profile', 'Home::profile');
+
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');

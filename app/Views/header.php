@@ -88,7 +88,7 @@ $isPatientsPage = url_is('admin/patients*');
                     <?= esc($roleLabel) ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end account-menu">
-                    <li><a class="dropdown-item" href="#" onclick="return false;">Settings</a></li>
+                    <li><a class="dropdown-item" href="<?= site_url('/profile') ?>">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="<?= site_url('/logout') ?>">Logout</a></li>
                 </ul>
