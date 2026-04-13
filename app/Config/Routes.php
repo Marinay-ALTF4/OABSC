@@ -20,6 +20,20 @@ $routes->get('/logout', 'Auth::logout');
 // Dashboard
 $routes->get('/dashboard', 'Home::index');
 
+// Settings
+$routes->get('/settings', 'Settings::index');
+$routes->post('/settings/update', 'Settings::update');
+
+// Secretary
+$routes->get('/secretary/appointments', 'Secretary::appointments');
+$routes->get('/secretary/queue', 'Secretary::queue');
+$routes->get('/secretary/records', 'Secretary::records');
+$routes->get('/secretary/register', 'Secretary::register');
+$routes->post('/secretary/register', 'Secretary::register');
+$routes->get('/secretary/schedules', 'Secretary::schedules');
+$routes->get('/secretary/approvals', 'Secretary::approvals');
+$routes->post('/secretary/update-status', 'Secretary::updateStatus');
+
 // Client Appointments
 $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
