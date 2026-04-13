@@ -37,12 +37,30 @@ class Settings extends BaseController
         }
 
         $data = [
-            'name'  => trim($this->request->getPost('name')),
-            'phone' => trim($this->request->getPost('phone') ?? ''),
+            'name'    => trim($this->request->getPost('name')),
+            'phone'   => trim($this->request->getPost('phone') ?? ''),
+            'city'    => trim($this->request->getPost('city') ?? ''),
+            'address' => trim($this->request->getPost('address') ?? ''),
         ];
 
+        // Doctor-specific fields
+        if (session('user_role') === 'doctor') {
+            $data['specialization'] = trim($this->request->getPost('specialization') ?? '');
+            $data['experience']     = trim($this->request->getPost('experience') ?? '');
+            $data['degree']         = trim($this->request->getPost('degree') ?? '');
+            $data['bio']            = trim($this->request->getPost('bio') ?? '');
+
+            // Handle photo upload
+            $photo = $this->request->getFile('profile_photo');
+            if ($photo && $photo->isValid() && ! $photo->hasMoved()) {
+                $newName = $photo->getRandomName();
+                $photo->move(FCPATH . 'uploads/profiles/', $newName);
+                $data['profile_photo'] = 'uploads/profiles/' . $newName;
+            }
+        }
+
         // Change password if provided
-        $newPassword = $this->request->getPost('new_password');
+        $newPassword     = $this->request->getPost('new_password');
         $currentPassword = $this->request->getPost('current_password');
 
         if ($newPassword) {
@@ -57,8 +75,6 @@ class Settings extends BaseController
         }
 
         $model->update($userId, $data);
-
-        // Update session name
         session()->set('user_name', $data['name']);
 
         return redirect()->to('/settings')->with('success', 'Settings updated successfully.');

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AppointmentModel;
+use App\Models\UserModel;
 
 class Home extends BaseController
 {
@@ -13,6 +14,9 @@ class Home extends BaseController
         }
 
         $data = [];
+
+        $userModel = new UserModel();
+        $data['currentUser'] = $userModel->find((int) session('user_id'));
 
         if (session('user_role') === 'secretary') {
             $model = new AppointmentModel();
