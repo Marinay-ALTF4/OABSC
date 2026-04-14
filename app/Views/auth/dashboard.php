@@ -155,11 +155,7 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <?php if ($role === 'admin'): ?>
-                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
-                <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-                <?php endif; ?>
+                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
             </div>
         </div>
         <div class="col-md-4">
@@ -168,7 +164,7 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Reports</div>
                 <div class="adm-card-title">Clinic Reports</div>
                 <div class="adm-card-desc">View statistics and generate reports on clinic activity.</div>
-                <button class="adm-btn adm-btn-disabled" disabled>Coming soon</button>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
             </div>
         </div>
         <?php if ($role === 'admin'): ?>
@@ -213,6 +209,29 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-title">Edit Patient Details</div>
                 <div class="adm-card-desc">Update patient information, roles, or account details.</div>
                 <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">Go to List</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Records Section for Assistant Admin -->
+    <div class="adm-section-label mt-4 mb-3">Medical Records</div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></div>
+                <div class="adm-card-tag">History</div>
+                <div class="adm-card-title">Patient History</div>
+                <div class="adm-card-desc">View full medical history and health records of registered patients.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></div>
+                <div class="adm-card-tag">Appointments</div>
+                <div class="adm-card-title">Previous Appointments</div>
+                <div class="adm-card-desc">Browse past appointment records and consultation history per patient.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
             </div>
         </div>
     </div>
