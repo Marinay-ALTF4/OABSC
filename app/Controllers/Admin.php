@@ -105,6 +105,24 @@ class Admin extends BaseController
         ]);
     }
 
+    public function doctorSpecialization()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('specialization', 'ASC')->findAll();
+
+        // Group by specialization
+        $grouped = [];
+        foreach ($doctors as $doc) {
+            $spec = $doc['specialization'] ?? 'General';
+            $grouped[$spec][] = $doc;
+        }
+
+        return view('admin/doctor_specialization', ['grouped' => $grouped]);
+    }
+
     public function doctorList()
     {
         $access = $this->ensureAdminAccess();
