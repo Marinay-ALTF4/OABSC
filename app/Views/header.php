@@ -70,7 +70,6 @@ $isPatientsPage = url_is('admin/patients*');
         <?php endif; ?>
 
         <div class="d-flex align-items-center gap-3 ms-auto">
-            <?php if ($role === 'client'): ?>
             <div class="position-relative" id="notif-bell-wrap">
                 <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
                     <i class="bi bi-bell"></i>
@@ -84,7 +83,6 @@ $isPatientsPage = url_is('admin/patients*');
                     <div id="notif-dropdown-list" style="max-height:320px;overflow-y:auto;"></div>
                 </div>
             </div>
-            <?php endif; ?>
             <div class="dropdown">
                 <button class="btn btn-account btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <?= esc($roleLabel) ?>
