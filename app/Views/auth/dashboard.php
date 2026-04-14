@@ -193,7 +193,9 @@ $name = session('user_name') ?? 'User';
                     <span id="notif-count-label-adm">Loading...</span>
                     <button class="notif-mark-all" onclick="markAllReadAdm()">Mark all as read</button>
                 </div>
-                <div id="notif-list-adm"></div>
+                <div class="notif-panel-body">
+                    <div id="notif-list-adm"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -343,7 +345,9 @@ $name = session('user_name') ?? 'User';
                             <span id="notif-count-label-sec">Loading...</span>
                             <button class="notif-mark-all" onclick="markAllReadSec()">Mark all as read</button>
                         </div>
-                        <div id="notif-list-sec"></div>
+                        <div class="notif-panel-body">
+                            <div id="notif-list-sec"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -521,7 +525,9 @@ $name = session('user_name') ?? 'User';
                     <span id="notif-count-label-doc">Loading...</span>
                     <button class="notif-mark-all" onclick="markAllReadDoc()">Mark all as read</button>
                 </div>
-                <div id="notif-list-doc"></div>
+                <div class="notif-panel-body">
+                    <div id="notif-list-doc"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -666,7 +672,9 @@ $name = session('user_name') ?? 'User';
                     <span id="notif-count-label">Loading...</span>
                     <button class="notif-mark-all" onclick="markAllRead()">Mark all as read</button>
                 </div>
-                <div id="notif-list"></div>
+                <div class="notif-panel-body">
+                    <div id="notif-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1271,6 +1279,15 @@ $name = session('user_name') ?? 'User';
         box-shadow: 0 2px 8px rgba(15,23,42,0.06);
         overflow: hidden;
     }
+    .notif-panel-body {
+        max-height: 420px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    .notif-panel-body::-webkit-scrollbar { width: 5px; }
+    .notif-panel-body::-webkit-scrollbar-track { background: #f1f5f9; }
+    .notif-panel-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .notif-panel-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .notif-panel-header {
         display: flex; justify-content: space-between; align-items: center;
         padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
