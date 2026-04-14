@@ -178,6 +178,17 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
         <?php endif; ?>
+        <?php if ($role === 'assistant_admin'): ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#f5f3ff;color:#6d28d9;"><i class="bi bi-chat-dots"></i></div>
+                <div class="adm-card-tag">Messaging</div>
+                <div class="adm-card-title">Chat with Clinic</div>
+                <div class="adm-card-desc">Send messages to doctors or clinic staff directly from your dashboard.</div>
+                <button class="adm-btn adm-btn-outline" onclick="openChat()" style="border-color:#c4b5fd;color:#6d28d9;background:#f5f3ff;">Open Chat</button>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <?php if ($role === 'assistant_admin'): ?>
@@ -231,59 +242,15 @@ $name = session('user_name') ?? 'User';
                     <span class="aa-list-label">Specialization</span>
                     <i class="bi bi-chevron-right aa-list-arrow"></i>
                 </a>
-                <span class="aa-list-item aa-list-disabled">
+                <a href="<?= site_url('/admin/doctors/schedule') ?>" class="aa-list-item">
                     <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></span>
                     <span class="aa-list-label">Availability Schedule</span>
-                    <span class="aa-list-soon">Soon</span>
-                </span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Availability Schedule Widget -->
-    <div class="adm-section-label mt-4 mb-3"><i class="bi bi-clock-history me-1"></i> Availability Schedule</div>
-    <div class="aa-list-panel">
-        <div class="aa-sched-header">
-            <span>Doctor</span>
-            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-        </div>
-        <div class="aa-sched-row">
-            <div class="aa-sched-name"><div class="doc-avatar-xs">JS</div>Dr. John Smith</div>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-off">—</span>
-        </div>
-        <div class="aa-sched-row">
-            <div class="aa-sched-name"><div class="doc-avatar-xs">SJ</div>Dr. Sarah Johnson</div>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">1–5</span>
-            <span class="aa-sched-slot aa-on">1–5</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">1–5</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-        </div>
-        <div class="aa-sched-row">
-            <div class="aa-sched-name"><div class="doc-avatar-xs">MC</div>Dr. Michael Chen</div>
-            <span class="aa-sched-slot aa-on">8–5</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–5</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–5</span>
-            <span class="aa-sched-slot aa-off">—</span>
-        </div>
-        <div class="aa-sched-row">
-            <div class="aa-sched-name"><div class="doc-avatar-xs">ED</div>Dr. Emily Davis</div>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-            <span class="aa-sched-slot aa-off">—</span>
-            <span class="aa-sched-slot aa-on">8–12</span>
-        </div>
-    </div>
     <?php endif; ?>
 
     <!-- Notifications Section -->

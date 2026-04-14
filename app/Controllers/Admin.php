@@ -105,6 +105,17 @@ class Admin extends BaseController
         ]);
     }
 
+    public function doctorSchedule()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/doctor_schedule', ['doctors' => $doctors]);
+    }
+
     public function doctorSpecialization()
     {
         $access = $this->ensureAdminAccess();
