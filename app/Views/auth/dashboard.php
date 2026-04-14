@@ -235,6 +235,38 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+
+    <!-- Doctor / Staff Information Section for Assistant Admin -->
+    <div class="adm-section-label mt-4 mb-3">Doctor / Staff Information</div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></div>
+                <div class="adm-card-tag">Doctors</div>
+                <div class="adm-card-title">List of Doctors</div>
+                <div class="adm-card-desc">View all registered doctors and their contact information.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></div>
+                <div class="adm-card-tag">Specialization</div>
+                <div class="adm-card-title">Specialization</div>
+                <div class="adm-card-desc">Browse doctors by their medical specialization and expertise.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></div>
+                <div class="adm-card-tag">Schedule</div>
+                <div class="adm-card-title">Availability Schedule</div>
+                <div class="adm-card-desc">Check doctor availability and manage their weekly schedules.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+    </div>
     <?php endif; ?>
 
     <!-- Notifications Section -->
