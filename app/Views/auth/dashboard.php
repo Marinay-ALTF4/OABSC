@@ -181,89 +181,61 @@ $name = session('user_name') ?? 'User';
     </div>
 
     <?php if ($role === 'assistant_admin'): ?>
-    <!-- CRUD Section for Assistant Admin -->
-    <div class="adm-section-label mt-4 mb-3">Patient Management</div>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-list-ul"></i></div>
-                <div class="adm-card-tag">Patients</div>
-                <div class="adm-card-title">View Patient List</div>
-                <div class="adm-card-desc">See all registered patients and their current status.</div>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">View List</a>
+    <!-- Compact List Sections for Assistant Admin -->
+    <div class="row g-3 mt-2">
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-people-fill me-2"></i>Patient Management</div>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-list-ul"></i></span>
+                    <span class="aa-list-label">View Patient List</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/add') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-plus-fill"></i></span>
+                    <span class="aa-list-label">Add New Patient</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-pencil-square"></i></span>
+                    <span class="aa-list-label">Edit Patient Details</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-plus-fill"></i></div>
-                <div class="adm-card-tag">Add</div>
-                <div class="adm-card-title">Add New Patient</div>
-                <div class="adm-card-desc">Register a new patient or user account in the system.</div>
-                <a href="<?= site_url('/admin/patients/add') ?>" class="adm-btn adm-btn-outline">Add Patient</a>
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-journal-medical me-2"></i>Medical Records</div>
+                <span class="aa-list-item aa-list-disabled">
+                    <span class="aa-list-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></span>
+                    <span class="aa-list-label">Patient History</span>
+                    <span class="aa-list-soon">Soon</span>
+                </span>
+                <span class="aa-list-item aa-list-disabled">
+                    <span class="aa-list-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></span>
+                    <span class="aa-list-label">Previous Appointments</span>
+                    <span class="aa-list-soon">Soon</span>
+                </span>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-pencil-square"></i></div>
-                <div class="adm-card-tag">Edit</div>
-                <div class="adm-card-title">Edit Patient Details</div>
-                <div class="adm-card-desc">Update patient information, roles, or account details.</div>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">Go to List</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Medical Records Section for Assistant Admin -->
-    <div class="adm-section-label mt-4 mb-3">Medical Records</div>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></div>
-                <div class="adm-card-tag">History</div>
-                <div class="adm-card-title">Patient History</div>
-                <div class="adm-card-desc">View full medical history and health records of registered patients.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></div>
-                <div class="adm-card-tag">Appointments</div>
-                <div class="adm-card-title">Previous Appointments</div>
-                <div class="adm-card-desc">Browse past appointment records and consultation history per patient.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Doctor / Staff Information Section for Assistant Admin -->
-    <div class="adm-section-label mt-4 mb-3">Doctor / Staff Information</div>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></div>
-                <div class="adm-card-tag">Doctors</div>
-                <div class="adm-card-title">List of Doctors</div>
-                <div class="adm-card-desc">View all registered doctors and their contact information.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></div>
-                <div class="adm-card-tag">Specialization</div>
-                <div class="adm-card-title">Specialization</div>
-                <div class="adm-card-desc">Browse doctors by their medical specialization and expertise.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></div>
-                <div class="adm-card-tag">Schedule</div>
-                <div class="adm-card-title">Availability Schedule</div>
-                <div class="adm-card-desc">Check doctor availability and manage their weekly schedules.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-person-badge me-2"></i>Doctor / Staff Info</div>
+                <span class="aa-list-item aa-list-disabled">
+                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></span>
+                    <span class="aa-list-label">List of Doctors</span>
+                    <span class="aa-list-soon">Soon</span>
+                </span>
+                <span class="aa-list-item aa-list-disabled">
+                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></span>
+                    <span class="aa-list-label">Specialization</span>
+                    <span class="aa-list-soon">Soon</span>
+                </span>
+                <span class="aa-list-item aa-list-disabled">
+                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></span>
+                    <span class="aa-list-label">Availability Schedule</span>
+                    <span class="aa-list-soon">Soon</span>
+                </span>
             </div>
         </div>
     </div>
@@ -1472,6 +1444,37 @@ $name = session('user_name') ?? 'User';
     .adm-btn-outline { background:#edf3f9; color:#334155; border:1.5px solid #c4d3e2 !important; }
     .adm-btn-outline:hover:not(:disabled) { background:#e2ebf4; border-color:#a9bfd4 !important; }
     .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
+
+    /* ── Assistant Admin Compact List ── */
+    .aa-list-panel {
+        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06); overflow: hidden;
+    }
+    .aa-list-header {
+        font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.7px; color: #5a7288;
+        padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9;
+        background: #f8fafc;
+    }
+    .aa-list-item {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.65rem 1rem; border-bottom: 1px solid #f1f5f9;
+        text-decoration: none; color: #0f172a;
+        transition: background 0.12s;
+    }
+    .aa-list-item:last-child { border-bottom: none; }
+    a.aa-list-item:hover { background: #f0f6ff; color: #1e40af; }
+    .aa-list-disabled { opacity: 0.55; cursor: not-allowed; }
+    .aa-list-icon {
+        width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+    }
+    .aa-list-label { flex: 1; font-size: 0.85rem; font-weight: 600; }
+    .aa-list-arrow { color: #94a3b8; font-size: 0.75rem; }
+    .aa-list-soon {
+        font-size: 0.68rem; font-weight: 700; background: #f1f5f9;
+        color: #94a3b8; padding: 2px 7px; border-radius: 999px;
+    }
 
     /* ══════════════════════════════════════
        SECRETARY — Redesigned Green Theme
