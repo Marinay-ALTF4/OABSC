@@ -22,6 +22,7 @@ $name = session('user_name') ?? 'User';
     <div class="adm-wrapper">
 
     <!-- Welcome Banner -->
+<<<<<<< HEAD
     <div class="welcome-banner banner-client mb-4">
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
             <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
@@ -83,6 +84,13 @@ $name = session('user_name') ?? 'User';
             <div class="welcome-label">Admin Panel</div>
             <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
             <p class="welcome-sub">Quick overview of your clinic's activity today.</p>
+=======
+    <div class="adm-banner mb-4">
+        <div>
+            <div class="adm-banner-label"><?= $role === 'assistant_admin' ? 'Assistant Admin Panel' : 'Admin Panel' ?></div>
+            <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?></h4>
+            <p class="adm-banner-sub"><?= $role === 'assistant_admin' ? 'You have limited admin access.' : 'Quick overview of your clinic\'s activity today.' ?></p>
+>>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
         <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
@@ -138,6 +146,7 @@ $name = session('user_name') ?? 'User';
     <!-- Quick Access -->
     <div class="adm-section-label mb-3">Quick Access</div>
     <div class="row g-3">
+        <?php if ($role === 'admin'): ?>
         <div class="col-md-4">
             <div class="adm-card">
                 <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
@@ -147,13 +156,18 @@ $name = session('user_name') ?? 'User';
                 <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">Open</a>
             </div>
         </div>
+        <?php endif; ?>
         <div class="col-md-4">
             <div class="adm-card">
                 <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
                 <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php if ($role === 'admin'): ?>
+                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php else: ?>
+                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-4">
@@ -165,6 +179,17 @@ $name = session('user_name') ?? 'User';
                 <button class="adm-btn adm-btn-disabled" disabled>Coming soon</button>
             </div>
         </div>
+        <?php if ($role === 'admin'): ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#d4edda;color:#155724;"><i class="bi bi-key-fill"></i></div>
+                <div class="adm-card-tag">Security</div>
+                <div class="adm-card-title">Clinic Settings</div>
+                <div class="adm-card-desc">Manage clinic access code for role selection screen.</div>
+                <a href="<?= site_url('/admin/settings') ?>" class="adm-btn adm-btn-outline">Open</a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     </div><!-- end adm-wrapper -->
@@ -172,8 +197,9 @@ $name = session('user_name') ?? 'User';
     <?php elseif ($role === 'secretary') : ?>
     <!-- ==================== SECRETARY ==================== -->
 
-    <div class="sec-wrapper">
+    <div class="sec2-page">
 
+<<<<<<< HEAD
         <!-- Welcome Banner -->
         <div class="welcome-banner banner-client mb-4">
             <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
@@ -240,104 +266,90 @@ $name = session('user_name') ?? 'User';
             <div class="welcome-date" style="position:relative;z-index:2;">
                 <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
             </div>
+=======
+        <!-- Left Sidebar -->
+        <div class="sec2-sidebar">
+            <div class="sec2-sidebar-label"></div>
+            <a href="<?= site_url('/dashboard') ?>" class="sec2-sidebar-item active">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="<?= site_url('/appointments/my') ?>" class="sec2-sidebar-item">
+                <i class="bi bi-calendar2-plus"></i> Manage Appointments
+            </a>
+            <a href="<?= site_url('/secretary/queue') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Patient Queue'); return false;">
+                <i class="bi bi-list-ol"></i> Patient Queue
+            </a>
+            <a href="<?= site_url('/admin/patients') ?>" class="sec2-sidebar-item">
+                <i class="bi bi-folder2-open"></i> Patient Records
+            </a>
+            <a href="<?= site_url('/secretary/register') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Register New Patient'); return false;">
+                <i class="bi bi-person-plus"></i> Register New Patient
+            </a>
+            <a href="<?= site_url('/secretary/schedules') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Doctor Schedules'); return false;">
+                <i class="bi bi-clock-history"></i> Doctor Schedules
+            </a>
+            <a href="<?= site_url('/secretary/approvals') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Pending Approvals'); return false;">
+                <i class="bi bi-bell"></i> Pending Approvals
+            </a>
+>>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
 
-        <!-- Stat Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="sec-stat-card">
-                    <div class="sec-stat-icon" style="background:#ddeedd;color:#2a4a2e;"><i class="bi bi-calendar-day"></i></div>
-                    <div class="sec-stat-value">0</div>
-                    <div class="sec-stat-label">Today's Appointments</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="sec-stat-card">
-                    <div class="sec-stat-icon" style="background:#c8dfc8;color:#1e3820;"><i class="bi bi-hourglass-split"></i></div>
-                    <div class="sec-stat-value">0</div>
-                    <div class="sec-stat-label">Pending Requests</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="sec-stat-card">
-                    <div class="sec-stat-icon" style="background:#b8d0ba;color:#1a2e1c;"><i class="bi bi-people"></i></div>
-                    <div class="sec-stat-value">0</div>
-                    <div class="sec-stat-label">Total Patients</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="sec-stat-card">
-                    <div class="sec-stat-icon" style="background:#3a5c3e;color:#c8f0ca;"><i class="bi bi-person-badge"></i></div>
-                    <div class="sec-stat-value">0</div>
-                    <div class="sec-stat-label">Doctors On Duty</div>
-                </div>
-            </div>
-        </div>
+        <!-- Right Content -->
+        <div class="sec2-content">
 
-        <!-- Quick Access -->
-        <div class="sec-section-label mb-3">Quick Access</div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#ddeedd;color:#2a4a2e;"><i class="bi bi-calendar2-plus"></i></div>
-                    <div class="sec-card-tag">Appointments</div>
-                    <div class="sec-card-title">Manage Appointments</div>
-                    <div class="sec-card-desc">Schedule, reschedule, or cancel patient appointments.</div>
-                    <button class="sec-btn sec-btn-filled" disabled>Open (soon)</button>
+            <!-- Welcome Banner -->
+            <div class="sec2-banner mb-4">
+                <div>
+                    <div class="sec2-banner-label">Secretary Panel</div>
+                    <h4 class="sec2-banner-name">Welcome back, <?= esc($name) ?></h4>
+                    <p class="sec2-banner-sub">Here is your front-desk overview for today.</p>
+                </div>
+                <div class="sec2-banner-date" id="secDateBadge" style="cursor:pointer;" title="Pick a date">
+                    <i class="bi bi-calendar3 me-2"></i><span id="secDateText"><?= esc(date('l, F j, Y')) ?></span>
+                    <input type="text" id="secDatePicker" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#c8dfc8;color:#1e3820;"><i class="bi bi-list-ol"></i></div>
-                    <div class="sec-card-tag">Queue</div>
-                    <div class="sec-card-title">Patient Queue</div>
-                    <div class="sec-card-desc">View and manage today's walk-in and booked patient queue.</div>
-                    <button class="sec-btn sec-btn-outline" disabled>View Queue (soon)</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#b8d0ba;color:#1a2e1c;"><i class="bi bi-folder2-open"></i></div>
-                    <div class="sec-card-tag">Records</div>
-                    <div class="sec-card-title">Patient Records</div>
-                    <div class="sec-card-desc">Search and view registered patient information.</div>
-                    <button class="sec-btn sec-btn-outline" disabled>Search Patients (soon)</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#3a5c3e;color:#c8f0ca;"><i class="bi bi-person-plus"></i></div>
-                    <div class="sec-card-tag">Registration</div>
-                    <div class="sec-card-title">Register New Patient</div>
-                    <div class="sec-card-desc">Add a new patient to the system for their first visit.</div>
-                    <button class="sec-btn sec-btn-outline" disabled>Register Patient (soon)</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#ddeedd;color:#2a4a2e;"><i class="bi bi-clock-history"></i></div>
-                    <div class="sec-card-tag">Schedule</div>
-                    <div class="sec-card-title">Doctor Schedules</div>
-                    <div class="sec-card-desc">View available doctors and their schedules for booking.</div>
-                    <button class="sec-btn sec-btn-outline" disabled>View Schedules (soon)</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="sec-card">
-                    <div class="sec-card-icon" style="background:#c8dfc8;color:#1e3820;"><i class="bi bi-bell"></i></div>
-                    <div class="sec-card-tag">Notifications</div>
-                    <div class="sec-card-title">Pending Approvals</div>
-                    <div class="sec-card-desc">Review and confirm appointment requests from patients.</div>
-                    <button class="sec-btn sec-btn-outline" disabled>Review Requests (soon)</button>
-                </div>
-            </div>
-        </div>
 
-    </div><!-- end sec-wrapper -->
+            <!-- Stat Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="sec2-stat">
+                        <div class="sec2-stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="bi bi-calendar-day"></i></div>
+                        <div class="sec2-stat-val"><?= $total_today ?? 0 ?></div>
+                        <div class="sec2-stat-lbl">Today's Appointments</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sec2-stat">
+                        <div class="sec2-stat-icon" style="background:#fff8e1;color:#f59e0b;"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="sec2-stat-val"><?= $total_pending ?? 0 ?></div>
+                        <div class="sec2-stat-lbl">Pending Requests</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sec2-stat">
+                        <div class="sec2-stat-icon" style="background:#e8f5e9;color:#388e3c;"><i class="bi bi-people"></i></div>
+                        <div class="sec2-stat-val"><?= $total_patients ?? 0 ?></div>
+                        <div class="sec2-stat-lbl">Total Patients</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sec2-stat">
+                        <div class="sec2-stat-icon" style="background:#2e5c32;color:#c8f0ca;"><i class="bi bi-person-badge"></i></div>
+                        <div class="sec2-stat-val">0</div>
+                        <div class="sec2-stat-lbl">Doctors On Duty</div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end sec2-content -->
+
+    </div><!-- end sec2-page -->
 
     <?php elseif ($role === 'doctor') : ?>
     <!-- ==================== DOCTOR ==================== -->
 
+<<<<<<< HEAD
     <div class="welcome-banner banner-client mb-4">
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
             <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
@@ -399,11 +411,29 @@ $name = session('user_name') ?? 'User';
             <div class="welcome-label">Doctor Panel</div>
             <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
             <p class="welcome-sub">Here is your clinical overview for today.</p>
+=======
+
+    <div class="welcome-banner banner-doctor mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <?php if (!empty($currentUser['profile_photo'])): ?>
+                <img src="<?= base_url($currentUser['profile_photo']) ?>" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            <?php else: ?>
+                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;">
+                    <?= strtoupper(substr($name ?? 'D', 0, 2)) ?>
+                </div>
+            <?php endif; ?>
+            <div>
+                <div class="welcome-label">Doctor Panel</div>
+                <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
+                <p class="welcome-sub">Here is your clinical overview for today.</p>
+            </div>
+>>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
         <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
         </div>
     </div>
+
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
@@ -644,6 +674,24 @@ $name = session('user_name') ?? 'User';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    const badge = document.getElementById('secDateBadge');
+    const dateText = document.getElementById('secDateText');
+    if (badge) {
+        const fp = flatpickr('#secDatePicker', {
+            defaultDate: new Date(),
+            disableMobile: true,
+            onChange: function(selectedDates, dateStr) {
+                const d = selectedDates[0];
+                const formatted = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+                dateText.textContent = formatted;
+            }
+        });
+        badge.addEventListener('click', () => fp.open());
+    }
+</script>
 
 <!-- ── Chat Widget ── -->
 <div id="chat-widget" class="chat-widget d-none">
@@ -1321,17 +1369,18 @@ $name = session('user_name') ?? 'User';
     .adm-btn-outline:hover:not(:disabled) { background:#e2ebf4; border-color:#a9bfd4 !important; }
     .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
 
-    .sec-wrapper {
-        background: #ecf4ef;
-        border-radius: 24px;
+    /* ══════════════════════════════════════
+       SECRETARY — Redesigned Green Theme
+    ══════════════════════════════════════ */
+    .sec2-wrapper {
+        background: #f4f9f4;
+        border-radius: 20px;
         padding: 28px;
         margin: -12px;
     }
-
-    /* Banner */
-    .sec-banner {
-        background: linear-gradient(135deg, #ddeedd 0%, #c8dfc8 100%);
-        border-radius: 20px;
+    .sec2-banner {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-radius: 16px;
         padding: 28px 32px;
         display: flex;
         justify-content: space-between;
@@ -1339,140 +1388,43 @@ $name = session('user_name') ?? 'User';
         flex-wrap: wrap;
         gap: 12px;
         border: 1px solid rgba(255,255,255,0.9);
-        box-shadow: 0 4px 20px rgba(58,92,62,0.12);
+        box-shadow: 0 2px 12px rgba(46,125,50,0.10);
     }
-    .sec-banner-label {
-        font-size: 10.5px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1.3px;
-        color: #3a5c3e;
-        margin-bottom: 5px;
-    }
-    .sec-banner-name {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1a2e1c;
-        margin: 0 0 5px;
-        letter-spacing: -0.3px;
-    }
-    .sec-banner-sub {
-        font-size: 0.84rem;
-        color: #4a6e4e;
-        margin: 0;
-    }
-    .sec-banner-date {
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #2a4a2e;
-        background: rgba(255,255,255,0.8);
-        padding: 8px 18px;
-        border-radius: 20px;
-        white-space: nowrap;
-        border: 1px solid rgba(255,255,255,0.95);
-        box-shadow: 0 2px 8px rgba(58,92,62,0.1);
-    }
-
-    /* Section label */
-    .sec-section-label {
-        font-size: 10.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: #7aaa80;
-    }
-
-    /* Stat cards */
-    .sec-stat-card {
+    .sec2-banner-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#2e7d32; margin-bottom:4px; }
+    .sec2-banner-name  { font-size:1.5rem; font-weight:700; color:#1b3a1e; margin:0 0 4px; letter-spacing:-0.4px; }
+    .sec2-banner-sub   { font-size:0.85rem; color:#4a7a4e; margin:0; }
+    .sec2-banner-date  { font-size:0.8rem; font-weight:500; color:#2e5c32; background:rgba(255,255,255,0.85); padding:8px 18px; border-radius:20px; white-space:nowrap; border:1px solid rgba(255,255,255,0.95); box-shadow:0 1px 6px rgba(46,125,50,0.10); }
+    .sec2-section-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#6aaa70; }
+    .sec2-stat {
         background: #ffffff;
-        border-radius: 18px;
-        padding: 20px 18px;
-        border: 1px solid #c0d8c2;
-        box-shadow: 0 2px 8px rgba(58,92,62,0.07);
+        border-radius: 16px;
+        padding: 22px 20px;
+        border: 1px solid #d0e8d2;
+        box-shadow: 0 1px 6px rgba(46,125,50,0.07);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
     }
-    .sec-stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(58,92,62,0.14);
-        border-color: #9ac09e;
-    }
-    .sec-stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        margin-bottom: 14px;
-    }
-    .sec-stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1a2e1c;
-        line-height: 1;
-        margin-bottom: 5px;
-        letter-spacing: -0.5px;
-    }
-    .sec-stat-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.7px;
-        color: #7aaa80;
-        font-weight: 600;
-    }
-
-    /* Action cards */
-    .sec-card {
+    .sec2-stat:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(46,125,50,0.13); border-color: #a5d6a7; }
+    .sec2-stat-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; margin-bottom:14px; }
+    .sec2-stat-val  { font-size:2.2rem; font-weight:700; color:#1b3a1e; line-height:1; margin-bottom:6px; letter-spacing:-0.5px; }
+    .sec2-stat-lbl  { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.8px; color:#6aaa70; font-weight:600; }
+    .sec2-card {
         background: #ffffff;
-        border-radius: 18px;
+        border-radius: 16px;
         padding: 24px 22px;
-        border: 1px solid #c0d8c2;
-        box-shadow: 0 2px 8px rgba(58,92,62,0.07);
+        border: 1px solid #d0e8d2;
+        box-shadow: 0 1px 6px rgba(46,125,50,0.07);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         display: flex;
         flex-direction: column;
     }
-    .sec-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(58,92,62,0.14);
-        border-color: #9ac09e;
-    }
-    .sec-card-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 13px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        margin-bottom: 14px;
-    }
-    .sec-card-tag {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        color: #7aaa80;
-        margin-bottom: 5px;
-    }
-    .sec-card-title {
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #1a2e1c;
-        margin-bottom: 7px;
-        letter-spacing: -0.1px;
-    }
-    .sec-card-desc {
-        font-size: 0.8rem;
-        color: #4a6e4e;
-        flex: 1;
-        margin-bottom: 18px;
-        line-height: 1.55;
-    }
-    .sec-btn {
+    .sec2-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(46,125,50,0.13); border-color: #a5d6a7; }
+    .sec2-card-icon  { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:14px; }
+    .sec2-card-tag   { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#6aaa70; margin-bottom:5px; }
+    .sec2-card-title { font-size:0.97rem; font-weight:700; color:#1b3a1e; margin-bottom:7px; letter-spacing:-0.1px; }
+    .sec2-card-desc  { font-size:0.8rem; color:#4a7a4e; flex:1; margin-bottom:18px; line-height:1.55; }
+    .sec2-btn {
         font-size: 0.78rem;
         font-weight: 600;
         padding: 7px 18px;
@@ -1484,27 +1436,137 @@ $name = session('user_name') ?? 'User';
         display: inline-block;
         letter-spacing: 0.1px;
     }
-    .sec-btn:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(58,92,62,0.28);
+    .sec2-btn:disabled { cursor: not-allowed; opacity: 0.85; }
+    .sec2-btn-filled  { background:#2e5c32; color:#fff; box-shadow:0 2px 8px rgba(46,92,50,0.25); }
+    .sec2-btn-filled:hover:not(:disabled)  { background:#245228; box-shadow:0 4px 14px rgba(46,92,50,0.35); transform:translateY(-1px); }
+    .sec2-btn-outline { background:#f4f9f4; color:#2e5c32; border:1.5px solid #a5d6a7 !important; }
+    .sec2-btn-outline:hover:not(:disabled) { background:#e8f5e9; border-color:#81c784 !important; transform:translateY(-1px); }
+
+    /* Sidebar layout */
+    .sec2-page {
+        display: flex;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: -3rem;
+        min-height: calc(100vh - 60px);
+        background: #edf2f7;
     }
-    .sec-btn-filled {
-        background: linear-gradient(135deg, #3a5c3e 0%, #2a4a2e 100%);
-        color: #fff;
-        box-shadow: 0 2px 10px rgba(58,92,62,0.3);
+    .sec2-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 4px 0 24px rgba(46, 125, 50, 0.08);
+        padding: 28px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
-    .sec-btn-filled:hover:not(:disabled) {
-        background: linear-gradient(135deg, #2a4a2e 0%, #1e3820 100%);
+    .sec2-content {
+        flex: 1;
+        padding: 32px 28px;
+        min-width: 0;
     }
-    .sec-btn-outline {
-        background: #eef6ef;
-        color: #2a4a2e;
-        border: 1.5px solid #a8c8aa !important;
+
+    /* Table */
+    .sec2-table-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #d0e8d2;
+        box-shadow: 0 1px 6px rgba(46,125,50,0.07);
+        overflow: hidden;
     }
-    .sec-btn-outline:hover:not(:disabled) {
-        background: #daeeda;
-        border-color: #80aa84 !important;
+    .sec2-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e8f5e9;
     }
+    .sec2-table-title {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1b3a1e;
+    }
+    .sec2-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+    }
+    .sec2-table thead tr {
+        background: #f4f9f4;
+    }
+    .sec2-table th {
+        padding: 10px 16px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: #6aaa70;
+        border-bottom: 1px solid #e0f0e1;
+        white-space: nowrap;
+    }
+    .sec2-table td {
+        padding: 12px 16px;
+        color: #2d3748;
+        border-bottom: 1px solid #f0f7f0;
+        vertical-align: middle;
+    }
+    .sec2-table tbody tr:last-child td { border-bottom: none; }
+    .sec2-table tbody tr:hover { background: #f9fdf9; }
+    .sec2-queue { font-weight: 700; color: #2e5c32; }
+    .sec2-patient { font-weight: 600; color: #1b3a1e; }
+    .sec2-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .sec2-badge-confirmed  { background:#dbeafe; color:#1d4ed8; }
+    .sec2-badge-completed  { background:#d1fae5; color:#065f46; }
+    .sec2-badge-serving    { background:#fef3c7; color:#92400e; }
+    .sec2-badge-pending    { background:#fde68a; color:#78350f; }
+    .sec2-badge-cancelled  { background:#fee2e2; color:#991b1b; }
+    .sec2-sidebar-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+        color: #6aaa70;
+        padding: 0 8px;
+        margin-bottom: 8px;
+    }
+    .sec2-sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: #2e5c32;
+        text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .sec2-sidebar-item i { font-size: 1.15rem; }
+    .sec2-sidebar-item:hover {
+        background: rgba(232, 245, 233, 0.8);
+        color: #1b3a1e;
+    }
+    .sec2-sidebar-item.active {
+        background: #2e5c32;
+        color: #ffffff;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(46, 92, 50, 0.25);
+    }
+    .sec2-main { flex: 1; min-width: 0; }
 </style>
 </body>
 </html>

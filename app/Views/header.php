@@ -46,10 +46,12 @@ $isPatientsPage = url_is('admin/patients*');
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">Appointments</a>
+                    <a class="nav-link px-2 <?= url_is('appointments*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/appointments/my') ?>">Appointments</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2" href="#" onclick="return false;">Patients</a>
+                    <?php if ($role === 'admin'): ?>
+                    <a class="nav-link px-2 <?= url_is('admin/patients*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/admin/patients') ?>">Patients</a>
+                    <?php endif; ?>
                 </li>
             </ul>
         <?php elseif ($role === 'doctor') : ?>
@@ -88,7 +90,7 @@ $isPatientsPage = url_is('admin/patients*');
                     <?= esc($roleLabel) ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end account-menu">
-                    <li><a class="dropdown-item" href="<?= site_url('/profile') ?>">Settings</a></li>
+                    <li><a class="dropdown-item" href="<?= site_url('/settings') ?>">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="<?= site_url('/logout') ?>">Logout</a></li>
                 </ul>

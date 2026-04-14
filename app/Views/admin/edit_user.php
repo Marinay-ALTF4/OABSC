@@ -107,6 +107,15 @@ if (! is_array($errors)) {
                     <?php endif; ?>
                 </div>
 
+                <?php if (in_array($user['role'] ?? '', ['admin', 'assistant_admin', 'assistant_secretary'])): ?>
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Role Selection Password <span class="text-muted fw-normal">(Optional)</span></label>
+                    <input type="password" name="role_password" class="form-control" placeholder="Set or update role selection password" minlength="8">
+                    <div class="form-text">This password is used during the role selection screen after login.</div>
+                </div>
+                <?php endif; ?>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Save changes</button>
                     <a href="<?= site_url('/admin/patients/list') ?>" class="btn btn-outline-secondary">Cancel</a>

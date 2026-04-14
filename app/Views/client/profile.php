@@ -29,24 +29,24 @@
         <!-- Left: Avatar + quick info -->
         <div class="col-lg-3">
             <div class="profile-card text-center">
-                <div class="avatar-circle mx-auto mb-3" id="avatarCircle">
-                    <span id="avatarInitials"><?= strtoupper(substr(session('user_name') ?? 'U', 0, 2)) ?></span>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary mb-3" onclick="document.getElementById('profileImageInput').click()">
-                    <i class="bi bi-camera"></i> Change Photo
-                </button>
-                <input type="file" id="profileImageInput" accept="image/*" class="d-none" onchange="handleProfileImage(event)">
+                <?php if (!empty($user['profile_photo'])): ?>
+                    <img src="<?= base_url($user['profile_photo']) ?>" alt="Profile Photo" class="avatar-circle mx-auto mb-3" style="object-fit:cover;">
+                <?php else: ?>
+                    <div class="avatar-circle mx-auto mb-3" id="avatarCircle">
+                        <span id="avatarInitials"><?= strtoupper(substr(session('user_name') ?? 'U', 0, 2)) ?></span>
+                    </div>
+                <?php endif; ?>
                 <div class="profile-card-name" id="sidebarName"><?= esc(session('user_name') ?? 'User') ?></div>
-                <div class="profile-card-role">Patient</div>
+                <div class="profile-card-role"><?= esc(strtoupper(session('user_role') ?? 'user')) ?></div>
                 <hr class="my-3">
                 <div class="profile-card-meta" id="sidebarEmail">
                     <i class="bi bi-envelope me-2 text-primary"></i><?= esc(session('user_email') ?? '—') ?>
                 </div>
                 <div class="profile-card-meta mt-2" id="sidebarPhone">
-                    <i class="bi bi-telephone me-2 text-primary"></i><span id="sidebarPhoneVal">—</span>
+                    <i class="bi bi-telephone me-2 text-primary"></i><span id="sidebarPhoneVal"><?= esc($user['phone'] ?? '—') ?></span>
                 </div>
                 <div class="profile-card-meta mt-2" id="sidebarAddress">
-                    <i class="bi bi-geo-alt me-2 text-primary"></i><span id="sidebarAddressVal">—</span>
+                    <i class="bi bi-geo-alt me-2 text-primary"></i><span id="sidebarAddressVal"><?= esc($user['address'] ?? '—') ?></span>
                 </div>
             </div>
         </div>
@@ -87,50 +87,93 @@
                     <div class="section-card-title">Personal Information</div>
                     <div class="section-card-sub">Update your name, contact details, and address.</div>
                     <hr class="my-3">
-                    <form id="personalForm" onsubmit="savePersonal(event)">
+                    <form id="personalForm" action="<?= site_url('/profile/save') ?>" method="post" enctype="multipart/form-data">
+                        <?= csrf_field() ?>
+                        <?php if (session()->getFlashdata('success')): ?>
+                            <div class="alert alert-success py-2 mb-3"><?= esc(session()->getFlashdata('success')) ?></div>
+                        <?php endif; ?>
                         <div class="row g-3">
+                            <div class="col-12">
+                                <label class="field-label">Profile Photo</label>
+                                <input type="file" name="profile_photo" class="form-control" accept="image/*">
+                            </div>
                             <div class="col-md-6">
                                 <label class="field-label">Full Name</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-person input-icon"></i>
-                                    <input type="text" class="field-input" id="fieldName"
+                                    <input type="text" name="name" class="field-input" id="fieldName"
                                         placeholder="Enter your full name"
-                                        value="<?= esc(session('user_name') ?? '') ?>">
+                                        value="<?= esc($user['name'] ?? session('user_name') ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="field-label">Email Address</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-envelope input-icon"></i>
-                                    <input type="email" class="field-input" id="fieldEmail"
+                                    <input type="email" name="email" class="field-input" id="fieldEmail"
                                         placeholder="Enter your email"
-                                        value="<?= esc(session('user_email') ?? '') ?>">
+                                        value="<?= esc($user['email'] ?? session('user_email') ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="field-label">Phone Number</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-telephone input-icon"></i>
-                                    <input type="tel" class="field-input" id="fieldPhone"
-                                        placeholder="+63 9XX XXX XXXX">
+                                    <input type="tel" name="phone" class="field-input" id="fieldPhone"
+                                        placeholder="+63 9XX XXX XXXX"
+                                        value="<?= esc($user['phone'] ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="field-label">City / Municipality</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-geo-alt input-icon"></i>
-                                    <input type="text" class="field-input" id="fieldCity"
-                                        placeholder="e.g. General Santos City">
+                                    <input type="text" name="city" class="field-input" id="fieldCity"
+                                        placeholder="e.g. General Santos City"
+                                        value="<?= esc($user['city'] ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <label class="field-label">Home Address</label>
                                 <div class="input-group-custom">
                                     <i class="bi bi-house input-icon"></i>
-                                    <input type="text" class="field-input" id="fieldAddress"
-                                        placeholder="Street, Barangay, City">
+                                    <input type="text" name="address" class="field-input" id="fieldAddress"
+                                        placeholder="Street, Barangay, City"
+                                        value="<?= esc($user['address'] ?? '') ?>">
                                 </div>
                             </div>
+
+                            <?php if (session('user_role') === 'doctor'): ?>
+                            <div class="col-12"><hr class="my-1"><p class="field-label text-muted mb-0">Professional Information</p></div>
+                            <div class="col-md-6">
+                                <label class="field-label">Specialization</label>
+                                <div class="input-group-custom">
+                                    <i class="bi bi-heart-pulse input-icon"></i>
+                                    <input type="text" name="specialization" class="field-input" id="fieldSpec" placeholder="e.g. Cardiologist" value="<?= esc($user['specialization'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Experience</label>
+                                <div class="input-group-custom">
+                                    <i class="bi bi-clock-history input-icon"></i>
+                                    <input type="text" name="experience" class="field-input" id="fieldExp" placeholder="e.g. 10 years" value="<?= esc($user['experience'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Degree</label>
+                                <div class="input-group-custom">
+                                    <i class="bi bi-mortarboard input-icon"></i>
+                                    <input type="text" name="degree" class="field-input" id="fieldDegree" placeholder="e.g. MD, University of Santo Tomas" value="<?= esc($user['degree'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">About</label>
+                                <div class="input-group-custom">
+                                    <i class="bi bi-info-circle input-icon"></i>
+                                    <input type="text" name="bio" class="field-input" id="fieldBio" placeholder="Brief description about yourself" value="<?= esc($user['bio'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                         <div class="mt-4 d-flex gap-2">
                             <button type="submit" class="btn-save">
@@ -277,6 +320,10 @@ const PROFILE_KEY = 'oabsc_profile';
     if (saved.phone)   document.getElementById('fieldPhone').value   = saved.phone;
     if (saved.city)    document.getElementById('fieldCity').value    = saved.city;
     if (saved.address) document.getElementById('fieldAddress').value = saved.address;
+    if (document.getElementById('fieldSpec')   && saved.spec)   document.getElementById('fieldSpec').value   = saved.spec;
+    if (document.getElementById('fieldExp')    && saved.exp)    document.getElementById('fieldExp').value    = saved.exp;
+    if (document.getElementById('fieldDegree') && saved.degree) document.getElementById('fieldDegree').value = saved.degree;
+    if (document.getElementById('fieldBio')    && saved.bio)    document.getElementById('fieldBio').value    = saved.bio;
     updateSidebar(saved);
     loadHistory();
     addHistoryEntry('Visited settings', 'Opened profile settings page');
@@ -346,11 +393,15 @@ function savePersonal(e) {
     const phone   = document.getElementById('fieldPhone').value.trim();
     const city    = document.getElementById('fieldCity').value.trim();
     const address = document.getElementById('fieldAddress').value.trim();
+    const spec    = document.getElementById('fieldSpec')   ? document.getElementById('fieldSpec').value.trim()   : null;
+    const exp     = document.getElementById('fieldExp')    ? document.getElementById('fieldExp').value.trim()    : null;
+    const degree  = document.getElementById('fieldDegree') ? document.getElementById('fieldDegree').value.trim() : null;
+    const bio     = document.getElementById('fieldBio')    ? document.getElementById('fieldBio').value.trim()    : null;
 
-    if (!name || !email) { showAlert('Name and email are required.', 'error'); return; }
+    if (!name && !email) { showAlert('Please fill in at least one field to save.', 'error'); return; }
 
     const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
-    const data = { name, email, phone, city, address, avatar: saved.avatar || null };
+    const data = { name, email, phone, city, address, spec, exp, degree, bio, avatar: saved.avatar || null };
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     updateSidebar(data);
     showAlert('Profile updated successfully!', 'success');

@@ -12,8 +12,72 @@ class Admin extends BaseController
         if ($role !== 'admin' && $role !== 'assistant_admin') {
             return redirect()->to('/dashboard');
         }
-
         return null;
+    }
+
+    private function ensureMainAdminOnly()
+    {
+        $role = (string) session()->get('user_role');
+        if ($role !== 'admin') {
+            return redirect()->to('/dashboard')->with('error', 'Access denied. Main Admin only.');
+        }
+        return null;
+    }
+
+    public function addRole()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        if ($this->request->is('post')) {
+            $rules = [
+                'name'          => 'required|min_length[3]',
+                'email'         => 'required|valid_email|is_unique[users.email]',
+                'role'          => 'required|in_list[assistant_admin,assistant_secretary]',
+                'role_password' => 'required|min_length[8]',
+                'role_password_confirm' => 'required|matches[role_password]',
+            ];
+
+            if (! $this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            $userModel = new UserModel();
+            $created = $userModel->insert([
+                'name'          => trim((string) $this->request->getPost('name')),
+                'email'         => strtolower(trim((string) $this->request->getPost('email'))),
+                'role'          => (string) $this->request->getPost('role'),
+                'password_hash' => password_hash('unused_' . bin2hex(random_bytes(8)), PASSWORD_DEFAULT),
+                'role_password' => password_hash((string) $this->request->getPost('role_password'), PASSWORD_DEFAULT),
+            ]);
+
+            if (! $created) {
+                return redirect()->back()->withInput()->with('error', 'Unable to add role.');
+            }
+
+            return redirect()->to('/admin/patients/list')->with('success', 'Role added successfully.');
+        }
+
+        return view('admin/add_role');
+    }
+
+    public function clinicSettings()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $settingsModel = new \App\Models\ClinicSettingsModel();
+
+        if ($this->request->is('post')) {
+            $newCode = trim((string) $this->request->getPost('clinic_access_code'));
+            if ($newCode !== '') {
+                $settingsModel->setValue('clinic_access_code', password_hash($newCode, PASSWORD_DEFAULT));
+                return redirect()->back()->with('success', 'Clinic access code updated.');
+            }
+            return redirect()->back()->with('error', 'Please enter a new access code.');
+        }
+
+        return view('admin/clinic_settings');
     }
 
     public function patients()
@@ -26,12 +90,25 @@ class Admin extends BaseController
         return view('admin/patients');
     }
 
-    public function patientList()
+    public function clientList()
     {
         $access = $this->ensureAdminAccess();
         if ($access !== null) {
             return $access;
         }
+
+        $userModel = new UserModel();
+        $users = $userModel->withDeleted()->where('role', 'client')->orderBy('id', 'DESC')->findAll();
+
+        return view('admin/client_list', [
+            'users' => $users,
+        ]);
+    }
+
+    public function patientList()
+    {
+        $access = $this->ensureMainAdminOnly();
+        if ($access !== null) return $access;
 
         $userModel = new UserModel();
         $users = $userModel->withDeleted()->orderBy('id', 'DESC')->findAll();
@@ -43,10 +120,8 @@ class Admin extends BaseController
 
     public function addUser()
     {
-        $access = $this->ensureAdminAccess();
-        if ($access !== null) {
-            return $access;
-        }
+        $access = $this->ensureMainAdminOnly();
+        if ($access !== null) return $access;
 
         if ($this->request->is('post')) {
             $rules = [
@@ -102,10 +177,8 @@ class Admin extends BaseController
 
     public function editUser(int $id)
     {
-        $access = $this->ensureAdminAccess();
-        if ($access !== null) {
-            return $access;
-        }
+        $access = $this->ensureMainAdminOnly();
+        if ($access !== null) return $access;
 
         $userModel = new UserModel();
         $user = $userModel->find($id);
@@ -144,6 +217,11 @@ class Admin extends BaseController
                 $updateData['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
             }
 
+            $newRolePassword = (string) $this->request->getPost('role_password');
+            if ($newRolePassword !== '') {
+                $updateData['role_password'] = password_hash($newRolePassword, PASSWORD_DEFAULT);
+            }
+
             $updated = $userModel->update($id, $updateData);
 
             if (! $updated) {
@@ -165,10 +243,8 @@ class Admin extends BaseController
 
     public function deleteUser(int $id)
     {
-        $access = $this->ensureAdminAccess();
-        if ($access !== null) {
-            return $access;
-        }
+        $access = $this->ensureMainAdminOnly();
+        if ($access !== null) return $access;
 
         $currentAdminId = (int) session()->get('user_id');
         if ($id === $currentAdminId) {
@@ -195,10 +271,8 @@ class Admin extends BaseController
 
     public function restoreUser(int $id)
     {
-        $access = $this->ensureAdminAccess();
-        if ($access !== null) {
-            return $access;
-        }
+        $access = $this->ensureMainAdminOnly();
+        if ($access !== null) return $access;
 
         $userModel = new UserModel();
         $user = $userModel->withDeleted()->find($id);

@@ -36,18 +36,32 @@ class Auth extends BaseController
         $userModel = new UserModel();
         $user      = $userModel->where('email', $email)->first();
 
-        if (! $user || ! password_verify($password, $user['password_hash'] ?? '')) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Invalid email or password.');
+        if (! $user) {
+            return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
+        }
+
+        if (! password_verify($password, $user['password_hash'] ?? '')) {
+            return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
         }
 
         session()->set([
-            'user_id'   => $user['id'],
-            'user_name' => $user['name'] ?? '',
-            'user_role' => $user['role'] ?? 'client',
-            'isLoggedIn'=> true,
+            'user_id'    => $user['id'],
+            'user_name'  => $user['name'] ?? '',
+            'user_email' => $user['email'] ?? '',
+            'user_role'  => $user['role'] ?? 'client',
+            'isLoggedIn' => true,
         ]);
+
+        // Redirect admin to role selection
+        if ($user['role'] === 'admin') {
+            session()->set([
+                'isLoggedIn'             => false,
+                'pending_role_selection' => true,
+                'pending_user_id'        => $user['id'],
+                'pending_user_role'      => 'admin',
+            ]);
+            return redirect()->to('/role-selection');
+        }
 
         return redirect()->to('/dashboard');
     }
