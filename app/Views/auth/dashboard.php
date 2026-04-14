@@ -151,15 +151,29 @@ $name = session('user_name') ?? 'User';
         <?php endif; ?>
         <div class="col-md-4">
             <div class="adm-card">
-                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
+                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-calendar-check"></i></div>
+                <div class="adm-card-tag">Appointments</div>
+                <div class="adm-card-title">View Appointments</div>
+                <div class="adm-card-desc">View and manage all patient appointments in the clinic.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-people"></i></div>
                 <div class="adm-card-tag">Patients</div>
+                <div class="adm-card-title">Patients</div>
+                <div class="adm-card-desc">Browse all registered patients and their information.</div>
+                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
+                <div class="adm-card-tag">Records</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <?php if ($role === 'admin'): ?>
-                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
-                <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-                <?php endif; ?>
+                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
             </div>
         </div>
         <div class="col-md-4">
