@@ -1,0 +1,1 @@
+how 586162d:app/Views/auth/dashboard.php --no-pager

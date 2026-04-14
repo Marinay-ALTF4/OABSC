@@ -107,7 +107,7 @@ class Admin extends BaseController
 
     public function patientList()
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
@@ -120,7 +120,7 @@ class Admin extends BaseController
 
     public function addUser()
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         if ($this->request->is('post')) {
@@ -177,7 +177,7 @@ class Admin extends BaseController
 
     public function editUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
@@ -243,7 +243,7 @@ class Admin extends BaseController
 
     public function deleteUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $currentAdminId = (int) session()->get('user_id');
@@ -271,7 +271,7 @@ class Admin extends BaseController
 
     public function restoreUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();

@@ -151,29 +151,15 @@ $name = session('user_name') ?? 'User';
         <?php endif; ?>
         <div class="col-md-4">
             <div class="adm-card">
-                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-calendar-check"></i></div>
-                <div class="adm-card-tag">Appointments</div>
-                <div class="adm-card-title">View Appointments</div>
-                <div class="adm-card-desc">View and manage all patient appointments in the clinic.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-people"></i></div>
-                <div class="adm-card-tag">Patients</div>
-                <div class="adm-card-title">Patients</div>
-                <div class="adm-card-desc">Browse all registered patients and their information.</div>
-                <button class="adm-btn adm-btn-outline" disabled>Coming soon</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
                 <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
-                <div class="adm-card-tag">Records</div>
+                <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php if ($role === 'admin'): ?>
+                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php else: ?>
+                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-4">
@@ -197,6 +183,40 @@ $name = session('user_name') ?? 'User';
         </div>
         <?php endif; ?>
     </div>
+
+    <?php if ($role === 'assistant_admin'): ?>
+    <!-- CRUD Section for Assistant Admin -->
+    <div class="adm-section-label mt-4 mb-3">Patient Management</div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-list-ul"></i></div>
+                <div class="adm-card-tag">Patients</div>
+                <div class="adm-card-title">View Patient List</div>
+                <div class="adm-card-desc">See all registered patients and their current status.</div>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">View List</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-plus-fill"></i></div>
+                <div class="adm-card-tag">Add</div>
+                <div class="adm-card-title">Add New Patient</div>
+                <div class="adm-card-desc">Register a new patient or user account in the system.</div>
+                <a href="<?= site_url('/admin/patients/add') ?>" class="adm-btn adm-btn-outline">Add Patient</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-pencil-square"></i></div>
+                <div class="adm-card-tag">Edit</div>
+                <div class="adm-card-title">Edit Patient Details</div>
+                <div class="adm-card-desc">Update patient information, roles, or account details.</div>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">Go to List</a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Notifications Section -->
     <div class="adm-section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
