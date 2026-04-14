@@ -22,7 +22,6 @@ $name = session('user_name') ?? 'User';
     <div class="adm-wrapper">
 
     <!-- Welcome Banner -->
-<<<<<<< HEAD
     <div class="welcome-banner banner-client mb-4">
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
             <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
@@ -84,13 +83,6 @@ $name = session('user_name') ?? 'User';
             <div class="welcome-label">Admin Panel</div>
             <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
             <p class="welcome-sub">Quick overview of your clinic's activity today.</p>
-=======
-    <div class="adm-banner mb-4">
-        <div>
-            <div class="adm-banner-label"><?= $role === 'assistant_admin' ? 'Assistant Admin Panel' : 'Admin Panel' ?></div>
-            <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?></h4>
-            <p class="adm-banner-sub"><?= $role === 'assistant_admin' ? 'You have limited admin access.' : 'Quick overview of your clinic\'s activity today.' ?></p>
->>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
         <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
@@ -199,74 +191,6 @@ $name = session('user_name') ?? 'User';
 
     <div class="sec2-page">
 
-<<<<<<< HEAD
-        <!-- Welcome Banner -->
-        <div class="welcome-banner banner-client mb-4">
-            <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
-                <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
-                <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-sec)"/>
-                <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
-                <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-                <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
-                <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
-                <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
-                <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
-                <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
-                <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
-                <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
-                <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
-                <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
-                <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
-                <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
-                <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
-                <circle cx="286" cy="98" r="3" fill="#2d3748"/>
-                <circle cx="302" cy="98" r="3" fill="#2d3748"/>
-                <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
-                <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
-                <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
-                <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
-                <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
-                <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
-                <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
-                <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
-                <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
-                <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
-                <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
-                <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
-                <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
-                <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
-                <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
-                <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
-                <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
-                <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
-                <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
-                <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
-                <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
-                <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
-                <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
-                <defs>
-                    <linearGradient id="bldg-grad-sec" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#d6e8f8"/>
-                        <stop offset="100%" stop-color="#b8d0ee"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-            <div style="position:relative;z-index:2;">
-                <div class="welcome-label">Secretary Panel</div>
-                <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
-                <p class="welcome-sub">Here is your front-desk overview for today.</p>
-            </div>
-            <div class="welcome-date" style="position:relative;z-index:2;">
-                <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
-            </div>
-=======
         <!-- Left Sidebar -->
         <div class="sec2-sidebar">
             <div class="sec2-sidebar-label"></div>
@@ -291,22 +215,76 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/secretary/approvals') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Pending Approvals'); return false;">
                 <i class="bi bi-bell"></i> Pending Approvals
             </a>
->>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
 
         <!-- Right Content -->
         <div class="sec2-content">
 
             <!-- Welcome Banner -->
-            <div class="sec2-banner mb-4">
-                <div>
-                    <div class="sec2-banner-label">Secretary Panel</div>
-                    <h4 class="sec2-banner-name">Welcome back, <?= esc($name) ?></h4>
-                    <p class="sec2-banner-sub">Here is your front-desk overview for today.</p>
+            <div class="welcome-banner banner-client mb-4">
+                <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+                    <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
+                    <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-sec)"/>
+                    <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+                    <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+                    <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+                    <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+                    <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+                    <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+                    <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+                    <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+                    <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+                    <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+                    <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+                    <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+                    <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+                    <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+                    <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+                    <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+                    <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+                    <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+                    <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+                    <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+                    <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+                    <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+                    <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+                    <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+                    <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+                    <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+                    <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+                    <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+                    <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+                    <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+                    <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+                    <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+                    <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+                    <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+                    <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+                    <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+                    <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+                    <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="bldg-grad-sec" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#d6e8f8"/>
+                            <stop offset="100%" stop-color="#b8d0ee"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div style="position:relative;z-index:2;">
+                    <div class="welcome-label">Secretary Panel</div>
+                    <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
+                    <p class="welcome-sub">Here is your front-desk overview for today.</p>
                 </div>
-                <div class="sec2-banner-date" id="secDateBadge" style="cursor:pointer;" title="Pick a date">
-                    <i class="bi bi-calendar3 me-2"></i><span id="secDateText"><?= esc(date('l, F j, Y')) ?></span>
-                    <input type="text" id="secDatePicker" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+                <div class="welcome-date" style="position:relative;z-index:2;">
+                    <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
                 </div>
             </div>
 
@@ -349,7 +327,6 @@ $name = session('user_name') ?? 'User';
     <?php elseif ($role === 'doctor') : ?>
     <!-- ==================== DOCTOR ==================== -->
 
-<<<<<<< HEAD
     <div class="welcome-banner banner-client mb-4">
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
             <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
@@ -411,23 +388,6 @@ $name = session('user_name') ?? 'User';
             <div class="welcome-label">Doctor Panel</div>
             <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
             <p class="welcome-sub">Here is your clinical overview for today.</p>
-=======
-
-    <div class="welcome-banner banner-doctor mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <?php if (!empty($currentUser['profile_photo'])): ?>
-                <img src="<?= base_url($currentUser['profile_photo']) ?>" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-            <?php else: ?>
-                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;">
-                    <?= strtoupper(substr($name ?? 'D', 0, 2)) ?>
-                </div>
-            <?php endif; ?>
-            <div>
-                <div class="welcome-label">Doctor Panel</div>
-                <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
-                <p class="welcome-sub">Here is your clinical overview for today.</p>
-            </div>
->>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
         </div>
         <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
