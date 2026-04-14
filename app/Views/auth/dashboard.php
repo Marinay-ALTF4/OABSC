@@ -24,9 +24,9 @@ $name = session('user_name') ?? 'User';
     <!-- Welcome Banner -->
     <div class="adm-banner mb-4">
         <div>
-            <div class="adm-banner-label">Admin Panel</div>
+            <div class="adm-banner-label"><?= $role === 'assistant_admin' ? 'Assistant Admin Panel' : 'Admin Panel' ?></div>
             <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?></h4>
-            <p class="adm-banner-sub">Quick overview of your clinic's activity today.</p>
+            <p class="adm-banner-sub"><?= $role === 'assistant_admin' ? 'You have limited admin access.' : 'Quick overview of your clinic\'s activity today.' ?></p>
         </div>
         <div class="adm-banner-date">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
@@ -82,6 +82,7 @@ $name = session('user_name') ?? 'User';
     <!-- Quick Access -->
     <div class="adm-section-label mb-3">Quick Access</div>
     <div class="row g-3">
+        <?php if ($role === 'admin'): ?>
         <div class="col-md-4">
             <div class="adm-card">
                 <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
@@ -91,13 +92,18 @@ $name = session('user_name') ?? 'User';
                 <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">Open</a>
             </div>
         </div>
+        <?php endif; ?>
         <div class="col-md-4">
             <div class="adm-card">
                 <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
                 <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php if ($role === 'admin'): ?>
+                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php else: ?>
+                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-4">
@@ -109,6 +115,17 @@ $name = session('user_name') ?? 'User';
                 <button class="adm-btn adm-btn-disabled" disabled>Coming soon</button>
             </div>
         </div>
+        <?php if ($role === 'admin'): ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#d4edda;color:#155724;"><i class="bi bi-key-fill"></i></div>
+                <div class="adm-card-tag">Security</div>
+                <div class="adm-card-title">Clinic Settings</div>
+                <div class="adm-card-desc">Manage clinic access code for role selection screen.</div>
+                <a href="<?= site_url('/admin/settings') ?>" class="adm-btn adm-btn-outline">Open</a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     </div><!-- end adm-wrapper -->

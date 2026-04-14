@@ -18,6 +18,7 @@
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             <a href="<?= site_url('/admin/patients/add') ?>" class="btn btn-sm btn-primary">Add User</a>
+            <a href="<?= site_url('/admin/patients/add-role') ?>" class="btn btn-sm btn-outline-primary">Add Role</a>
             <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
         </div>
     </header>
