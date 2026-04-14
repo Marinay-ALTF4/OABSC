@@ -40,10 +40,10 @@
 
     <?php if (! $patient): ?>
     <!-- Patient picker -->
-    <div class="pl-card mb-4" style="max-width:480px;">
-        <p class="au-label mb-3">Select a patient to view their history:</p>
-        <form action="" method="get" id="patientPickForm">
-            <div class="au-field">
+    <div class="d-flex justify-content-center">
+        <div class="pl-card mb-4" style="max-width:480px;width:100%;padding:1.5rem;">
+            <p class="au-label mb-3">Select a patient to view their history:</p>
+            <div class="au-field mb-0">
                 <div class="au-input-wrap">
                     <i class="bi bi-search au-icon"></i>
                     <select name="_redirect" class="au-input" onchange="redirectToPatient(this)">
@@ -56,11 +56,12 @@
                     </select>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 
     <?php else: ?>
     <!-- Patient info card -->
+    <div style="max-width:760px;margin:0 auto;">
     <div class="ph-info-card mb-4">
         <div class="ph-info-avatar"><?= strtoupper(substr($patient['name'], 0, 2)) ?></div>
         <div>
@@ -130,6 +131,7 @@
             </div>
         <?php endif; ?>
     </div>
+    </div><!-- end center wrapper -->
     <?php endif; ?>
 
 </div>
