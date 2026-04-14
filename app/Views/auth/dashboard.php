@@ -239,6 +239,51 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+
+    <!-- Availability Schedule Widget -->
+    <div class="adm-section-label mt-4 mb-3"><i class="bi bi-clock-history me-1"></i> Availability Schedule</div>
+    <div class="aa-list-panel">
+        <div class="aa-sched-header">
+            <span>Doctor</span>
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="aa-sched-row">
+            <div class="aa-sched-name"><div class="doc-avatar-xs">JS</div>Dr. John Smith</div>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-off">—</span>
+        </div>
+        <div class="aa-sched-row">
+            <div class="aa-sched-name"><div class="doc-avatar-xs">SJ</div>Dr. Sarah Johnson</div>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">1–5</span>
+            <span class="aa-sched-slot aa-on">1–5</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">1–5</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+        </div>
+        <div class="aa-sched-row">
+            <div class="aa-sched-name"><div class="doc-avatar-xs">MC</div>Dr. Michael Chen</div>
+            <span class="aa-sched-slot aa-on">8–5</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–5</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–5</span>
+            <span class="aa-sched-slot aa-off">—</span>
+        </div>
+        <div class="aa-sched-row">
+            <div class="aa-sched-name"><div class="doc-avatar-xs">ED</div>Dr. Emily Davis</div>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+            <span class="aa-sched-slot aa-off">—</span>
+            <span class="aa-sched-slot aa-on">8–12</span>
+        </div>
+    </div>
     <?php endif; ?>
 
     <!-- Notifications Section -->
@@ -1475,6 +1520,37 @@ $name = session('user_name') ?? 'User';
         font-size: 0.68rem; font-weight: 700; background: #f1f5f9;
         color: #94a3b8; padding: 2px 7px; border-radius: 999px;
     }
+
+    /* ── Availability Schedule Widget ── */
+    .aa-sched-header {
+        display: grid; grid-template-columns: 1fr repeat(6, 60px);
+        padding: 0.6rem 1rem; background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px; color: #5a7288; gap: 0.25rem;
+    }
+    .aa-sched-row {
+        display: grid; grid-template-columns: 1fr repeat(6, 60px);
+        padding: 0.6rem 1rem; border-bottom: 1px solid #f1f5f9;
+        align-items: center; gap: 0.25rem;
+    }
+    .aa-sched-row:last-child { border-bottom: none; }
+    .aa-sched-name {
+        display: flex; align-items: center; gap: 0.6rem;
+        font-size: 0.82rem; font-weight: 600; color: #0f172a;
+    }
+    .doc-avatar-xs {
+        width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg,#3b556e,#2e445a);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.6rem; font-weight: 700; color: white;
+    }
+    .aa-sched-slot {
+        font-size: 0.68rem; font-weight: 600; text-align: center;
+        padding: 3px 4px; border-radius: 6px;
+    }
+    .aa-on  { background: #d1fae5; color: #065f46; }
+    .aa-off { background: #f1f5f9; color: #94a3b8; }
 
     /* ══════════════════════════════════════
        SECRETARY — Redesigned Green Theme
