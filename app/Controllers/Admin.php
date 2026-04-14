@@ -110,8 +110,8 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $userModel = new UserModel();
-        $doctors = $userModel->where('role', 'doctor')->orderBy('name', 'ASC')->findAll();
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
 
         return view('admin/doctor_list', ['doctors' => $doctors]);
     }

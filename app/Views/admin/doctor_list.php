@@ -38,25 +38,18 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Specialization</th>
-                            <th>Experience</th>
-                            <th>Degree</th>
-                            <th>Status</th>
+                            <th>Phone</th>
+                            <th>Available</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($doctors as $doc): ?>
-                            <?php $isDeleted = !empty($doc['deleted_at']); ?>
                             <tr>
                                 <td class="pl-id"><?= esc((string)($doc['id'] ?? '')) ?></td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="doc-avatar"><?= strtoupper(substr($doc['name'] ?? 'D', 0, 2)) ?></div>
-                                        <div>
-                                            <div class="pl-name"><?= esc($doc['name'] ?? '') ?></div>
-                                            <?php if (!empty($doc['bio'])): ?>
-                                                <div class="pl-email"><?= esc($doc['bio']) ?></div>
-                                            <?php endif; ?>
-                                        </div>
+                                        <div class="pl-name"><?= esc($doc['name'] ?? '') ?></div>
                                     </div>
                                 </td>
                                 <td class="pl-email"><?= esc($doc['email'] ?? '—') ?></td>
@@ -67,13 +60,12 @@
                                         <span class="pl-email">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="pl-date"><?= esc($doc['experience'] ?? '—') ?></td>
-                                <td class="pl-date"><?= esc($doc['degree'] ?? '—') ?></td>
+                                <td class="pl-date"><?= esc($doc['phone'] ?? '—') ?></td>
                                 <td>
-                                    <?php if ($isDeleted): ?>
-                                        <span class="pl-status-badge" style="background:#f1f5f9;color:#64748b;">Inactive</span>
+                                    <?php if ($doc['available'] ?? false): ?>
+                                        <span class="pl-status-badge" style="background:#d1fae5;color:#065f46;">Available</span>
                                     <?php else: ?>
-                                        <span class="pl-status-badge" style="background:#d1fae5;color:#065f46;">Active</span>
+                                        <span class="pl-status-badge" style="background:#fee2e2;color:#991b1b;">Unavailable</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
