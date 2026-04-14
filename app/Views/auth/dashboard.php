@@ -178,6 +178,17 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
         <?php endif; ?>
+        <?php if ($role === 'assistant_admin'): ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#f5f3ff;color:#6d28d9;"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="adm-card-tag">Messaging</div>
+                <div class="adm-card-title">Chat with Clinic</div>
+                <div class="adm-card-desc">Send messages to doctors or clinic staff directly from your dashboard.</div>
+                <button class="adm-btn adm-btn-outline" onclick="openChat()" style="border-color:#c4b5fd;color:#6d28d9;">Open Chat</button>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <?php if ($role === 'assistant_admin'): ?>
@@ -236,25 +247,6 @@ $name = session('user_name') ?? 'User';
                     <span class="aa-list-label">Availability Schedule</span>
                     <i class="bi bi-chevron-right aa-list-arrow"></i>
                 </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chat Card for Assistant Admin -->
-    <div class="row g-3 mt-0">
-        <div class="col-lg-4">
-            <div class="aa-list-panel">
-                <div class="aa-list-header"><i class="bi bi-chat-dots me-2"></i>Messaging</div>
-                <span class="aa-list-item" onclick="openChat()" style="cursor:pointer;">
-                    <span class="aa-list-icon" style="background:#f5f3ff;color:#6d28d9;"><i class="bi bi-chat-dots-fill"></i></span>
-                    <span class="aa-list-label">Chat with Clinic</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </span>
-                <span class="aa-list-item" onclick="openChat()" style="cursor:pointer;">
-                    <span class="aa-list-icon" style="background:#eff6ff;color:#1e40af;"><i class="bi bi-person-fill"></i></span>
-                    <span class="aa-list-label">Message a Doctor</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </span>
             </div>
         </div>
     </div>
