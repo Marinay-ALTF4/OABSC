@@ -105,6 +105,17 @@ class Admin extends BaseController
         ]);
     }
 
+    public function doctorList()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $userModel = new UserModel();
+        $doctors = $userModel->where('role', 'doctor')->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/doctor_list', ['doctors' => $doctors]);
+    }
+
     public function patientHistory(int $id = 0)
     {
         $access = $this->ensureAdminAccess();

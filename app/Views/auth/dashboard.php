@@ -221,11 +221,11 @@ $name = session('user_name') ?? 'User';
         <div class="col-lg-4">
             <div class="aa-list-panel">
                 <div class="aa-list-header"><i class="bi bi-person-badge me-2"></i>Doctor / Staff Info</div>
-                <span class="aa-list-item aa-list-disabled">
+                <a href="<?= site_url('/admin/doctors') ?>" class="aa-list-item">
                     <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></span>
                     <span class="aa-list-label">List of Doctors</span>
-                    <span class="aa-list-soon">Soon</span>
-                </span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
                 <span class="aa-list-item aa-list-disabled">
                     <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></span>
                     <span class="aa-list-label">Specialization</span>

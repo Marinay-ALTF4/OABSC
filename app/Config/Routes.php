@@ -53,6 +53,7 @@ $routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/admin/patients/list', 'Admin::patientList');
 $routes->get('/admin/patients/history/(:num)', 'Admin::patientHistory/$1');
 $routes->get('/admin/patients/history', 'Admin::patientHistory');
+$routes->get('/admin/doctors', 'Admin::doctorList');
 $routes->get('/admin/patients/clients', 'Admin::clientList');
 $routes->get('/admin/patients/add', 'Admin::addUser');
 $routes->post('/admin/patients/add', 'Admin::addUser');
