@@ -206,16 +206,16 @@ $name = session('user_name') ?? 'User';
         <div class="col-lg-4">
             <div class="aa-list-panel">
                 <div class="aa-list-header"><i class="bi bi-journal-medical me-2"></i>Medical Records</div>
-                <span class="aa-list-item aa-list-disabled">
+                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
                     <span class="aa-list-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></span>
                     <span class="aa-list-label">Patient History</span>
-                    <span class="aa-list-soon">Soon</span>
-                </span>
-                <span class="aa-list-item aa-list-disabled">
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
                     <span class="aa-list-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></span>
                     <span class="aa-list-label">Previous Appointments</span>
-                    <span class="aa-list-soon">Soon</span>
-                </span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
             </div>
         </div>
         <div class="col-lg-4">

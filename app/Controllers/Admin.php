@@ -105,6 +105,41 @@ class Admin extends BaseController
         ]);
     }
 
+    public function patientHistory(int $id = 0)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $userModel = new UserModel();
+        $appointmentModel = new \App\Models\AppointmentModel();
+
+        // If a specific patient ID is given, show their history
+        if ($id > 0) {
+            $patient = $userModel->find($id);
+            if (! $patient) {
+                return redirect()->to('/admin/patients/history')->with('error', 'Patient not found.');
+            }
+            $appointments = $appointmentModel
+                ->where('client_id', $id)
+                ->orderBy('appointment_date', 'DESC')
+                ->findAll();
+
+            return view('admin/patient_history', [
+                'patient'      => $patient,
+                'appointments' => $appointments,
+            ]);
+        }
+
+        // No ID — show list of all clients to pick from
+        $patients = $userModel->where('role', 'client')->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/patient_history', [
+            'patient'      => null,
+            'patients'     => $patients,
+            'appointments' => [],
+        ]);
+    }
+
     public function patientList()
     {
         $access = $this->ensureAdminAccess();
