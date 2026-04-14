@@ -184,6 +184,20 @@ $name = session('user_name') ?? 'User';
         <?php endif; ?>
     </div>
 
+    <!-- Notifications Section -->
+    <div class="adm-section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="notif-panel">
+                <div class="notif-panel-header">
+                    <span id="notif-count-label-adm">Loading...</span>
+                    <button class="notif-mark-all" onclick="markAllReadAdm()">Mark all as read</button>
+                </div>
+                <div id="notif-list-adm"></div>
+            </div>
+        </div>
+    </div>
+
     </div><!-- end adm-wrapper -->
 
     <?php elseif ($role === 'secretary') : ?>
@@ -316,6 +330,20 @@ $name = session('user_name') ?? 'User';
                         <div class="sec2-stat-icon" style="background:#2e5c32;color:#c8f0ca;"><i class="bi bi-person-badge"></i></div>
                         <div class="sec2-stat-val">0</div>
                         <div class="sec2-stat-lbl">Doctors On Duty</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="notif-panel">
+                        <div class="notif-panel-header">
+                            <span id="notif-count-label-sec">Loading...</span>
+                            <button class="notif-mark-all" onclick="markAllReadSec()">Mark all as read</button>
+                        </div>
+                        <div id="notif-list-sec"></div>
                     </div>
                 </div>
             </div>
@@ -480,6 +508,20 @@ $name = session('user_name') ?? 'User';
                 <div class="action-title">My Schedule Settings</div>
                 <div class="action-desc">Set your available days and hours for appointments.</div>
                 <button class="action-btn btn-outline" disabled>Set Availability (soon)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Section -->
+    <div class="section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="notif-panel">
+                <div class="notif-panel-header">
+                    <span id="notif-count-label-doc">Loading...</span>
+                    <button class="notif-mark-all" onclick="markAllReadDoc()">Mark all as read</button>
+                </div>
+                <div id="notif-list-doc"></div>
             </div>
         </div>
     </div>
