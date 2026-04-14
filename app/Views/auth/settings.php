@@ -362,15 +362,9 @@ function checkStrength(val) {
     label.style.color = lvl.color;
 }
 
-// Language
-const CLIENT_LANG_KEY = 'oabsc_client_lang';
-function setLanguage(lang) {
-    localStorage.setItem(CLIENT_LANG_KEY, lang);
-    const input = document.querySelector(`input[name="lang"][value="${lang}"]`);
-    if (input) input.checked = true;
-}
+// Language - CLIENT_LANG_KEY and setLanguage already defined in header.php
 (function() {
-    const saved = localStorage.getItem(CLIENT_LANG_KEY) || 'en';
+    const saved = localStorage.getItem('oabsc_client_lang') || 'en';
     const input = document.querySelector(`input[name="lang"][value="${saved}"]`);
     if (input) input.checked = true;
 })();
@@ -511,6 +505,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .history-item-meta span { color: #64748b; font-size: 0.82rem; }
     .history-item-details { margin-top: 0.5rem; color: #475569; font-size: 0.875rem; }
     .history-empty { background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 14px; }
+    .tab-section { display: block; }
+    .tab-section.d-none { display: none !important; }
 </style>
 </body>
 </html>
