@@ -92,6 +92,16 @@ $name = session('user_name') ?? 'User';
                 <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">Open</a>
             </div>
         </div>
+        <?php else: ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
+                <div class="adm-card-tag">Users</div>
+                <div class="adm-card-title">Manage Users</div>
+                <div class="adm-card-desc">Add, edit, or remove system users and assign their roles.</div>
+                <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+            </div>
+        </div>
         <?php endif; ?>
         <div class="col-md-4">
             <div class="adm-card">
