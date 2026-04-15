@@ -71,6 +71,11 @@
                         <i class="bi bi-translate me-1"></i> <span data-t="tab_language">Language</span>
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button class="profile-tab" onclick="switchTab('history', this)">
+                        <i class="bi bi-clock-history me-1"></i> <span>Activity History</span>
+                    </button>
+                </li>
             </ul>
 
             <!-- Alert -->
@@ -282,6 +287,24 @@
                 </div>
             </div>
 
+            <div id="tab-history" class="tab-section d-none">
+                <div class="section-card">
+                    <div class="section-card-title">Dashboard Activity History</div>
+                    <div class="section-card-sub">See the actions you performed inside your client dashboard.</div>
+                    <hr class="my-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="history-summary">Recent actions are stored locally in your browser.</div>
+                        <button type="button" class="btn-clear-history" onclick="clearHistory()">
+                            <i class="bi bi-trash me-1"></i> Clear History
+                        </button>
+                    </div>
+                    <div id="historyList" class="history-list"></div>
+                    <div id="historyEmpty" class="history-empty text-center text-muted py-4">
+                        No history yet. Use the dashboard to book appointments, view visits, or open chat.
+                    </div>
+                </div>
+            </div>
+
         </div><!-- end right col -->
     </div>
 </div>
@@ -302,6 +325,8 @@ const PROFILE_KEY = 'oabsc_profile';
     if (document.getElementById('fieldDegree') && saved.degree) document.getElementById('fieldDegree').value = saved.degree;
     if (document.getElementById('fieldBio')    && saved.bio)    document.getElementById('fieldBio').value    = saved.bio;
     updateSidebar(saved);
+    loadHistory();
+    addHistoryEntry('Visited settings', 'Opened profile settings page');
 })();
 
 function updateSidebar(data) {
@@ -393,6 +418,7 @@ function resetPersonal() {
     const initials = document.getElementById('avatarInitials');
     avatar.style.backgroundImage = 'none';
     initials.style.display = 'inline-block';
+    addHistoryEntry('Reset profile info', 'Cleared saved personal contact details');
     showAlert('Profile reset to defaults.', 'info');
 }
 
@@ -412,7 +438,55 @@ function savePassword(e) {
     document.getElementById('fieldConfirmPw').value = '';
     document.getElementById('strengthFill').style.width = '0';
     document.getElementById('strengthLabel').textContent = '';
+    addHistoryEntry('Updated password', 'Changed password from settings');
     showAlert('Password updated successfully!', 'success');
+}
+
+const HISTORY_KEY = 'oabsc_client_dashboard_history';
+
+function addHistoryEntry(action, details) {
+    const entries = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    entries.unshift({
+        time: new Date().toISOString(),
+        action,
+        details,
+    });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 30)));
+    renderHistory();
+}
+
+function loadHistory() {
+    renderHistory();
+}
+
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const list = document.getElementById('historyList');
+    const empty = document.getElementById('historyEmpty');
+    list.innerHTML = '';
+    if (!history.length) {
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+    history.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+            <div class="history-item-meta">
+                <strong>${entry.action}</strong>
+                <span>${new Date(entry.time).toLocaleString()}</span>
+            </div>
+            <div class="history-item-details">${entry.details}</div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+    showAlert('Dashboard history cleared.', 'info');
 }
 
 function togglePw(id, btn) {
@@ -576,6 +650,25 @@ function checkStrength(val) {
         border-radius: 10px; cursor: pointer; transition: background 0.15s;
     }
     .btn-reset:hover { background: #e2e8f0; }
+
+    .history-summary { font-size: 0.9rem; color: #475569; }
+    .btn-clear-history {
+        background: #f8fafc; color: #334155; border: 1px solid #cbd5e1;
+        padding: 0.5rem 0.85rem; border-radius: 10px; font-weight: 600;
+    }
+    .history-list { display: grid; gap: 0.9rem; }
+    .history-item {
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
+        padding: 0.95rem 1rem;
+    }
+    .history-item-meta {
+        display: flex; justify-content: space-between; flex-wrap: wrap;
+        gap: 0.5rem; font-size: 0.92rem; color: #0f172a;
+    }
+    .history-item-meta strong { font-weight: 700; }
+    .history-item-meta span { color: #64748b; font-size: 0.82rem; }
+    .history-item-details { margin-top: 0.5rem; color: #475569; font-size: 0.875rem; }
+    .history-empty { background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 14px; }
 </style>
 </body>
 </html>

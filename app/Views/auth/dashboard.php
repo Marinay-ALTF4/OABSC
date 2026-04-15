@@ -22,13 +22,69 @@ $name = session('user_name') ?? 'User';
     <div class="adm-wrapper">
 
     <!-- Welcome Banner -->
-    <div class="adm-banner mb-4">
-        <div>
-            <div class="adm-banner-label"><?= $role === 'assistant_admin' ? 'Assistant Admin Panel' : 'Admin Panel' ?></div>
-            <h4 class="adm-banner-name">Welcome back, <?= esc($name) ?></h4>
-            <p class="adm-banner-sub"><?= $role === 'assistant_admin' ? 'You have limited admin access.' : 'Quick overview of your clinic\'s activity today.' ?></p>
+    <div class="welcome-banner banner-client mb-4">
+        <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-adm)"/>
+            <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+            <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+            <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+            <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+            <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+            <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+            <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+            <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+            <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+            <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+            <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+            <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+            <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+            <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+            <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+            <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+            <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+            <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+            <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+            <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+            <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+            <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+            <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+            <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+            <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+            <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+            <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+            <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+            <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+            <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+            <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+            <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+            <defs>
+                <linearGradient id="bldg-grad-adm" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d6e8f8"/>
+                    <stop offset="100%" stop-color="#b8d0ee"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        <div style="position:relative;z-index:2;">
+            <div class="welcome-label">Admin Panel</div>
+            <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
+            <p class="welcome-sub">Quick overview of your clinic's activity today.</p>
         </div>
-        <div class="adm-banner-date">
+        <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
         </div>
     </div>
@@ -109,11 +165,7 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <?php if ($role === 'admin'): ?>
-                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
-                <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-                <?php endif; ?>
+                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
             </div>
         </div>
         <div class="col-md-4">
@@ -122,7 +174,7 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Reports</div>
                 <div class="adm-card-title">Clinic Reports</div>
                 <div class="adm-card-desc">View statistics and generate reports on clinic activity.</div>
-                <button class="adm-btn adm-btn-disabled" disabled>Coming soon</button>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
             </div>
         </div>
         <?php if ($role === 'admin'): ?>
@@ -136,6 +188,95 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
         <?php endif; ?>
+        <?php if ($role === 'assistant_admin'): ?>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card-icon" style="background:#f5f3ff;color:#6d28d9;"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="adm-card-tag">Messaging</div>
+                <div class="adm-card-title">Chat with Clinic</div>
+                <div class="adm-card-desc">Send messages to doctors or clinic staff directly from your dashboard.</div>
+                <button class="adm-btn adm-btn-outline" onclick="openChat()" style="border-color:#c4b5fd;color:#6d28d9;">Open Chat</button>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($role === 'assistant_admin'): ?>
+    <!-- Compact List Sections for Assistant Admin -->
+    <div class="row g-3 mt-2">
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-people-fill me-2"></i>Patient Management</div>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-list-ul"></i></span>
+                    <span class="aa-list-label">View Patient List</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/add') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-plus-fill"></i></span>
+                    <span class="aa-list-label">Add New Patient</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-pencil-square"></i></span>
+                    <span class="aa-list-label">Edit Patient Details</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-journal-medical me-2"></i>Medical Records</div>
+                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></span>
+                    <span class="aa-list-label">Patient History</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></span>
+                    <span class="aa-list-label">Previous Appointments</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="aa-list-panel">
+                <div class="aa-list-header"><i class="bi bi-person-badge me-2"></i>Doctor / Staff Info</div>
+                <a href="<?= site_url('/admin/doctors') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></span>
+                    <span class="aa-list-label">List of Doctors</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/doctors/specialization') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></span>
+                    <span class="aa-list-label">Specialization</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+                <a href="<?= site_url('/admin/doctors/schedule') ?>" class="aa-list-item">
+                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></span>
+                    <span class="aa-list-label">Availability Schedule</span>
+                    <i class="bi bi-chevron-right aa-list-arrow"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <?php endif; ?>
+
+    <!-- Notifications Section -->
+    <div class="adm-section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="notif-panel">
+                <div class="notif-panel-header">
+                    <span id="notif-count-label-adm">Loading...</span>
+                    <button class="notif-mark-all" onclick="markAllReadAdm()">Mark all as read</button>
+                </div>
+                <div class="notif-panel-body">
+                    <div id="notif-list-adm"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     </div><!-- end adm-wrapper -->
@@ -175,15 +316,70 @@ $name = session('user_name') ?? 'User';
         <div class="sec2-content">
 
             <!-- Welcome Banner -->
-            <div class="sec2-banner mb-4">
-                <div>
-                    <div class="sec2-banner-label">Secretary Panel</div>
-                    <h4 class="sec2-banner-name">Welcome back, <?= esc($name) ?></h4>
-                    <p class="sec2-banner-sub">Here is your front-desk overview for today.</p>
+            <div class="welcome-banner banner-client mb-4">
+                <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+                    <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
+                    <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-sec)"/>
+                    <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+                    <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+                    <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+                    <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+                    <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+                    <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+                    <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+                    <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+                    <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+                    <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+                    <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+                    <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+                    <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+                    <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+                    <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+                    <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+                    <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+                    <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+                    <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+                    <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+                    <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+                    <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+                    <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+                    <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+                    <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+                    <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+                    <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+                    <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+                    <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+                    <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+                    <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+                    <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+                    <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+                    <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+                    <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+                    <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+                    <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+                    <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+                    <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="bldg-grad-sec" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#d6e8f8"/>
+                            <stop offset="100%" stop-color="#b8d0ee"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div style="position:relative;z-index:2;">
+                    <div class="welcome-label">Secretary Panel</div>
+                    <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
+                    <p class="welcome-sub">Here is your front-desk overview for today.</p>
                 </div>
-                <div class="sec2-banner-date" id="secDateBadge" style="cursor:pointer;" title="Pick a date">
-                    <i class="bi bi-calendar3 me-2"></i><span id="secDateText"><?= esc(date('l, F j, Y')) ?></span>
-                    <input type="text" id="secDatePicker" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+                <div class="welcome-date" style="position:relative;z-index:2;">
+                    <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
                 </div>
             </div>
 
@@ -219,6 +415,22 @@ $name = session('user_name') ?? 'User';
                 </div>
             </div>
 
+            <!-- Notifications Section -->
+            <div class="section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="notif-panel">
+                        <div class="notif-panel-header">
+                            <span id="notif-count-label-sec">Loading...</span>
+                            <button class="notif-mark-all" onclick="markAllReadSec()">Mark all as read</button>
+                        </div>
+                        <div class="notif-panel-body">
+                            <div id="notif-list-sec"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div><!-- end sec2-content -->
 
     </div><!-- end sec2-page -->
@@ -226,23 +438,69 @@ $name = session('user_name') ?? 'User';
     <?php elseif ($role === 'doctor') : ?>
     <!-- ==================== DOCTOR ==================== -->
 
-
-    <div class="welcome-banner banner-doctor mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <?php if (!empty($currentUser['profile_photo'])): ?>
-                <img src="<?= base_url($currentUser['profile_photo']) ?>" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-            <?php else: ?>
-                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;">
-                    <?= strtoupper(substr($name ?? 'D', 0, 2)) ?>
-                </div>
-            <?php endif; ?>
-            <div>
-                <div class="welcome-label">Doctor Panel</div>
-                <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
-                <p class="welcome-sub">Here is your clinical overview for today.</p>
-            </div>
+    <div class="welcome-banner banner-client mb-4">
+        <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
+            <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-doc)"/>
+            <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+            <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+            <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+            <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+            <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+            <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+            <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+            <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+            <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+            <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+            <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+            <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+            <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+            <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+            <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+            <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+            <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+            <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+            <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+            <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+            <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+            <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+            <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+            <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+            <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+            <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+            <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+            <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+            <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+            <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+            <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+            <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+            <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+            <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+            <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+            <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+            <defs>
+                <linearGradient id="bldg-grad-doc" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d6e8f8"/>
+                    <stop offset="100%" stop-color="#b8d0ee"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        <div style="position:relative;z-index:2;">
+            <div class="welcome-label">Doctor Panel</div>
+            <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
+            <p class="welcome-sub">Here is your clinical overview for today.</p>
         </div>
-        <div class="welcome-date">
+        <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
         </div>
     </div>
@@ -333,6 +591,22 @@ $name = session('user_name') ?? 'User';
                 <div class="action-title">My Schedule Settings</div>
                 <div class="action-desc">Set your available days and hours for appointments.</div>
                 <button class="action-btn btn-outline" disabled>Set Availability (soon)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Section -->
+    <div class="section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="notif-panel">
+                <div class="notif-panel-header">
+                    <span id="notif-count-label-doc">Loading...</span>
+                    <button class="notif-mark-all" onclick="markAllReadDoc()">Mark all as read</button>
+                </div>
+                <div class="notif-panel-body">
+                    <div id="notif-list-doc"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -477,7 +751,9 @@ $name = session('user_name') ?? 'User';
                     <span id="notif-count-label">Loading...</span>
                     <button class="notif-mark-all" onclick="markAllRead()">Mark all as read</button>
                 </div>
-                <div id="notif-list"></div>
+                <div class="notif-panel-body">
+                    <div id="notif-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1082,6 +1358,15 @@ $name = session('user_name') ?? 'User';
         box-shadow: 0 2px 8px rgba(15,23,42,0.06);
         overflow: hidden;
     }
+    .notif-panel-body {
+        max-height: 420px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    .notif-panel-body::-webkit-scrollbar { width: 5px; }
+    .notif-panel-body::-webkit-scrollbar-track { background: #f1f5f9; }
+    .notif-panel-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .notif-panel-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .notif-panel-header {
         display: flex; justify-content: space-between; align-items: center;
         padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
@@ -1181,6 +1466,68 @@ $name = session('user_name') ?? 'User';
     .adm-btn-outline { background:#edf3f9; color:#334155; border:1.5px solid #c4d3e2 !important; }
     .adm-btn-outline:hover:not(:disabled) { background:#e2ebf4; border-color:#a9bfd4 !important; }
     .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
+
+    /* ── Assistant Admin Compact List ── */
+    .aa-list-panel {
+        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06); overflow: hidden;
+    }
+    .aa-list-header {
+        font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.7px; color: #5a7288;
+        padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9;
+        background: #f8fafc;
+    }
+    .aa-list-item {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.65rem 1rem; border-bottom: 1px solid #f1f5f9;
+        text-decoration: none; color: #0f172a;
+        transition: background 0.12s;
+    }
+    .aa-list-item:last-child { border-bottom: none; }
+    a.aa-list-item:hover { background: #f0f6ff; color: #1e40af; }
+    .aa-list-disabled { opacity: 0.55; cursor: not-allowed; }
+    .aa-list-icon {
+        width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+    }
+    .aa-list-label { flex: 1; font-size: 0.85rem; font-weight: 600; }
+    .aa-list-arrow { color: #94a3b8; font-size: 0.75rem; }
+    .aa-list-soon {
+        font-size: 0.68rem; font-weight: 700; background: #f1f5f9;
+        color: #94a3b8; padding: 2px 7px; border-radius: 999px;
+    }
+
+    /* ── Availability Schedule Widget ── */
+    .aa-sched-header {
+        display: grid; grid-template-columns: 1fr repeat(6, 60px);
+        padding: 0.6rem 1rem; background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px; color: #5a7288; gap: 0.25rem;
+    }
+    .aa-sched-row {
+        display: grid; grid-template-columns: 1fr repeat(6, 60px);
+        padding: 0.6rem 1rem; border-bottom: 1px solid #f1f5f9;
+        align-items: center; gap: 0.25rem;
+    }
+    .aa-sched-row:last-child { border-bottom: none; }
+    .aa-sched-name {
+        display: flex; align-items: center; gap: 0.6rem;
+        font-size: 0.82rem; font-weight: 600; color: #0f172a;
+    }
+    .doc-avatar-xs {
+        width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg,#3b556e,#2e445a);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.6rem; font-weight: 700; color: white;
+    }
+    .aa-sched-slot {
+        font-size: 0.68rem; font-weight: 600; text-align: center;
+        padding: 3px 4px; border-radius: 6px;
+    }
+    .aa-on  { background: #d1fae5; color: #065f46; }
+    .aa-off { background: #f1f5f9; color: #94a3b8; }
 
     /* ══════════════════════════════════════
        SECRETARY — Redesigned Green Theme

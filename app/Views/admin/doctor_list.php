@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin · Patient List</title>
+    <title>Doctors List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
@@ -15,27 +15,19 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h4 class="pl-title mb-1">Patient List</h4>
-            <p class="pl-sub mb-0">All registered patients (clients) in the clinic.</p>
+            <h4 class="pl-title mb-1">Doctors List</h4>
+            <p class="pl-sub mb-0">All registered doctors and their information.</p>
         </div>
-        <a href="<?= site_url('/admin/patients') ?>" class="pl-btn pl-btn-ghost">
-            <i class="bi bi-arrow-left me-1"></i>Back
+        <a href="<?= site_url('/dashboard') ?>" class="pl-btn pl-btn-ghost">
+            <i class="bi bi-arrow-left me-1"></i>Dashboard
         </a>
     </div>
 
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success py-2 mb-3"><?= esc(session()->getFlashdata('success')) ?></div>
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
-    <?php endif; ?>
-
     <div class="pl-card">
-        <?php $users = $users ?? []; ?>
-        <?php if (empty($users)): ?>
+        <?php if (empty($doctors)): ?>
             <div class="text-center text-muted py-5">
-                <i class="bi bi-people" style="font-size:2rem;opacity:0.3;"></i>
-                <p class="mt-2 mb-0" style="font-size:0.875rem;">No patients found.</p>
+                <i class="bi bi-person-badge" style="font-size:2rem;opacity:0.3;"></i>
+                <p class="mt-2 mb-0" style="font-size:0.875rem;">No doctors registered yet.</p>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -45,32 +37,37 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Specialization</th>
                             <th>Phone</th>
-                            <th>Status</th>
-                            <th>Registered</th>
+                            <th>Available</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($users as $user): ?>
-                            <?php $isDeleted = !empty($user['deleted_at']); ?>
+                        <?php foreach ($doctors as $doc): ?>
                             <tr>
-                                <td class="pl-id"><?= esc((string)($user['id'] ?? '')) ?></td>
+                                <td class="pl-id"><?= esc((string)($doc['id'] ?? '')) ?></td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="doc-avatar"><?= strtoupper(substr($user['name'] ?? 'P', 0, 2)) ?></div>
-                                        <span class="pl-name"><?= esc($user['name'] ?? '') ?></span>
+                                        <div class="doc-avatar"><?= strtoupper(substr($doc['name'] ?? 'D', 0, 2)) ?></div>
+                                        <div class="pl-name"><?= esc($doc['name'] ?? '') ?></div>
                                     </div>
                                 </td>
-                                <td class="pl-email"><?= esc($user['email'] ?? '—') ?></td>
-                                <td class="pl-date"><?= esc($user['phone'] ?? '—') ?></td>
+                                <td class="pl-email"><?= esc($doc['email'] ?? '—') ?></td>
                                 <td>
-                                    <?php if ($isDeleted): ?>
-                                        <span class="pl-status-badge" style="background:#f1f5f9;color:#64748b;">Deleted</span>
+                                    <?php if (!empty($doc['specialization'])): ?>
+                                        <span class="doc-spec-badge"><?= esc($doc['specialization']) ?></span>
                                     <?php else: ?>
-                                        <span class="pl-status-badge" style="background:#d1fae5;color:#065f46;">Active</span>
+                                        <span class="pl-email">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="pl-date"><?= esc($user['created_at'] ?? '—') ?></td>
+                                <td class="pl-date"><?= esc($doc['phone'] ?? '—') ?></td>
+                                <td>
+                                    <?php if ($doc['available'] ?? false): ?>
+                                        <span class="pl-status-badge" style="background:#d1fae5;color:#065f46;">Available</span>
+                                    <?php else: ?>
+                                        <span class="pl-status-badge" style="background:#fee2e2;color:#991b1b;">Unavailable</span>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -109,15 +106,20 @@
     .pl-table tbody td { padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     .pl-table tbody tr:last-child td { border-bottom: none; }
     .pl-id    { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
-    .pl-name  { font-weight: 600; color: #0f172a; }
-    .pl-email { color: #475569; font-size: 0.82rem; }
+    .pl-name  { font-weight: 600; color: #0f172a; font-size: 0.875rem; }
+    .pl-email { color: #475569; font-size: 0.8rem; }
     .pl-date  { color: #64748b; font-size: 0.82rem; }
     .pl-status-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
     .doc-avatar {
-        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+        width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
         background: linear-gradient(135deg,#3b556e,#2e445a);
         display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem; font-weight: 700; color: white;
+        font-size: 0.78rem; font-weight: 700; color: white;
+    }
+    .doc-spec-badge {
+        font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+        border-radius: 999px; background: #cce4ed; color: #1e5a6e;
+        white-space: nowrap;
     }
 </style>
 </body>

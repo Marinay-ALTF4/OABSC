@@ -70,7 +70,6 @@ $isPatientsPage = url_is('admin/patients*');
         <?php endif; ?>
 
         <div class="d-flex align-items-center gap-3 ms-auto">
-            <?php if ($role === 'client'): ?>
             <div class="position-relative" id="notif-bell-wrap">
                 <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
                     <i class="bi bi-bell"></i>
@@ -84,7 +83,6 @@ $isPatientsPage = url_is('admin/patients*');
                     <div id="notif-dropdown-list" style="max-height:320px;overflow-y:auto;"></div>
                 </div>
             </div>
-            <?php endif; ?>
             <div class="dropdown">
                 <button class="btn btn-account btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <?= esc($roleLabel) ?>
@@ -305,12 +303,15 @@ $isPatientsPage = url_is('admin/patients*');
     const STORAGE_KEY = 'oabsc_notifications_read';
 
     const defaultNotifs = [
-        { id: 1, type: 'reminder',  icon: 'bi-alarm',           color: '#3b82f6', bg: '#eff6ff', title: 'Appointment Reminder',       body: 'You have an appointment tomorrow. Please be on time.',         time: '2 hours ago' },
-        { id: 2, type: 'status',    icon: 'bi-check-circle',    color: '#10b981', bg: '#f0fdf4', title: 'Appointment Confirmed',       body: 'Your appointment with Dr. Santos has been confirmed.',         time: 'Yesterday' },
-        { id: 3, type: 'status',    icon: 'bi-x-circle',        color: '#ef4444', bg: '#fff1f2', title: 'Appointment Cancelled',       body: 'Your appointment on March 10 was cancelled by the clinic.',   time: '2 days ago' },
-        { id: 4, type: 'message',   icon: 'bi-chat-left-dots',  color: '#8b5cf6', bg: '#f5f3ff', title: 'Message from Dr. Reyes',      body: 'Please bring your previous lab results to your next visit.',  time: '3 days ago' },
-        { id: 5, type: 'reminder',  icon: 'bi-calendar-check',  color: '#f59e0b', bg: '#fffbeb', title: 'Follow-up Reminder',          body: 'Your follow-up check-up is scheduled for next week.',         time: '4 days ago' },
-        { id: 6, type: 'message',   icon: 'bi-chat-left-dots',  color: '#8b5cf6', bg: '#f5f3ff', title: 'Message from Dr. Cruz',       body: 'Your prescription is ready for pick-up at the clinic.',       time: '5 days ago' },
+        { id: 1, type: 'reminder',  icon: 'bi-alarm',           color: '#3b82f6', bg: '#eff6ff', title: 'Appointment Reminder',         body: 'You have an appointment tomorrow. Please be on time.',                   time: '2 hours ago' },
+        { id: 2, type: 'status',    icon: 'bi-check-circle',    color: '#10b981', bg: '#f0fdf4', title: 'Appointment Confirmed',         body: 'Your appointment with Dr. Santos has been confirmed.',                   time: 'Yesterday' },
+        { id: 3, type: 'status',    icon: 'bi-x-circle',        color: '#ef4444', bg: '#fff1f2', title: 'Appointment Cancelled',         body: 'Your appointment on March 10 was cancelled by the clinic.',             time: '2 days ago' },
+        { id: 4, type: 'message',   icon: 'bi-chat-left-dots',  color: '#8b5cf6', bg: '#f5f3ff', title: 'Message from Dr. Reyes',        body: 'Please bring your previous lab results to your next visit.',            time: '3 days ago' },
+        { id: 5, type: 'reminder',  icon: 'bi-calendar-check',  color: '#f59e0b', bg: '#fffbeb', title: 'Follow-up Reminder',            body: 'Your follow-up check-up is scheduled for next week.',                   time: '4 days ago' },
+        { id: 6, type: 'message',   icon: 'bi-chat-left-dots',  color: '#8b5cf6', bg: '#f5f3ff', title: 'Message from Dr. Cruz',         body: 'Your prescription is ready for pick-up at the clinic.',                 time: '5 days ago' },
+        { id: 7, type: 'request',   icon: 'bi-calendar2-plus',  color: '#0ea5e9', bg: '#f0f9ff', title: 'New Appointment Request',       body: 'A patient has submitted a new appointment request for review.',         time: '30 minutes ago' },
+        { id: 8, type: 'cancelled', icon: 'bi-calendar-x',      color: '#ef4444', bg: '#fff1f2', title: 'Booking Cancelled by Patient',  body: 'A patient cancelled their booking scheduled for tomorrow at 10:00 AM.', time: '1 hour ago' },
+        { id: 9, type: 'reminder',  icon: 'bi-bell-fill',       color: '#f59e0b', bg: '#fffbeb', title: 'Schedule Reminder',             body: 'You have 3 appointments scheduled for today. Please be prepared.',      time: 'Today' },
     ];
 
     function getReadIds() {
@@ -351,19 +352,47 @@ $isPatientsPage = url_is('admin/patients*');
             ddList.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
         }
 
-        // Dashboard panel
+        // Dashboard panel (client)
         const panel = document.getElementById('notif-list');
         if (panel) {
             panel.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
         }
 
-        // Count label
+        // Dashboard panel (admin)
+        const panelAdm = document.getElementById('notif-list-adm');
+        if (panelAdm) {
+            panelAdm.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
+        }
+
+        // Dashboard panel (secretary)
+        const panelSec = document.getElementById('notif-list-sec');
+        if (panelSec) {
+            panelSec.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
+        }
+
+        // Dashboard panel (doctor)
+        const panelDoc = document.getElementById('notif-list-doc');
+        if (panelDoc) {
+            panelDoc.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
+        }
+
+        // Count label (client)
         const label = document.getElementById('notif-count-label');
         if (label) {
             label.textContent = unread.length > 0
                 ? `${unread.length} unread notification${unread.length > 1 ? 's' : ''}`
                 : 'All caught up!';
         }
+
+        // Count labels (other roles)
+        ['notif-count-label-adm', 'notif-count-label-sec', 'notif-count-label-doc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = unread.length > 0
+                    ? `${unread.length} unread notification${unread.length > 1 ? 's' : ''}`
+                    : 'All caught up!';
+            }
+        });
     }
 
     window.markOneRead = function(id) {
@@ -394,6 +423,8 @@ $isPatientsPage = url_is('admin/patients*');
         saveReadIds(defaultNotifs.map(n => n.id));
         renderAll();
     };
+
+    window.markAllReadAdm = window.markAllReadSec = window.markAllReadDoc = window.markAllRead;
 
     window.toggleNotifDropdown = function() {
         const dd = document.getElementById('notif-dropdown');

@@ -105,9 +105,84 @@ class Admin extends BaseController
         ]);
     }
 
+    public function doctorSchedule()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/doctor_schedule', ['doctors' => $doctors]);
+    }
+
+    public function doctorSpecialization()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('specialization', 'ASC')->findAll();
+
+        // Group by specialization
+        $grouped = [];
+        foreach ($doctors as $doc) {
+            $spec = $doc['specialization'] ?? 'General';
+            $grouped[$spec][] = $doc;
+        }
+
+        return view('admin/doctor_specialization', ['grouped' => $grouped]);
+    }
+
+    public function doctorList()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $doctorModel = new \App\Models\DoctorModel();
+        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/doctor_list', ['doctors' => $doctors]);
+    }
+
+    public function patientHistory(int $id = 0)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $userModel = new UserModel();
+        $appointmentModel = new \App\Models\AppointmentModel();
+
+        // If a specific patient ID is given, show their history
+        if ($id > 0) {
+            $patient = $userModel->find($id);
+            if (! $patient) {
+                return redirect()->to('/admin/patients/history')->with('error', 'Patient not found.');
+            }
+            $appointments = $appointmentModel
+                ->where('client_id', $id)
+                ->orderBy('appointment_date', 'DESC')
+                ->findAll();
+
+            return view('admin/patient_history', [
+                'patient'      => $patient,
+                'appointments' => $appointments,
+            ]);
+        }
+
+        // No ID — show list of all clients to pick from
+        $patients = $userModel->where('role', 'client')->orderBy('name', 'ASC')->findAll();
+
+        return view('admin/patient_history', [
+            'patient'      => null,
+            'patients'     => $patients,
+            'appointments' => [],
+        ]);
+    }
+
     public function patientList()
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
@@ -120,7 +195,7 @@ class Admin extends BaseController
 
     public function addUser()
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         if ($this->request->is('post')) {
@@ -177,7 +252,7 @@ class Admin extends BaseController
 
     public function editUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
@@ -243,7 +318,7 @@ class Admin extends BaseController
 
     public function deleteUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $currentAdminId = (int) session()->get('user_id');
@@ -271,7 +346,7 @@ class Admin extends BaseController
 
     public function restoreUser(int $id)
     {
-        $access = $this->ensureMainAdminOnly();
+        $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
