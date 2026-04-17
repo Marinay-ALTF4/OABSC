@@ -7,6 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<script>
+// Clear session flag when landing on login page
+localStorage.removeItem('oabsc_session_active');
+</script>
 <div class="container px-3">
     <div class="login-card bg-white p-4 p-md-5 mx-auto">
         <div class="mb-3 text-center">

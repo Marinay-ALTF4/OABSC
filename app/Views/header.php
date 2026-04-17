@@ -685,3 +685,12 @@ function loadClientLanguage() {
 
 document.addEventListener('DOMContentLoaded', loadClientLanguage);
 </script>
+
+<script>
+// Mark session as active so other tabs can detect it
+<?php if (session()->get('isLoggedIn')): ?>
+localStorage.setItem('oabsc_session_active', '1');
+<?php else: ?>
+localStorage.removeItem('oabsc_session_active');
+<?php endif; ?>
+</script>
