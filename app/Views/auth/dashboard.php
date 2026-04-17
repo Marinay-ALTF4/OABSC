@@ -80,9 +80,9 @@ $name = session('user_name') ?? 'User';
             </defs>
         </svg>
         <div style="position:relative;z-index:2;">
-            <div class="welcome-label">Admin Panel</div>
+            <div class="welcome-label"><?= $role === 'assistant_admin' ? 'Assistant Admin Panel' : 'Admin Panel' ?></div>
             <h4 class="welcome-name">Welcome back, <?= esc($name) ?></h4>
-            <p class="welcome-sub">Quick overview of your clinic's activity today.</p>
+            <p class="welcome-sub"><?= $role === 'assistant_admin' ? 'You have limited admin access.' : "Quick overview of your clinic's activity today." ?></p>
         </div>
         <div class="welcome-date" style="position:relative;z-index:2;">
             <i class="bi bi-calendar3 me-1"></i><?= esc(date('l, F j, Y')) ?>
@@ -165,7 +165,11 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Patients</div>
                 <div class="adm-card-title">Patient Records</div>
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php if ($role === 'admin'): ?>
+                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php else: ?>
+                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-4">
@@ -174,7 +178,11 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-tag">Reports</div>
                 <div class="adm-card-title">Clinic Reports</div>
                 <div class="adm-card-desc">View statistics and generate reports on clinic activity.</div>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
+                <?php if ($role === 'admin'): ?>
+                    <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
+                <?php else: ?>
+                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                <?php endif; ?>
             </div>
         </div>
         <?php if ($role === 'admin'): ?>
@@ -201,8 +209,8 @@ $name = session('user_name') ?? 'User';
         <?php endif; ?>
     </div>
 
-    <?php if ($role === 'assistant_admin'): ?>
-    <!-- Compact List Sections for Assistant Admin -->
+    <?php if ($role === 'admin'): ?>
+    <!-- Compact List Sections for Admin -->
     <div class="row g-3 mt-2">
         <div class="col-lg-4">
             <div class="aa-list-panel">
@@ -260,7 +268,6 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
-
     <?php endif; ?>
 
     <!-- Notifications Section -->
