@@ -59,41 +59,6 @@ $bookedSlots = $bookedSlots ?? [];
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label">Select Your Doctor</label>
-<<<<<<< HEAD
-                                <?php
-                                $doctorProfiles = [
-                                    'Dr. Santos' => [
-                                        'avatar'  => 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Lego+Doctor+Santos',
-                                        'spec'    => 'General Practitioner',
-                                        'exp'     => '12 years',
-                                        'degree'  => 'MD, University of Santo Tomas',
-                                        'bio'     => 'Specializes in preventive care and chronic disease management.',
-                                    ],
-                                    'Dr. Reyes' => [
-                                        'avatar'  => 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Lego+Doctor+Reyes',
-                                        'spec'    => 'Cardiologist',
-                                        'exp'     => '18 years',
-                                        'degree'  => 'MD, UP College of Medicine',
-                                        'bio'     => 'Expert in heart disease prevention and cardiovascular treatment.',
-                                    ],
-                                    'Dr. Cruz' => [
-                                        'avatar'  => 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Lego+Doctor+Cruz',
-                                        'spec'    => 'Pediatrician',
-                                        'exp'     => '9 years',
-                                        'degree'  => 'MD, Ateneo School of Medicine',
-                                        'bio'     => 'Dedicated to child health and development. Great with kids!',
-                                    ],
-                                    'Dr. Garcia' => [
-                                        'avatar'  => 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Lego+Doctor+Garcia',
-                                        'spec'    => 'Dermatologist',
-                                        'exp'     => '14 years',
-                                        'degree'  => 'MD, Far Eastern University',
-                                        'bio'     => 'Specializes in skin conditions, cosmetic procedures, and skin cancer screening.',
-                                    ],
-                                ];
-                                ?>
-=======
->>>>>>> 586162d19ce4d5d1cda99a7189d39afde36d9eeb
                                 <input type="hidden" id="doctor_name" name="doctor_name" value="<?= esc(old('doctor_name')) ?>" required>
                                 <?php if ($doctorErr): ?>
                                     <div class="text-danger small mb-2"><?= esc($doctorErr) ?></div>

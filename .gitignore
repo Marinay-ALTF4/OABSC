@@ -11,6 +11,7 @@ composer.phar
 !/writable/.htaccess
 
 # Logs
+.env
 *.log
 /logs/
 

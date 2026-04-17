@@ -8,7 +8,11 @@
 </head>
 <body>
 <script>
-// Clear session flag when landing on login page
+// If another tab has an active session, redirect to dashboard immediately
+if (localStorage.getItem('oabsc_session_active') === '1') {
+    window.location.replace('<?= site_url('/dashboard') ?>');
+}
+// Clear session flag when landing on login (means user logged out)
 localStorage.removeItem('oabsc_session_active');
 </script>
 <div class="container px-3">
