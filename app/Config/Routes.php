@@ -39,6 +39,9 @@ $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
 
+// Notifications
+$routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
+
 // Doctor Schedule
 $routes->get('/doctor/schedule', 'DoctorSchedule::index');
 $routes->post('/doctor/schedule/save', 'DoctorSchedule::save');

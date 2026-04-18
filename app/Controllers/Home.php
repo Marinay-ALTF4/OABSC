@@ -18,6 +18,11 @@ class Home extends BaseController
         $userModel = new UserModel();
         $data['currentUser'] = $userModel->find((int) session('user_id'));
 
+        // Real notifications for all roles
+        $notifModel = new \App\Models\NotificationModel();
+        $data['notifications']       = $notifModel->getAll((int) session('user_id'));
+        $data['unread_notif_count']  = count($notifModel->getUnread((int) session('user_id')));
+
         if (session('user_role') === 'secretary') {
             $model = new AppointmentModel();
             $today = date('Y-m-d');

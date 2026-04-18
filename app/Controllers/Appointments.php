@@ -147,6 +147,18 @@ class Appointments extends BaseController
             ]);
         }
 
+        // Send notification to doctor
+        if (! empty($insertData['doctor_id'])) {
+            $notifModel  = new \App\Models\NotificationModel();
+            $patientName = session('user_name') ?? 'A patient';
+            $notifModel->send(
+                (int) $insertData['doctor_id'],
+                'New Appointment Booked',
+                "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $insertData['appointment_time'], 0, 5) . '.',
+                'appointment'
+            );
+        }
+
         return redirect()->to('/appointments/my')->with('success', 'Appointment request submitted successfully.');
     }
 
