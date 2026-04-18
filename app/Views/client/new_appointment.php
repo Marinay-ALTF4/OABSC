@@ -211,6 +211,11 @@ $bookedSlots = $bookedSlots ?? [];
                     <span class="profile-label"><i class="bi bi-telephone-fill me-1"></i>Contact</span>
                     <span id="modalDoctorPhone" class="profile-value"></span>
                 </div>
+                <!-- Schedule Row -->
+                <div class="profile-row border-0 pb-0">
+                    <span class="profile-label"><i class="bi bi-calendar-week me-1"></i>Schedule</span>
+                </div>
+                <div id="modalDoctorSchedule" class="mt-1 mb-2" style="font-size:0.82rem;color:#374151;"></div>
                 <!-- Location Row -->
                 <div class="profile-row border-0 pb-0">
                     <span class="profile-label"><i class="bi bi-geo-alt-fill me-1" style="color:#ef4444;"></i>Location</span>
@@ -334,6 +339,16 @@ $bookedSlots = $bookedSlots ?? [];
         document.getElementById('modalDoctorBio').textContent     = p.bio;
         document.getElementById('modalDoctorLocation').textContent= location;
         document.getElementById('modalDoctorPhone').textContent   = p.phone || 'Not provided';
+
+        // Schedule
+        const scheduleEl = document.getElementById('modalDoctorSchedule');
+        if (p.schedules && p.schedules.length > 0) {
+            scheduleEl.innerHTML = p.schedules.map(s =>
+                `<span class="badge me-1 mb-1" style="background:#e0f2fe;color:#0369a1;font-weight:500;">${s.day}: ${s.start_time.slice(0,5)} - ${s.end_time.slice(0,5)}</span>`
+            ).join('');
+        } else {
+            scheduleEl.innerHTML = '<span class="text-muted">No schedule set</span>';
+        }
 
         // Embed map
         document.getElementById('modalDoctorMap').src = mapData.embed;

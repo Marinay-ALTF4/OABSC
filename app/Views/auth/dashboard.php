@@ -604,7 +604,7 @@ $name = session('user_name') ?? 'User';
                 <div class="action-tag">Availability</div>
                 <div class="action-title">My Schedule Settings</div>
                 <div class="action-desc">Set your available days and hours for appointments.</div>
-                <button class="action-btn btn-outline" disabled>Set Availability (soon)</button>
+                <a href="<?= site_url('/doctor/schedule') ?>" class="action-btn btn-outline">Set Availability</a>
             </div>
         </div>
     </div>

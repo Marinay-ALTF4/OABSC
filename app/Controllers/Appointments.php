@@ -60,15 +60,18 @@ class Appointments extends BaseController
         $userModel    = new UserModel();
         $doctorUsers  = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
         $doctorOptions = array_map(fn($d) => 'Dr. ' . $d['name'], $doctorUsers);
+        $scheduleModel = new \App\Models\DoctorScheduleModel();
         $doctorProfiles = [];
         foreach ($doctorUsers as $d) {
+            $schedules = $scheduleModel->getScheduleByDoctor((int) $d['id']);
             $doctorProfiles['Dr. ' . $d['name']] = [
-                'avatar' => ! empty($d['profile_photo']) ? base_url($d['profile_photo']) : null,
-                'spec'   => $d['specialization'] ?? 'Specialist',
-                'exp'    => $d['experience'] ?? 'N/A',
-                'degree' => $d['degree'] ?? 'MD',
-                'bio'    => $d['bio'] ?? 'Experienced medical professional.',
-                'phone'  => $d['phone'] ?? null,
+                'avatar'    => ! empty($d['profile_photo']) ? base_url($d['profile_photo']) : null,
+                'spec'      => $d['specialization'] ?? 'Specialist',
+                'exp'       => $d['experience'] ?? 'N/A',
+                'degree'    => $d['degree'] ?? 'MD',
+                'bio'       => $d['bio'] ?? 'Experienced medical professional.',
+                'phone'     => $d['phone'] ?? null,
+                'schedules' => $schedules,
             ];
         }
 

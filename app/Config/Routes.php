@@ -39,6 +39,11 @@ $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
 
+// Doctor Schedule
+$routes->get('/doctor/schedule', 'DoctorSchedule::index');
+$routes->post('/doctor/schedule/save', 'DoctorSchedule::save');
+$routes->get('/api/doctor/(:num)/schedule', 'DoctorSchedule::getByDoctor/$1');
+
 // Client Profile
 $routes->get('/profile', 'Profile::index');
 $routes->post('/profile/save', 'Profile::save');
