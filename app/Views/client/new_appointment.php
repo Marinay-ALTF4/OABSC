@@ -375,6 +375,7 @@ $bookedSlots = $bookedSlots ?? [];
     const openConfirmModalBtn = document.getElementById('openConfirmModalBtn');
     const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
     const clientSuccessAlert = document.getElementById('clientSuccessAlert');
+    const form = document.getElementById('appointmentForm');
 
     const summaryDoctor = document.querySelector('[data-summary="doctor"]');
     const summaryDate = document.querySelector('[data-summary="date"]');

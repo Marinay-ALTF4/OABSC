@@ -126,7 +126,16 @@ class Appointments extends BaseController
         ];
 
         if ($this->hasDoctorNameColumn()) {
-            $insertData['doctor_name'] = trim((string) $this->request->getPost('doctor_name'));
+            $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
+            $insertData['doctor_name'] = $doctorNamePost;
+
+            // Save doctor_id - strip "Dr. " prefix to find by name
+            $nameOnly    = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
+            $userModel   = new \App\Models\UserModel();
+            $doctorUser  = $userModel->where('role', 'doctor')->where('name', $nameOnly)->first();
+            if ($doctorUser) {
+                $insertData['doctor_id'] = $doctorUser['id'];
+            }
         }
 
         $model = new AppointmentModel();

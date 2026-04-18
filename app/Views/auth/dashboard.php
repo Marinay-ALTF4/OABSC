@@ -524,28 +524,28 @@ $name = session('user_name') ?? 'User';
         <div class="col-6 col-md-3">
             <div class="stat-card">
                 <div class="stat-icon bg-green-soft"><i class="bi bi-person-check"></i></div>
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?= $doc_today ?? 0 ?></div>
                 <div class="stat-label">Today's Patients</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
                 <div class="stat-icon bg-blue-soft"><i class="bi bi-calendar-event"></i></div>
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?= $doc_upcoming ?? 0 ?></div>
                 <div class="stat-label">Upcoming</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
                 <div class="stat-icon bg-teal-soft"><i class="bi bi-check2-circle"></i></div>
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?= $doc_completed ?? 0 ?></div>
                 <div class="stat-label">Completed</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
                 <div class="stat-icon bg-purple-soft"><i class="bi bi-clipboard2-pulse"></i></div>
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?= $doc_total ?? 0 ?></div>
                 <div class="stat-label">Total Consultations</div>
             </div>
         </div>
@@ -559,7 +559,7 @@ $name = session('user_name') ?? 'User';
                 <div class="action-tag">Schedule</div>
                 <div class="action-title">My Appointments</div>
                 <div class="action-desc">View your full appointment schedule and manage your calendar.</div>
-                <button class="action-btn btn-filled" disabled>View Schedule (soon)</button>
+                <a href="<?= site_url('/doctor/appointments') ?>" class="action-btn btn-filled">View Schedule</a>
             </div>
         </div>
         <div class="col-md-4">

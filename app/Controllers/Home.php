@@ -30,6 +30,23 @@ class Home extends BaseController
             $data['recent_appointments'] = $model->orderBy('created_at', 'DESC')->findAll(10);
         }
 
+        if (session('user_role') === 'doctor') {
+            $doctorName = 'Dr. ' . session('user_name');
+            $doctorId   = (int) session('user_id');
+            $model      = new AppointmentModel();
+            $today      = date('Y-m-d');
+
+            $allAppts = $model->findAll();
+            $myAppts  = array_filter($allAppts, fn($a) =>
+                $a['doctor_name'] === $doctorName || (int)($a['doctor_id'] ?? 0) === $doctorId
+            );
+
+            $data['doc_today']        = count(array_filter($myAppts, fn($a) => $a['appointment_date'] === $today));
+            $data['doc_upcoming']     = count(array_filter($myAppts, fn($a) => $a['appointment_date'] >= $today && in_array($a['status'], ['pending', 'approved'])));
+            $data['doc_completed']    = count(array_filter($myAppts, fn($a) => $a['status'] === 'completed'));
+            $data['doc_total']        = count($myAppts);
+        }
+
         return view('auth/dashboard', $data);
     }
 
