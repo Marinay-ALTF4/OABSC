@@ -295,11 +295,18 @@ $name = session('user_name') ?? 'User';
 
         <!-- Left Sidebar -->
         <div class="sec2-sidebar">
-            <div class="sec2-sidebar-label"></div>
+            <div class="sec2-sidebar-user">
+                <div class="sec2-sidebar-avatar"><i class="bi bi-person-circle"></i></div>
+                <div>
+                    <div class="sec2-sidebar-name"><?= esc(session('user_name') ?? 'Secretary') ?></div>
+                    <div class="sec2-sidebar-role">Secretary</div>
+                </div>
+            </div>
+            <hr class="sec2-sidebar-divider">
             <a href="<?= site_url('/dashboard') ?>" class="sec2-sidebar-item active">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-            <a href="<?= site_url('/appointments/my') ?>" class="sec2-sidebar-item">
+            <a href="<?= site_url('/secretary/appointments') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-calendar2-plus"></i> Manage Appointments
             </a>
             <a href="<?= site_url('/secretary/queue') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Patient Queue'); return false;">
@@ -1710,6 +1717,29 @@ $name = session('user_name') ?? 'User';
         padding: 0 8px;
         margin-bottom: 8px;
     }
+    /* Secretary avatar block (styled as circular badge to match nav icons) */
+    .sec2-sidebar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 10px;
+    }
+    .sec2-sidebar-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #eaf6ea; /* light green background */
+        color: #2e5c32;     /* green icon */
+        font-size: 1.25rem;
+        border: 2px solid rgba(46,92,50,0.08);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+    }
+    .sec2-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #1b3a1e; margin: 0; }
+    .sec2-sidebar-role { font-size: 0.72rem; color: #6aaa70; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sec2-sidebar-divider { border-color: #d0e8d2; margin: 10px 0; }
     .sec2-sidebar-item {
         display: flex;
         align-items: center;
