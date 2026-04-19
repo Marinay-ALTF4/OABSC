@@ -24,15 +24,14 @@ class Home extends BaseController
         $data['unread_notif_count']  = count($notifModel->getUnread((int) session('user_id')));
 
         if (session('user_role') === 'secretary') {
-            $model = new AppointmentModel();
+            $apptModel = new AppointmentModel();
             $today = date('Y-m-d');
 
-            $data['total_today']     = $model->where('appointment_date', $today)->countAllResults();
-            $data['total_pending']   = $model->where('status', 'pending')->countAllResults();
-            $data['total_completed'] = $model->where('appointment_date', $today)->where('status', 'completed')->countAllResults();
-            $data['total_patients']  = $model->countAllResults();
+            $data['total_today']    = (new AppointmentModel())->where('appointment_date', $today)->countAllResults();
+            $data['total_pending']  = (new AppointmentModel())->where('status', 'pending')->countAllResults();
+            $data['total_patients'] = (new UserModel())->where('role', 'client')->where('deleted_at IS NULL')->countAllResults();
 
-            $data['recent_appointments'] = $model->orderBy('created_at', 'DESC')->findAll(10);
+            $data['recent_appointments'] = $apptModel->orderBy('created_at', 'DESC')->findAll(10);
         }
 
         if (session('user_role') === 'doctor') {

@@ -309,19 +309,19 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/secretary/appointments') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-calendar2-plus"></i> Manage Appointments
             </a>
-            <a href="<?= site_url('/secretary/queue') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Patient Queue'); return false;">
+            <a href="<?= site_url('/secretary/queue') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-list-ol"></i> Patient Queue
             </a>
             <a href="<?= site_url('/admin/patients') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-folder2-open"></i> Patient Records
             </a>
-            <a href="<?= site_url('/secretary/register') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Register New Patient'); return false;">
+            <a href="<?= site_url('/secretary/register') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-person-plus"></i> Register New Patient
             </a>
-            <a href="<?= site_url('/secretary/schedules') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Doctor Schedules'); return false;">
+            <a href="<?= site_url('/secretary/schedules') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-clock-history"></i> Doctor Schedules
             </a>
-            <a href="<?= site_url('/secretary/approvals') ?>" class="sec2-sidebar-item" onclick="showComingSoon('Pending Approvals'); return false;">
+            <a href="<?= site_url('/secretary/approvals') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-bell"></i> Pending Approvals
             </a>
         </div>

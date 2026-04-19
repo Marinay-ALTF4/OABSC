@@ -40,19 +40,6 @@ $isPatientsPage = url_is('admin/patients*');
             </ul>
         <?php elseif ($role === 'secretary') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= $isDashboardPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= url_is('appointments*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/appointments/my') ?>">Appointments</a>
-                </li>
-                <li class="nav-item">
-                    <?php if ($role === 'admin'): ?>
-                    <a class="nav-link px-2 <?= url_is('admin/patients*') ? 'active fw-semibold' : '' ?>" href="<?= site_url('/admin/patients') ?>">Patients</a>
-                    <?php endif; ?>
-                </li>
             </ul>
         <?php elseif ($role === 'doctor') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
