@@ -7,8 +7,14 @@ use App\Models\UserModel;
 class Auth extends BaseController
 {
     private const PENDING_REGISTRATION_KEY = 'pending_registration';
+    private const PENDING_MFA_KEY          = 'pending_mfa';
     private const VERIFICATION_TTL_SECONDS = 600;
+    private const MFA_TTL_SECONDS          = 300;
     private const VERIFICATION_MAX_ATTEMPTS = 5;
+    private const MFA_MAX_ATTEMPTS          = 5;
+
+    // Seeded/system accounts that skip MFA
+    private const MFA_BYPASS_DOMAIN = '@example.com';
 
     public function login()
     {
@@ -44,26 +50,146 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
         }
 
-        session()->set([
-            'user_id'    => $user['id'],
-            'user_name'  => $user['name'] ?? '',
-            'user_email' => $user['email'] ?? '',
-            'user_role'  => $user['role'] ?? 'client',
-            'isLoggedIn' => true,
-        ]);
+        // Skip MFA for seeded/system accounts (@example.com)
+        $isSeededUser = str_ends_with(strtolower((string) $user['email']), self::MFA_BYPASS_DOMAIN);
 
-        // Redirect admin/assistant_admin to role selection
-        if (in_array($user['role'], ['admin', 'assistant_admin'], true)) {
+        if ($isSeededUser) {
             session()->set([
-                'isLoggedIn'             => false,
-                'pending_role_selection' => true,
-                'pending_user_id'        => $user['id'],
-                'pending_user_role'      => $user['role'],
+                'user_id'    => $user['id'],
+                'user_name'  => $user['name'] ?? '',
+                'user_email' => $user['email'] ?? '',
+                'user_role'  => $user['role'] ?? 'client',
+                'isLoggedIn' => true,
             ]);
-            return redirect()->to('/role-selection');
+
+            if (in_array($user['role'], ['admin', 'assistant_admin'], true)) {
+                session()->set([
+                    'isLoggedIn'             => false,
+                    'pending_role_selection' => true,
+                    'pending_user_id'        => $user['id'],
+                    'pending_user_role'      => $user['role'],
+                ]);
+                return redirect()->to('/role-selection');
+            }
+
+            return redirect()->to('/dashboard');
         }
 
-        return redirect()->to('/dashboard');
+        // Real registered users — send MFA OTP
+        $mfaCode = (string) random_int(100000, 999999);
+
+        $pendingMfa = [
+            'user_id'        => $user['id'],
+            'user_name'      => $user['name'] ?? '',
+            'user_email'     => $user['email'] ?? '',
+            'user_role'      => $user['role'] ?? 'client',
+            'email'          => $user['email'],
+            'mfa_code_hash'  => password_hash($mfaCode, PASSWORD_DEFAULT),
+            'mfa_expires_at' => time() + self::MFA_TTL_SECONDS,
+            'mfa_attempts'   => 0,
+        ];
+
+        if (! $this->sendMfaCode((string) $user['email'], (string) ($user['name'] ?? ''), $mfaCode)) {
+            return redirect()->back()->withInput()->with('error', 'Unable to send verification code. Please check email settings and try again.');
+        }
+
+        session()->set(self::PENDING_MFA_KEY, $pendingMfa);
+
+        return redirect()->to('/login/verify-mfa')->with('success', 'A 6-digit verification code has been sent to your email.');
+    }
+
+    public function verifyMfa()
+    {
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to('/dashboard');
+        }
+
+        $pendingMfa = $this->getPendingMfa();
+
+        if (! $pendingMfa) {
+            return redirect()->to('/login')->with('error', 'Session expired. Please log in again.');
+        }
+
+        if ($this->request->is('post')) {
+            if (! $this->validate(['mfa_code' => 'required|exact_length[6]|numeric'])) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            $pendingMfa = $this->getPendingMfa();
+
+            if (! $pendingMfa) {
+                return redirect()->to('/login')->with('error', 'Session expired. Please log in again.');
+            }
+
+            if (($pendingMfa['mfa_expires_at'] ?? 0) < time()) {
+                session()->remove(self::PENDING_MFA_KEY);
+                return redirect()->to('/login')->with('error', 'Verification code expired. Please log in again.');
+            }
+
+            $submittedCode = trim((string) $this->request->getPost('mfa_code'));
+
+            if (! password_verify($submittedCode, (string) ($pendingMfa['mfa_code_hash'] ?? ''))) {
+                $attempts = ((int) ($pendingMfa['mfa_attempts'] ?? 0)) + 1;
+
+                if ($attempts >= self::MFA_MAX_ATTEMPTS) {
+                    session()->remove(self::PENDING_MFA_KEY);
+                    return redirect()->to('/login')->with('error', 'Too many incorrect attempts. Please log in again.');
+                }
+
+                $pendingMfa['mfa_attempts'] = $attempts;
+                session()->set(self::PENDING_MFA_KEY, $pendingMfa);
+
+                return redirect()->back()->withInput()->with('errors', ['mfa_code' => 'Invalid verification code.']);
+            }
+
+            session()->remove(self::PENDING_MFA_KEY);
+            session()->set([
+                'user_id'    => $pendingMfa['user_id'],
+                'user_name'  => $pendingMfa['user_name'],
+                'user_email' => $pendingMfa['user_email'] ?? '',
+                'user_role'  => $pendingMfa['user_role'],
+                'isLoggedIn' => true,
+            ]);
+
+            if (in_array($pendingMfa['user_role'], ['admin', 'assistant_admin'], true)) {
+                session()->set([
+                    'isLoggedIn'             => false,
+                    'pending_role_selection' => true,
+                    'pending_user_id'        => $pendingMfa['user_id'],
+                    'pending_user_role'      => $pendingMfa['user_role'],
+                ]);
+                return redirect()->to('/role-selection');
+            }
+
+            return redirect()->to('/dashboard');
+        }
+
+        return view('auth/verify_mfa', [
+            'pendingEmail' => $pendingMfa['email'] ?? '',
+            'expiresAt'    => (int) ($pendingMfa['mfa_expires_at'] ?? 0),
+        ]);
+    }
+
+    public function resendMfaCode()
+    {
+        $pendingMfa = $this->getPendingMfa();
+
+        if (! $pendingMfa) {
+            return redirect()->to('/login')->with('error', 'Session expired. Please log in again.');
+        }
+
+        $mfaCode = (string) random_int(100000, 999999);
+        $pendingMfa['mfa_code_hash']  = password_hash($mfaCode, PASSWORD_DEFAULT);
+        $pendingMfa['mfa_expires_at'] = time() + self::MFA_TTL_SECONDS;
+        $pendingMfa['mfa_attempts']   = 0;
+
+        if (! $this->sendMfaCode((string) ($pendingMfa['email'] ?? ''), (string) ($pendingMfa['user_name'] ?? ''), $mfaCode)) {
+            return redirect()->back()->with('error', 'Unable to resend code. Please try again.');
+        }
+
+        session()->set(self::PENDING_MFA_KEY, $pendingMfa);
+
+        return redirect()->back()->with('success', 'A new verification code has been sent.');
     }
 
     public function apiLogin()
@@ -299,6 +425,12 @@ class Auth extends BaseController
         return redirect()->to('/register');
     }
 
+    private function getPendingMfa(): ?array
+    {
+        $pendingMfa = session()->get(self::PENDING_MFA_KEY);
+        return is_array($pendingMfa) ? $pendingMfa : null;
+    }
+
     private function getPendingRegistration(): ?array
     {
         $pendingRegistration = session()->get(self::PENDING_REGISTRATION_KEY);
@@ -334,6 +466,34 @@ class Auth extends BaseController
         $emailService->setAltMessage(
             'Hello ' . $name . ', your verification code is ' . $verificationCode
             . '. This code expires in ' . (int) (self::VERIFICATION_TTL_SECONDS / 60) . ' minutes.'
+        );
+
+        return (bool) $emailService->send(false);
+    }
+
+    private function sendMfaCode(string $email, string $name, string $mfaCode): bool
+    {
+        $emailService = service('email');
+        $emailConfig  = config('Email');
+        $fromEmail    = $emailConfig->fromEmail ?: $emailConfig->SMTPUser;
+        $fromName     = $emailConfig->fromName ?: 'Clinic Appointment Portal';
+
+        if ($fromEmail === '' || $emailConfig->SMTPHost === '' || $emailConfig->SMTPUser === '' || $emailConfig->SMTPPass === '') {
+            return false;
+        }
+
+        $emailService->setFrom($fromEmail, $fromName);
+        $emailService->setTo($email);
+        $emailService->setSubject('Your login verification code: ' . $mfaCode);
+        $emailService->setMessage(view('emails/verification_code', [
+            'name'             => $name,
+            'email'            => $email,
+            'verificationCode' => $mfaCode,
+            'expiresMinutes'   => (int) (self::MFA_TTL_SECONDS / 60),
+        ]));
+        $emailService->setAltMessage(
+            'Hello ' . $name . ', your login verification code is ' . $mfaCode
+            . '. This code expires in ' . (int) (self::MFA_TTL_SECONDS / 60) . ' minutes.'
         );
 
         return (bool) $emailService->send(false);
