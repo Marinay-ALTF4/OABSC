@@ -52,13 +52,13 @@ class Auth extends BaseController
             'isLoggedIn' => true,
         ]);
 
-        // Redirect admin to role selection
-        if ($user['role'] === 'admin') {
+        // Redirect admin/assistant_admin to role selection
+        if (in_array($user['role'], ['admin', 'assistant_admin'], true)) {
             session()->set([
                 'isLoggedIn'             => false,
                 'pending_role_selection' => true,
                 'pending_user_id'        => $user['id'],
-                'pending_user_role'      => 'admin',
+                'pending_user_role'      => $user['role'],
             ]);
             return redirect()->to('/role-selection');
         }
