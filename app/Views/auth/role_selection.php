@@ -70,14 +70,22 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold" style="font-size:0.85rem;">Select Role</label>
                 <div class="d-flex flex-column gap-2" id="roleOptions">
-                    <button type="button" class="role-btn" onclick="selectRole('admin', this)">
-                        <div class="role-title">Admin</div>
-                        <div class="role-sub">Full access to all system features</div>
-                    </button>
-                    <button type="button" class="role-btn" onclick="selectRole('assistant_admin', this)">
-                        <div class="role-title">Assistant Admin</div>
-                        <div class="role-sub">Limited admin access - cannot manage users</div>
-                    </button>
+                    <?php $pendingRole = session()->get('pending_user_role') ?? 'admin'; ?>
+                    <?php if ($pendingRole === 'admin'): ?>
+                        <button type="button" class="role-btn" onclick="selectRole('admin', this)">
+                            <div class="role-title">Admin</div>
+                            <div class="role-sub">Full access to all system features</div>
+                        </button>
+                        <button type="button" class="role-btn" onclick="selectRole('assistant_admin', this)">
+                            <div class="role-title">Assistant Admin</div>
+                            <div class="role-sub">Limited admin access - cannot manage users</div>
+                        </button>
+                    <?php else: ?>
+                        <button type="button" class="role-btn" onclick="selectRole('assistant_admin', this)">
+                            <div class="role-title">Assistant Admin</div>
+                            <div class="role-sub">Limited admin access - cannot manage users</div>
+                        </button>
+                    <?php endif; ?>
                 </div>
                 <input type="hidden" name="role" id="selectedRole">
             </div>
