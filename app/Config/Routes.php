@@ -45,6 +45,10 @@ $routes->get('/appointments/my', 'Appointments::my');
 // Notifications
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
 
+// Access Requests
+$routes->post('/access-request/send', 'AccessRequest::request');
+$routes->post('/access-request/approve', 'AccessRequest::approve');
+
 // Doctor Schedule
 $routes->get('/doctor/schedule', 'DoctorSchedule::index');
 $routes->post('/doctor/schedule/save', 'DoctorSchedule::save');

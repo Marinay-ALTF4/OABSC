@@ -23,6 +23,14 @@ class Home extends BaseController
         $data['notifications']       = $notifModel->getAll((int) session('user_id'));
         $data['unread_notif_count']  = count($notifModel->getUnread((int) session('user_id')));
 
+        // Access request status for assistant_admin
+        if (session('user_role') === 'assistant_admin') {
+            $arModel = new \App\Models\AccessRequestModel();
+            $uid     = (int) session('user_id');
+            $data['access_patient_records'] = $arModel->getStatus($uid, 'patient_records');
+            $data['access_clinic_reports']  = $arModel->getStatus($uid, 'clinic_reports');
+        }
+
         if (session('user_role') === 'secretary') {
             $apptModel = new AppointmentModel();
             $today = date('Y-m-d');

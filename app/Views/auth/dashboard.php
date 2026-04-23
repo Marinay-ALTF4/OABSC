@@ -167,8 +167,22 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
                 <?php if ($role === 'admin'): ?>
                     <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php elseif (($access_patient_records ?? null) === 'approved'): ?>
+                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
+                <?php elseif (($access_patient_records ?? null) === 'pending'): ?>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                        <button class="adm-btn adm-btn-disabled" disabled style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;">Pending...</button>
+                    </div>
                 <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                        <form action="<?= site_url('/access-request/send') ?>" method="post" class="d-inline">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="resource" value="patient_records">
+                            <button type="submit" class="adm-btn" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;font-size:0.72rem;">Request Access</button>
+                        </form>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -180,8 +194,22 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-desc">View statistics and generate reports on clinic activity.</div>
                 <?php if ($role === 'admin'): ?>
                     <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
+                <?php elseif (($access_clinic_reports ?? null) === 'approved'): ?>
+                    <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
+                <?php elseif (($access_clinic_reports ?? null) === 'pending'): ?>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                        <button class="adm-btn adm-btn-disabled" disabled style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;">Pending...</button>
+                    </div>
                 <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
+                        <form action="<?= site_url('/access-request/send') ?>" method="post" class="d-inline">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="resource" value="clinic_reports">
+                            <button type="submit" class="adm-btn" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;font-size:0.72rem;">Request Access</button>
+                        </form>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -268,6 +296,47 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+    <?php endif; ?>
+
+    <!-- Access Requests Section (Admin only) -->
+    <?php if ($role === 'admin'):
+        $arModel  = new \App\Models\AccessRequestModel();
+        $userModel2 = new \App\Models\UserModel();
+        $pendingRequests = $arModel->where('status', 'pending')->findAll();
+    ?>
+    <?php if (!empty($pendingRequests)): ?>
+    <div class="adm-section-label mt-4 mb-3"><i class="bi bi-key me-1"></i> Pending Access Requests</div>
+    <div class="row g-3 mb-2">
+        <?php foreach ($pendingRequests as $req):
+            $requester = $userModel2->find($req['user_id']);
+            $label = $req['resource'] === 'patient_records' ? 'Patient Records' : 'Clinic Reports';
+        ?>
+        <div class="col-12">
+            <div class="adm-card d-flex align-items-center justify-content-between flex-wrap gap-2 p-3">
+                <div>
+                    <span class="fw-semibold"><?= esc($requester['name'] ?? 'Unknown') ?></span>
+                    <span class="text-muted small ms-2">is requesting access to</span>
+                    <span class="badge bg-primary-subtle text-primary ms-1"><?= esc($label) ?></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="id" value="<?= $req['id'] ?>">
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="adm-btn adm-btn-filled" style="background:#16a34a;">Approve</button>
+                    </form>
+                    <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="id" value="<?= $req['id'] ?>">
+                        <input type="hidden" name="action" value="deny">
+                        <button type="submit" class="adm-btn" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;">Deny</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
     <?php endif; ?>
 
     <!-- Notifications Section -->
