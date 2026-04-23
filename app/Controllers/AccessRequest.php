@@ -21,7 +21,9 @@ class AccessRequest extends BaseController
             return redirect()->to('/dashboard')->with('error', 'Invalid resource.');
         }
 
-        $userId = (int) session('user_id');
+        $userId = (int) (session('user_role') === 'assistant_admin' && session('assistant_user_id')
+            ? session('assistant_user_id')
+            : session('user_id'));
         $model  = new AccessRequestModel();
 
         // Check if already pending or approved
@@ -34,12 +36,13 @@ class AccessRequest extends BaseController
         }
 
         $model->insert([
-            'user_id'  => $userId,
-            'resource' => $resource,
-            'status'   => 'pending',
+            'user_id'        => $userId,
+            'requested_role' => session('user_role'),
+            'resource'       => $resource,
+            'status'         => 'pending',
         ]);
 
-        // Notify all admins
+        // Notify all admins (role = admin only, not assistant_admin)
         $userModel = new UserModel();
         $admins    = $userModel->where('role', 'admin')->findAll();
         $notif     = new NotificationModel();

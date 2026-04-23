@@ -51,10 +51,16 @@ class RoleSelection extends BaseController
             }
             $finalRole = 'admin';
         } elseif ($selectedRole === 'assistant_admin') {
-            // Find the assistant_admin record - get role_password from any assistant_admin user
-            $userModel       = new UserModel();
-            $assistantAdmin  = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->first();
-            if (! $assistantAdmin || empty($assistantAdmin['role_password']) || ! password_verify($rolePassword, $assistantAdmin['role_password'])) {
+            // Find the matching assistant_admin user by role_password
+            $allAssistants = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->findAll();
+            $assistantAdmin = null;
+            foreach ($allAssistants as $a) {
+                if (! empty($a['role_password']) && password_verify($rolePassword, $a['role_password'])) {
+                    $assistantAdmin = $a;
+                    break;
+                }
+            }
+            if (! $assistantAdmin) {
                 return redirect()->back()->with('error', 'Incorrect password for Assistant Admin role.');
             }
             $finalRole = 'assistant_admin';
@@ -67,11 +73,12 @@ class RoleSelection extends BaseController
         session()->remove('pending_user_id');
 
         session()->set([
-            'isLoggedIn' => true,
-            'user_id'    => $user['id'],
-            'user_name'  => $user['name'],
-            'user_email' => $user['email'],
-            'user_role'  => $finalRole,
+            'isLoggedIn'         => true,
+            'user_id'            => $user['id'],
+            'user_name'          => $finalRole === 'assistant_admin' ? ($assistantAdmin['name'] ?? $user['name']) : $user['name'],
+            'user_email'         => $user['email'],
+            'user_role'          => $finalRole,
+            'assistant_user_id'  => $finalRole === 'assistant_admin' ? $assistantAdmin['id'] : null,
         ]);
 
         return redirect()->to('/dashboard');

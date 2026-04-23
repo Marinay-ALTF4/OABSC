@@ -233,10 +233,10 @@ class Auth extends BaseController
         // Revoke access requests on logout for assistant_admin
         if (session('user_role') === 'assistant_admin') {
             $arModel = new \App\Models\AccessRequestModel();
-            $arModel->where('user_id', (int) session('user_id'))
-                    ->where('status', 'approved')
-                    ->set('status', 'pending')
-                    ->update();
+            $uid = (int) (session('assistant_user_id') ?: session('user_id'));
+            $arModel->where('user_id', $uid)
+                    ->whereIn('status', ['approved', 'pending'])
+                    ->delete();
         }
 
         session()->destroy();

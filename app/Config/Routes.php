@@ -44,6 +44,7 @@ $routes->get('/appointments/my', 'Appointments::my');
 
 // Notifications
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
+$routes->post('/notifications/delete/(:num)', 'Notifications::deleteOne/$1');
 
 // Access Requests
 $routes->post('/access-request/send', 'AccessRequest::request');

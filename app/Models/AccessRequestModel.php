@@ -9,7 +9,7 @@ class AccessRequestModel extends Model
     protected $table         = 'access_requests';
     protected $primaryKey    = 'id';
     protected $returnType    = 'array';
-    protected $allowedFields = ['user_id', 'resource', 'status'];
+    protected $allowedFields = ['user_id', 'requested_role', 'resource', 'status'];
     protected $useTimestamps = true;
 
     public function getStatus(int $userId, string $resource): ?string

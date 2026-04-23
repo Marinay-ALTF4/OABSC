@@ -310,11 +310,21 @@ $name = session('user_name') ?? 'User';
         <?php foreach ($pendingRequests as $req):
             $requester = $userModel2->find($req['user_id']);
             $label = $req['resource'] === 'patient_records' ? 'Patient Records' : 'Clinic Reports';
+            $roleLabels = [
+                'admin'           => 'Admin',
+                'assistant_admin' => 'Assistant Admin',
+                'doctor'          => 'Doctor',
+                'secretary'       => 'Secretary',
+                'client'          => 'Client',
+            ];
+            $reqRole   = $req['requested_role'] ?? $requester['role'] ?? 'admin';
+            $roleLabel = $roleLabels[$reqRole] ?? ucfirst($reqRole);
         ?>
         <div class="col-12">
             <div class="adm-card d-flex align-items-center justify-content-between flex-wrap gap-2 p-3">
                 <div>
-                    <span class="fw-semibold"><?= esc($requester['name'] ?? 'Unknown') ?></span>
+                    <span class="fw-semibold"><?= esc($requester['name'] ?? $roleLabel) ?></span>
+                    <span class="text-muted small ms-1">(<?= esc($roleLabel) ?>)</span>
                     <span class="text-muted small ms-2">is requesting access to</span>
                     <span class="badge bg-primary-subtle text-primary ms-1"><?= esc($label) ?></span>
                 </div>
