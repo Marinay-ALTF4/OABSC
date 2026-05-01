@@ -15,10 +15,46 @@ $name = session('user_name') ?? 'User';
 <?= view('header') ?>
 
 <div class="dashboard-wrapper">
-<div class="container py-5">
 
     <?php if ($role === 'admin' || $role === 'assistant_admin') : ?>
     <!-- ==================== ADMIN ==================== -->
+    <div class="adm-page">
+
+        <!-- Sidebar -->
+        <div class="adm-sidebar">
+            <div class="adm-sidebar-user">
+                <div class="adm-sidebar-avatar"><i class="bi bi-person-circle"></i></div>
+                <div>
+                    <div class="adm-sidebar-name"><?= esc($name) ?></div>
+                    <div class="adm-sidebar-role"><?= $role === 'assistant_admin' ? 'Assistant Admin' : 'Admin' ?></div>
+                </div>
+            </div>
+            <hr class="adm-sidebar-divider">
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item active">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <?php if ($role === 'admin'): ?>
+            <a href="<?= site_url('/admin/patients/list') ?>" class="adm-nav-item">
+                <i class="bi bi-people-fill"></i> Manage Users
+            </a>
+            <a href="<?= site_url('/admin/patients') ?>" class="adm-nav-item">
+                <i class="bi bi-folder2-open"></i> Patient Records
+            </a>
+            <a href="<?= site_url('/admin/patients/add') ?>" class="adm-nav-item">
+                <i class="bi bi-person-plus"></i> Add Patient
+            </a>
+            <?php else: ?>
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
+                <i class="bi bi-people-fill"></i> Manage Users
+            </a>
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
+                <i class="bi bi-folder2-open"></i> Patient Records
+            </a>
+            <?php endif; ?>
+        </div>
+
+        <!-- Main Content -->
+        <div class="adm-main-content">
     <div class="adm-wrapper">
 
     <!-- Welcome Banner -->
@@ -135,141 +171,6 @@ $name = session('user_name') ?? 'User';
         </div>
     </div>
 
-    <!-- Quick Access -->
-    <div class="adm-section-label mb-3">Quick Access</div>
-    <div class="row g-3">
-        <?php if ($role === 'admin'): ?>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
-                <div class="adm-card-tag">Users</div>
-                <div class="adm-card-title">Manage Users</div>
-                <div class="adm-card-desc">Add, edit, or remove system users and assign their roles.</div>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-filled">Open</a>
-            </div>
-        </div>
-        <?php else: ?>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
-                <div class="adm-card-tag">Users</div>
-                <div class="adm-card-title">Manage Users</div>
-                <div class="adm-card-desc">Add, edit, or remove system users and assign their roles.</div>
-                <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-            </div>
-        </div>
-        <?php endif; ?>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-folder2-open"></i></div>
-                <div class="adm-card-tag">Patients</div>
-                <div class="adm-card-title">Patient Records</div>
-                <div class="adm-card-desc">Browse all registered patient profiles and appointment history.</div>
-                <?php if ($role === 'admin'): ?>
-                    <a href="<?= site_url('/admin/patients') ?>" class="adm-btn adm-btn-outline">Open</a>
-                <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-                <?php endif; ?>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-bar-chart-line"></i></div>
-                <div class="adm-card-tag">Reports</div>
-                <div class="adm-card-title">Clinic Reports</div>
-                <div class="adm-card-desc">View statistics and generate reports on clinic activity.</div>
-                <?php if ($role === 'admin'): ?>
-                    <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">View Records</a>
-                <?php else: ?>
-                    <button class="adm-btn adm-btn-disabled" disabled>No Access</button>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php if ($role === 'admin'): ?>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#d4edda;color:#155724;"><i class="bi bi-key-fill"></i></div>
-                <div class="adm-card-tag">Security</div>
-                <div class="adm-card-title">Clinic Settings</div>
-                <div class="adm-card-desc">Manage clinic access code for role selection screen.</div>
-                <a href="<?= site_url('/admin/settings') ?>" class="adm-btn adm-btn-outline">Open</a>
-            </div>
-        </div>
-        <?php endif; ?>
-        <?php if ($role === 'assistant_admin'): ?>
-        <div class="col-md-4">
-            <div class="adm-card">
-                <div class="adm-card-icon" style="background:#f5f3ff;color:#6d28d9;"><i class="bi bi-chat-dots-fill"></i></div>
-                <div class="adm-card-tag">Messaging</div>
-                <div class="adm-card-title">Chat with Clinic</div>
-                <div class="adm-card-desc">Send messages to doctors or clinic staff directly from your dashboard.</div>
-                <button class="adm-btn adm-btn-outline" onclick="openChat()" style="border-color:#c4b5fd;color:#6d28d9;">Open Chat</button>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-
-    <?php if ($role === 'admin'): ?>
-    <!-- Compact List Sections for Admin -->
-    <div class="row g-3 mt-2">
-        <div class="col-lg-4">
-            <div class="aa-list-panel">
-                <div class="aa-list-header"><i class="bi bi-people-fill me-2"></i>Patient Management</div>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-list-ul"></i></span>
-                    <span class="aa-list-label">View Patient List</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-                <a href="<?= site_url('/admin/patients/add') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-plus-fill"></i></span>
-                    <span class="aa-list-label">Add New Patient</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-pencil-square"></i></span>
-                    <span class="aa-list-label">Edit Patient Details</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="aa-list-panel">
-                <div class="aa-list-header"><i class="bi bi-journal-medical me-2"></i>Medical Records</div>
-                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#e0f0ff;color:#1e5a9e;"><i class="bi bi-journal-medical"></i></span>
-                    <span class="aa-list-label">Patient History</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-                <a href="<?= site_url('/admin/patients/history') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#d8eef8;color:#164a6e;"><i class="bi bi-calendar2-check"></i></span>
-                    <span class="aa-list-label">Previous Appointments</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="aa-list-panel">
-                <div class="aa-list-header"><i class="bi bi-person-badge me-2"></i>Doctor / Staff Info</div>
-                <a href="<?= site_url('/admin/doctors') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-person-badge"></i></span>
-                    <span class="aa-list-label">List of Doctors</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-                <a href="<?= site_url('/admin/doctors/specialization') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-heart-pulse"></i></span>
-                    <span class="aa-list-label">Specialization</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-                <a href="<?= site_url('/admin/doctors/schedule') ?>" class="aa-list-item">
-                    <span class="aa-list-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-clock-history"></i></span>
-                    <span class="aa-list-label">Availability Schedule</span>
-                    <i class="bi bi-chevron-right aa-list-arrow"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- Notifications Section -->
     <div class="adm-section-label mt-4 mb-3"><i class="bi bi-bell me-1"></i> Notifications &amp; Alerts</div>
     <div class="row g-3">
@@ -287,6 +188,8 @@ $name = session('user_name') ?? 'User';
     </div>
 
     </div><!-- end adm-wrapper -->
+        </div><!-- end adm-main-content -->
+    </div><!-- end adm-page -->
 
     <?php elseif ($role === 'secretary') : ?>
     <!-- ==================== SECRETARY ==================== -->
@@ -751,8 +654,7 @@ $name = session('user_name') ?? 'User';
     </div>
     <?php endif; ?>
 
-</div>
-</div>
+</div><!-- end dashboard-wrapper -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -1116,6 +1018,7 @@ $name = session('user_name') ?? 'User';
 
     .dashboard-wrapper {
         min-height: calc(100vh - 60px);
+        overflow-x: hidden;
     }
 
     /* ── Welcome Banner ── */
@@ -1593,6 +1496,72 @@ $name = session('user_name') ?? 'User';
     .sec2-btn-filled:hover:not(:disabled)  { background:#245228; box-shadow:0 4px 14px rgba(46,92,50,0.35); transform:translateY(-1px); }
     .sec2-btn-outline { background:#f4f9f4; color:#2e5c32; border:1.5px solid #a5d6a7 !important; }
     .sec2-btn-outline:hover:not(:disabled) { background:#e8f5e9; border-color:#81c784 !important; transform:translateY(-1px); }
+
+    /* Admin sidebar layout */
+    .adm-page {
+        display: flex;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: -3rem;
+        min-height: calc(100vh - 60px);
+        background: #edf2f7;
+        overflow-x: hidden;
+    }
+    .adm-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; overflow: hidden; }
+    .adm-wrapper { width: 100%; }
+        width: 260px;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
+    .adm-sidebar-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
+        border: 2px solid rgba(42,106,126,0.08);
+    }
+    .adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
+    .adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
+    .adm-nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 12px;
+        font-size: 0.92rem; font-weight: 500;
+        color: #2a6a7e; text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .adm-nav-item i { font-size: 1.15rem; }
+    .adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
+    .adm-nav-item.active {
+        background: #2a6a7e; color: #ffffff;
+        font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
+    }
 
     /* Sidebar layout */
     .doc-page {

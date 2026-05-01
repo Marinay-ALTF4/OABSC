@@ -17,12 +17,6 @@ $isPatientsPage = url_is('admin/patients*');
 
         <?php if ($role === 'admin') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= $isDashboardPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
-                        Dashboard
-                    </a>
-                </li>
-                
             </ul>
         <?php elseif ($role === 'assistant_admin') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
@@ -65,6 +59,10 @@ $isPatientsPage = url_is('admin/patients*');
                     <?= esc($roleLabel) ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end account-menu">
+                    <?php if ($role === 'admin' || $role === 'assistant_admin'): ?>
+                    <li><a class="dropdown-item" href="<?= site_url('/admin/settings') ?>"><i class="bi bi-key me-2"></i>Clinic Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php endif; ?>
                     <li><a class="dropdown-item" href="<?= site_url('/settings') ?>">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="<?= site_url('/logout') ?>">Logout</a></li>
@@ -102,6 +100,8 @@ $isPatientsPage = url_is('admin/patients*');
         background: #ffffff !important;
         border-bottom: 1px solid #dbe4ef !important;
         box-shadow: 0 1px 10px rgba(15,23,42,0.08) !important;
+        position: relative;
+        z-index: 1050;
     }
     .navbar-brand span {
         font-weight: 700;
