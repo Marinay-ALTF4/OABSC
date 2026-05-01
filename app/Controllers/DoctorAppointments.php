@@ -35,7 +35,7 @@ class DoctorAppointments extends BaseController
         $appointments = array_filter($allAppts, function($appt) use ($doctorName, $doctorId) {
             return ($appt['doctor_name'] === $doctorName) ||
                    ((int)($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
-        });
+        }); 
         $appointments = array_values($appointments);
 
         // Apply date filter

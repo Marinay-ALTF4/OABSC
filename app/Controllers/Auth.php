@@ -230,8 +230,16 @@ class Auth extends BaseController
 
     public function logout()
     {
-        session()->destroy();
+        // Revoke access requests on logout for assistant_admin
+        if (session('user_role') === 'assistant_admin') {
+            $arModel = new \App\Models\AccessRequestModel();
+            $uid = (int) (session('assistant_user_id') ?: session('user_id'));
+            $arModel->where('user_id', $uid)
+                    ->whereIn('status', ['approved', 'pending'])
+                    ->delete();
+        }
 
+        session()->destroy();
         return redirect()->to('/login');
     }
 

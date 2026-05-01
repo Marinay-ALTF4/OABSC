@@ -277,14 +277,13 @@ $isPatientsPage = url_is('admin/patients*');
 
 <script>
 (function() {
-    const STORAGE_KEY = 'oabsc_notifications_read';
-
-    const defaultNotifs = <?= json_encode(array_map(function($n) {
+    let defaultNotifs = <?= json_encode(array_map(function($n) {
         $typeMap = [
             'appointment' => ['icon' => 'bi-calendar-check', 'color' => '#10b981', 'bg' => '#f0fdf4'],
             'info'        => ['icon' => 'bi-info-circle',    'color' => '#3b82f6', 'bg' => '#eff6ff'],
             'warning'     => ['icon' => 'bi-exclamation-triangle', 'color' => '#f59e0b', 'bg' => '#fffbeb'],
             'error'       => ['icon' => 'bi-x-circle',       'color' => '#ef4444', 'bg' => '#fff1f2'],
+            'request'     => ['icon' => 'bi-key',            'color' => '#8b5cf6', 'bg' => '#f5f3ff'],
         ];
         $style = $typeMap[$n['type']] ?? $typeMap['info'];
         return [
@@ -300,103 +299,73 @@ $isPatientsPage = url_is('admin/patients*');
         ];
     }, $notifications ?? []), JSON_UNESCAPED_UNICODE) ?>;
 
-    function getReadIds() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
-    }
-    function saveReadIds(ids) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
-    }
-
-    function renderNotifItem(n, isRead) {
+    function renderNotifItem(n) {
         return `
-        <div class="notif-item ${isRead ? 'notif-read' : ''}" id="notif-item-${n.id}" onclick="openNotification(${n.id})">
-            <div class="notif-item-icon" style="background:${n.bg};color:${n.color};">
+        <div class="notif-item ${n.read ? 'notif-read' : ''}" id="notif-item-${n.id}">
+            <div class="notif-item-icon" style="background:${n.bg};color:${n.color};" onclick="openNotification(${n.id})">
                 <i class="bi ${n.icon}"></i>
             </div>
-            <div class="notif-item-body">
-                <div class="notif-item-title">${n.title}${!isRead ? '<span class="notif-unread-dot"></span>' : ''}</div>
+            <div class="notif-item-body" onclick="openNotification(${n.id})" style="cursor:pointer;">
+                <div class="notif-item-title">${n.title}${!n.read ? '<span class="notif-unread-dot"></span>' : ''}</div>
                 <div class="notif-item-text">${n.body}</div>
                 <div class="notif-item-time">${n.time}</div>
             </div>
             <div class="notif-item-action">
-                <button type="button" class="notif-item-btn" onclick="event.stopPropagation(); openNotification(${n.id})">View</button>
+                <button type="button" class="notif-item-btn" onclick="openNotification(${n.id})">View</button>
+                <button type="button" class="notif-item-btn ms-1" style="background:#ef4444;" onclick="deleteNotification(${n.id})"><i class="bi bi-trash"></i></button>
             </div>
         </div>`;
     }
 
+    function getUnreadCount() {
+        return defaultNotifs.filter(n => !n.read).length;
+    }
+
     function renderAll() {
-        const readIds = getReadIds();
-        const unread  = defaultNotifs.filter(n => !readIds.includes(n.id));
+        const unreadCount = getUnreadCount();
 
         // Bell dot
         const dot = document.getElementById('notif-dot');
-        if (dot) { unread.length > 0 ? dot.classList.remove('d-none') : dot.classList.add('d-none'); }
+        if (dot) { unreadCount > 0 ? dot.classList.remove('d-none') : dot.classList.add('d-none'); }
 
-        // Dropdown list
-        const ddList = document.getElementById('notif-dropdown-list');
-        if (ddList) {
-            ddList.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
-        }
+        const html = defaultNotifs.length
+            ? defaultNotifs.map(n => renderNotifItem(n)).join('')
+            : '<div class="text-center text-muted py-3" style="font-size:0.82rem;">No notifications</div>';
 
-        // Dashboard panel (client)
-        const panel = document.getElementById('notif-list');
-        if (panel) {
-            panel.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
-        }
-
-        // Dashboard panel (admin)
-        const panelAdm = document.getElementById('notif-list-adm');
-        if (panelAdm) {
-            panelAdm.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
-        }
-
-        // Dashboard panel (secretary)
-        const panelSec = document.getElementById('notif-list-sec');
-        if (panelSec) {
-            panelSec.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
-        }
-
-        // Dashboard panel (doctor)
-        const panelDoc = document.getElementById('notif-list-doc');
-        if (panelDoc) {
-            panelDoc.innerHTML = defaultNotifs.map(n => renderNotifItem(n, readIds.includes(n.id))).join('');
-        }
-
-        // Count label (client)
-        const label = document.getElementById('notif-count-label');
-        if (label) {
-            label.textContent = unread.length > 0
-                ? `${unread.length} unread notification${unread.length > 1 ? 's' : ''}`
-                : 'All caught up!';
-        }
-
-        // Count labels (other roles)
-        ['notif-count-label-adm', 'notif-count-label-sec', 'notif-count-label-doc'].forEach(id => {
+        ['notif-dropdown-list','notif-list','notif-list-adm','notif-list-sec','notif-list-doc'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) {
-                el.textContent = unread.length > 0
-                    ? `${unread.length} unread notification${unread.length > 1 ? 's' : ''}`
-                    : 'All caught up!';
-            }
+            if (el) el.innerHTML = html;
+        });
+
+        const countText = unreadCount > 0
+            ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
+            : 'All caught up!';
+        ['notif-count-label','notif-count-label-adm','notif-count-label-sec','notif-count-label-doc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = countText;
         });
     }
 
-    window.markOneRead = function(id) {
-        const readIds = getReadIds();
-        if (!readIds.includes(id)) { readIds.push(id); saveReadIds(readIds); renderAll(); }
-    };
-
     window.openNotification = function(id) {
-        markOneRead(id);
-        const notif = defaultNotifs.find(n => n.id === id);
+        id = parseInt(id);
+        const notif = defaultNotifs.find(n => parseInt(n.id) === id);
         if (!notif) return;
+
+        // Mark as read in DB
+        if (!notif.read) {
+            notif.read = true;
+            fetch('<?= site_url('/notifications/mark-all-read') ?>', {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'}
+            });
+            renderAll();
+        }
 
         const modal = document.getElementById('notif-modal');
         if (!modal) return;
-
         document.getElementById('notif-modal-title').textContent = notif.title;
-        document.getElementById('notif-modal-time').textContent = notif.time;
-        document.getElementById('notif-modal-body').textContent = notif.body;
+        document.getElementById('notif-modal-time').textContent  = notif.time;
+        document.getElementById('notif-modal-body').textContent  = notif.body;
         modal.classList.remove('d-none');
     };
 
@@ -406,17 +375,31 @@ $isPatientsPage = url_is('admin/patients*');
     };
 
     window.markAllRead = function() {
-        saveReadIds(defaultNotifs.map(n => n.id));
-        // Also mark as read in DB
+        defaultNotifs.forEach(n => n.read = true);
         fetch('<?= site_url('/notifications/mark-all-read') ?>', {
             method: 'POST',
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
-            body: JSON.stringify({csrf: '<?= csrf_hash() ?>'})
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'}
         });
         renderAll();
     };
 
     window.markAllReadAdm = window.markAllReadSec = window.markAllReadDoc = window.markAllRead;
+
+    window.deleteNotification = function(id) {
+        id = parseInt(id);
+        const formData = new FormData();
+        formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+        fetch(`<?= site_url('/notifications/delete/') ?>${id}`, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            body: formData
+        }).then(res => {
+            if (res.ok) {
+                defaultNotifs = defaultNotifs.filter(n => parseInt(n.id) !== id);
+                renderAll();
+            }
+        });
+    };
 
     window.toggleNotifDropdown = function() {
         const dd = document.getElementById('notif-dropdown');

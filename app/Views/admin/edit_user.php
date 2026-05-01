@@ -80,6 +80,7 @@ if (! is_array($errors)) {
                     <?php endif; ?>
                 </div>
 
+                <?php if (($user['role'] ?? '') !== 'assistant_admin'): ?>
                 <div class="mb-3">
                     <label for="password" class="form-label">New Password (Optional)</label>
                     <input
@@ -110,6 +111,7 @@ if (! is_array($errors)) {
                         <div class="invalid-feedback"><?= esc($errors['password_confirm']) ?></div>
                     <?php endif; ?>
                 </div>
+                <?php endif; ?>
 
                 <?php if (in_array($user['role'] ?? '', ['admin', 'assistant_admin', 'assistant_secretary'])): ?>
                 <hr>
