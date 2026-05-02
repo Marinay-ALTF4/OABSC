@@ -89,7 +89,7 @@ class AppDrawer extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: (roleName.toLowerCase().contains('secretary') 
+                      color: (roleName.toLowerCase().contains('secretary') || roleName.toLowerCase().contains('doctor')
                           ? const Color(0xFF166534) 
                           : AppColors.accent).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
@@ -99,7 +99,7 @@ class AppDrawer extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: roleName.toLowerCase().contains('secretary') 
+                        color: roleName.toLowerCase().contains('secretary') || roleName.toLowerCase().contains('doctor')
                             ? const Color(0xFF166534) 
                             : AppColors.accent,
                         letterSpacing: 1.2,
@@ -144,7 +144,7 @@ class AppDrawer extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isActive
-                                ? (roleName.toLowerCase().contains('secretary') 
+                                ? (roleName.toLowerCase().contains('secretary') || roleName.toLowerCase().contains('doctor')
                                     ? const Color(0xFF166534) 
                                     : AppColors.accent)
                                 : Colors.transparent,
