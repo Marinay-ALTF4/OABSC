@@ -5,10 +5,19 @@ import '../../widgets/quick_access_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
 import '../../services/auth_service.dart';
+import 'book_appointment_view.dart';
+import 'my_appointments_view.dart';
 
-/// Client Dashboard screen matching Screenshot 4
-class ClientDashboardScreen extends StatelessWidget {
+/// Client Dashboard screen with sub-views
+class ClientDashboardScreen extends StatefulWidget {
   const ClientDashboardScreen({super.key});
+
+  @override
+  State<ClientDashboardScreen> createState() => _ClientDashboardScreenState();
+}
+
+class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
+  String _currentView = 'dashboard';
 
   @override
   Widget build(BuildContext context) {
@@ -131,78 +140,101 @@ class ClientDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome banner
-            const WelcomeBanner(
-              panelLabel: 'PATIENT PORTAL',
-              title: 'Welcome, Client',
-              subtitle:
-                  'From here you can request or review your appointments.',
-            ),
-            const SizedBox(height: AppSpacing.xl),
+      body: _buildBody(),
+    );
+  }
 
-            // Quick Access section label
-            const Text(
-              'QUICK ACCESS',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+  Widget _buildBody() {
+    switch (_currentView) {
+      case 'dashboard':
+        return _buildDashboard();
+      case 'book_appointment':
+        return BookAppointmentView(
+          onBack: () => setState(() => _currentView = 'dashboard'),
+          onViewAppointments: () => setState(() => _currentView = 'my_appointments'),
+        );
+      case 'my_appointments':
+        return MyAppointmentsView(
+          onBack: () => setState(() => _currentView = 'dashboard'),
+          onBookNew: () => setState(() => _currentView = 'book_appointment'),
+        );
+      default:
+        return _buildDashboard();
+    }
+  }
 
-            // Quick access cards
-            QuickAccessCard(
-              categoryLabel: 'BOOK',
-              title: 'New Appointment',
-              description:
-                  'Choose your doctor, date, and time that works best for you.',
-              buttonText: 'Book Appointment',
-              icon: Icons.calendar_today_outlined,
-              iconColor: AppColors.accentLight,
-              iconBgColor: AppColors.iconBlueBg,
-              isPrimary: true,
-              onButtonTap: () {},
-            ),
-            const SizedBox(height: AppSpacing.md),
+  Widget _buildDashboard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Welcome banner
+          const WelcomeBanner(
+            panelLabel: 'PATIENT PORTAL',
+            title: 'Welcome, Client',
+            subtitle:
+                'From here you can request or review your appointments.',
+          ),
+          const SizedBox(height: AppSpacing.xl),
 
-            QuickAccessCard(
-              categoryLabel: 'MY VISITS',
-              title: 'My Appointments',
-              description:
-                  'View or cancel your upcoming visits and see past appointments.',
-              buttonText: 'View Appointments',
-              icon: Icons.assignment_outlined,
-              iconColor: const Color(0xFF10B981),
-              iconBgColor: AppColors.iconGreenBg,
-              onButtonTap: () {},
+          // Quick Access section label
+          const Text(
+            'QUICK ACCESS',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+              letterSpacing: 1.2,
             ),
-            const SizedBox(height: AppSpacing.md),
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-            QuickAccessCard(
-              categoryLabel: 'MESSAGING',
-              title: 'Chat with Clinic',
-              description:
-                  'Ask questions or send a message to your doctor or clinic staff before your visit.',
-              buttonText: 'Open Chat',
-              icon: Icons.chat_bubble_outline_rounded,
-              iconColor: const Color(0xFF8B5CF6),
-              iconBgColor: const Color(0xFFF3E8FF),
-              onButtonTap: () {},
-            ),
-            const SizedBox(height: AppSpacing.xxl),
+          // Quick access cards
+          QuickAccessCard(
+            categoryLabel: 'BOOK',
+            title: 'New Appointment',
+            description:
+                'Choose your doctor, date, and time that works best for you.',
+            buttonText: 'Book Appointment',
+            icon: Icons.calendar_today_outlined,
+            iconColor: AppColors.accentLight,
+            iconBgColor: AppColors.iconBlueBg,
+            isPrimary: true,
+            onButtonTap: () => setState(() => _currentView = 'book_appointment'),
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-            // Notifications section
-            const NotificationSection(),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-        ),
+          QuickAccessCard(
+            categoryLabel: 'MY VISITS',
+            title: 'My Appointments',
+            description:
+                'View or cancel your upcoming visits and see past appointments.',
+            buttonText: 'View Appointments',
+            icon: Icons.assignment_outlined,
+            iconColor: const Color(0xFF10B981),
+            iconBgColor: AppColors.iconGreenBg,
+            onButtonTap: () => setState(() => _currentView = 'my_appointments'),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          QuickAccessCard(
+            categoryLabel: 'MESSAGING',
+            title: 'Chat with Clinic',
+            description:
+                'Ask questions or send a message to your doctor or clinic staff before your visit.',
+            buttonText: 'Open Chat',
+            icon: Icons.chat_bubble_outline_rounded,
+            iconColor: const Color(0xFF8B5CF6),
+            iconBgColor: const Color(0xFFF3E8FF),
+            onButtonTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Notifications section
+          const NotificationSection(),
+          const SizedBox(height: AppSpacing.lg),
+        ],
       ),
     );
   }

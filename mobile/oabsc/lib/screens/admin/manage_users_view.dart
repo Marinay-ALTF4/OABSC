@@ -70,6 +70,16 @@ class ManageUsersView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                   ),
+                  OutlinedButton.icon(
+                    onPressed: () {}, // Handled by parent view typically
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: const Text('Back'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.border),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
                 ],
               ),
             ],

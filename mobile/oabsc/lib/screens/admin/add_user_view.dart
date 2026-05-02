@@ -16,29 +16,32 @@ class AddUserView extends StatelessWidget {
           // Header row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Add User',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Add User',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Register a new user account and assign their role.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary.withValues(alpha: 0.8),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Register a new user account and assign their role.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary.withValues(alpha: 0.8),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               OutlinedButton.icon(
                 onPressed: onBack,
                 icon: const Icon(Icons.arrow_back, size: 16),
@@ -79,6 +82,7 @@ class AddUserView extends StatelessWidget {
                       hintText: 'Enter full name',
                       prefixIcon: const Icon(Icons.person_outline, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -89,6 +93,7 @@ class AddUserView extends StatelessWidget {
                       hintText: 'Enter email address',
                       prefixIcon: const Icon(Icons.email_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -98,12 +103,14 @@ class AddUserView extends StatelessWidget {
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.shield_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                     hint: const Text('— Select Role —'),
                     items: const [
                       DropdownMenuItem(value: 'admin', child: Text('Admin')),
                       DropdownMenuItem(value: 'doctor', child: Text('Doctor')),
                       DropdownMenuItem(value: 'secretary', child: Text('Secretary')),
+                      DropdownMenuItem(value: 'client', child: Text('Client')),
                     ],
                     onChanged: (val) {},
                   ),
@@ -117,6 +124,7 @@ class AddUserView extends StatelessWidget {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -129,6 +137,7 @@ class AddUserView extends StatelessWidget {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxxl),

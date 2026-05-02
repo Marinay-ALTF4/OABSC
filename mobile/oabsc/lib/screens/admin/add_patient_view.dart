@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
-class AddRoleView extends StatelessWidget {
+class AddPatientView extends StatelessWidget {
   final VoidCallback onBack;
 
-  const AddRoleView({super.key, required this.onBack});
+  const AddPatientView({super.key, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class AddRoleView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Add Role',
+                      'Add Patient',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
@@ -32,7 +32,7 @@ class AddRoleView extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Add an Assistant Admin or Assistant Secretary.',
+                      'Register a new patient account.',
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary.withValues(alpha: 0.8),
@@ -45,7 +45,7 @@ class AddRoleView extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onBack,
                 icon: const Icon(Icons.arrow_back, size: 16),
-                label: const Text('Back to List'),
+                label: const Text('Back'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textPrimary,
                   side: const BorderSide(color: AppColors.border),
@@ -82,63 +82,44 @@ class AddRoleView extends StatelessWidget {
                       hintText: 'Enter full name',
                       prefixIcon: const Icon(Icons.person_outline, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  _buildLabel('Email Address (for records only)'),
+                  _buildLabel('Email Address'),
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Enter email',
+                      hintText: 'Enter email address',
                       prefixIcon: const Icon(Icons.email_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  _buildLabel('Role'),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.shield_outlined, size: 20),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    hint: const Text('— Select Role —'),
-                    items: const [
-                      DropdownMenuItem(value: 'assistant_admin', child: Text('Assistant Admin')),
-                      DropdownMenuItem(value: 'assistant_secretary', child: Text('Assistant Secretary')),
-                    ],
-                    onChanged: (val) {},
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _buildLabel('Role Password'),
+                  _buildLabel('Password'),
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: 'Min. 8 characters',
+                      hintText: 'At least 8 characters',
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'This will be used during the role selection screen.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textSecondary.withValues(alpha: 0.8),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  _buildLabel('Confirm Role Password'),
+                  _buildLabel('Confirm Password'),
                   TextField(
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: 'Confirm password',
+                      hintText: 'Re-enter password',
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxxl),
@@ -149,7 +130,7 @@ class AddRoleView extends StatelessWidget {
                       ElevatedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.check, size: 16),
-                        label: const Text('Add Role'),
+                        label: const Text('Add Patient'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),

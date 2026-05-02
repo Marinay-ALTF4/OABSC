@@ -9,6 +9,7 @@ import 'manage_users_view.dart';
 import 'add_user_view.dart';
 import 'add_role_view.dart';
 import 'patient_records_view.dart';
+import 'add_patient_view.dart';
 
 /// Admin Dashboard screen matching Screenshot 3
 class AdminDashboardScreen extends StatefulWidget {
@@ -139,7 +140,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           onBackToDashboard: () => setState(() => _currentView = 'dashboard'),
         );
       case 'add_patient':
-        return const Center(child: Text('Add Patient Screen'));
+        return AddPatientView(
+          onBack: () => setState(() => _currentView = 'patient_records'),
+        );
       default:
         return _buildDashboard();
     }
