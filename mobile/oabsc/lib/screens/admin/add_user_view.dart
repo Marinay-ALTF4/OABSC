@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -35,8 +36,8 @@ class _AddUserViewState extends State<AddUserView> {
   }
 
   bool _isValidPHPhone(String phone) {
-    // Matches 09XXXXXXXXX or +639XXXXXXXXX
-    final regExp = RegExp(r'^(09|\+639)\d{9}$');
+    // Matches exactly 11 digits starting with 09
+    final regExp = RegExp(r'^09\d{9}$');
     return regExp.hasMatch(phone);
   }
 
@@ -204,6 +205,10 @@ class _AddUserViewState extends State<AddUserView> {
                   TextField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(11),
+                    ],
                     decoration: InputDecoration(
                       hintText: 'e.g., 09123456789',
                       prefixIcon: const Icon(Icons.phone_android_outlined, size: 20),
