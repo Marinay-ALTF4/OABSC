@@ -5,6 +5,7 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
+import 'manage_appointments_view.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -55,29 +56,44 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         ],
       ),
       drawer: AppDrawer(roleName: 'Secretary', menuItems: _menuItems, activeIndex: _activeNavIndex),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const WelcomeBanner(panelLabel: 'SECRETARY PANEL', title: 'Welcome back, Secretary', subtitle: 'Here is your front-desk overview for today.'),
-            const SizedBox(height: 20),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final cols = constraints.maxWidth > 500 ? 4 : 2;
-                final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
-                return Wrap(spacing: 12, runSpacing: 12, children: [
-                  SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: "TODAY'S APPOINTMENTS")),
-                  SizedBox(width: w, child: const StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: '0', label: 'PENDING REQUESTS')),
-                  SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '1', label: 'TOTAL PATIENTS')),
-                  SizedBox(width: w, child: const StatCard(icon: Icons.medical_services_outlined, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'DOCTORS ON DUTY')),
-                ]);
-              },
-            ),
-            const SizedBox(height: 24),
-            const NotificationSection(),
-          ],
-        ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    switch (_activeNavIndex) {
+      case 0:
+        return _buildDashboard();
+      case 1:
+        return const ManageAppointmentsView();
+      default:
+        return _buildDashboard();
+    }
+  }
+
+  Widget _buildDashboard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const WelcomeBanner(panelLabel: 'SECRETARY PANEL', title: 'Welcome back, Secretary', subtitle: 'Here is your front-desk overview for today.'),
+          const SizedBox(height: 20),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cols = constraints.maxWidth > 500 ? 4 : 2;
+              final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
+              return Wrap(spacing: 12, runSpacing: 12, children: [
+                SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: "TODAY'S APPOINTMENTS")),
+                SizedBox(width: w, child: const StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: '0', label: 'PENDING REQUESTS')),
+                SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '1', label: 'TOTAL PATIENTS')),
+                SizedBox(width: w, child: const StatCard(icon: Icons.medical_services_outlined, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'DOCTORS ON DUTY')),
+              ]);
+            },
+          ),
+          const SizedBox(height: 24),
+          const NotificationSection(),
+        ],
       ),
     );
   }
