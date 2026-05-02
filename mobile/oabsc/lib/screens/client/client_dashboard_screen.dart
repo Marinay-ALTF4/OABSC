@@ -7,6 +7,7 @@ import '../../widgets/notification_section.dart';
 import '../../services/auth_service.dart';
 import 'book_appointment_view.dart';
 import 'my_appointments_view.dart';
+import 'profile_settings_view.dart';
 
 /// Client Dashboard screen with sub-views
 class ClientDashboardScreen extends StatefulWidget {
@@ -113,16 +114,18 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
                     (route) => false,
                   );
                 }
+              } else if (value == 'settings') {
+                setState(() => _currentView = 'settings');
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
-                value: 'profile',
+                value: 'settings',
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline, size: 18),
+                    Icon(Icons.settings_outlined, size: 18),
                     SizedBox(width: 8),
-                    Text('Profile'),
+                    Text('Settings'),
                   ],
                 ),
               ),
@@ -158,6 +161,10 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
           onBack: () => setState(() => _currentView = 'dashboard'),
           onBookNew: () => setState(() => _currentView = 'book_appointment'),
         );
+      case 'settings':
+        return ProfileSettingsView(
+          onBack: () => setState(() => _currentView = 'dashboard'),
+        );
       default:
         return _buildDashboard();
     }
@@ -175,6 +182,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
             title: 'Welcome, Client',
             subtitle:
                 'From here you can request or review your appointments.',
+            illustrationPath: 'lib/images/doctor-dashboard-illustration.svg',
           ),
           const SizedBox(height: AppSpacing.xl),
 
