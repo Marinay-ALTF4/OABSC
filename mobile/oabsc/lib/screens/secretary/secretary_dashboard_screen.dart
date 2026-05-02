@@ -9,6 +9,7 @@ import 'manage_appointments_view.dart';
 import 'patient_queue_view.dart';
 import 'patient_records_view.dart';
 import 'register_patient_view.dart';
+import 'doctor_schedules_view.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -75,6 +76,8 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         return const PatientRecordsView();
       case 4:
         return const RegisterPatientView();
+      case 5:
+        return const DoctorSchedulesView();
       default:
         return _buildDashboard();
     }
