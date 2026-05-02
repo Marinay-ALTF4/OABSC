@@ -560,4 +560,115 @@ class Api extends BaseController
             'users' => $users,
         ]);
     }
+
+    /**
+     * POST /api/admin/users/add
+     * Add a new user (for admin).
+     */
+    public function addUser()
+    {
+        if (! $this->request instanceof IncomingRequest) {
+            return $this->failServerError('Invalid request object.');
+        }
+
+        $json = $this->request->getJSON(true);
+        $name             = $json['name']             ?? $this->request->getPost('name');
+        $email            = $json['email']            ?? $this->request->getPost('email');
+        $role             = $json['role']             ?? $this->request->getPost('role');
+        $password         = $json['password']         ?? $this->request->getPost('password');
+        $passwordConfirm  = $json['password_confirm'] ?? $this->request->getPost('password_confirm');
+
+        $this->request->setGlobal('post', [
+            'name'             => $name,
+            'email'            => $email,
+            'role'             => $role,
+            'password'         => $password,
+            'password_confirm' => $passwordConfirm,
+        ]);
+
+        $rules = [
+            'name'             => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
+            'email'            => 'required|valid_email|is_unique[users.email]',
+            'role'             => 'required|in_list[admin,assistant_admin,client,secretary,doctor]',
+            'password'         => 'required|min_length[8]',
+            'password_confirm' => 'required|matches[password]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $userModel = new UserModel();
+        $userId = $userModel->insert([
+            'name'          => trim((string) $name),
+            'email'         => strtolower(trim((string) $email)),
+            'role'          => (string) $role,
+            'password_hash' => password_hash((string) $password, PASSWORD_DEFAULT),
+        ]);
+
+        if (! $userId) {
+            return $this->failServerError('Unable to add user.');
+        }
+
+        return $this->respondCreated([
+            'message' => 'User added successfully.',
+            'user_id' => $userId,
+        ]);
+    }
+
+    /**
+     * POST /api/admin/roles/add
+     * Add a new role (assistant_admin/assistant_secretary).
+     */
+    public function addRole()
+    {
+        if (! $this->request instanceof IncomingRequest) {
+            return $this->failServerError('Invalid request object.');
+        }
+
+        $json = $this->request->getJSON(true);
+        $name                = $json['name']                ?? $this->request->getPost('name');
+        $email               = $json['email']               ?? $this->request->getPost('email');
+        $role                = $json['role']                ?? $this->request->getPost('role');
+        $rolePassword        = $json['role_password']       ?? $this->request->getPost('role_password');
+        $rolePasswordConfirm = $json['role_password_confirm'] ?? $this->request->getPost('role_password_confirm');
+
+        $this->request->setGlobal('post', [
+            'name'                  => $name,
+            'email'                 => $email,
+            'role'                  => $role,
+            'role_password'         => $rolePassword,
+            'role_password_confirm' => $rolePasswordConfirm,
+        ]);
+
+        $rules = [
+            'name'                  => 'required|min_length[3]',
+            'email'                 => 'required|valid_email|is_unique[users.email]',
+            'role'                  => 'required|in_list[assistant_admin,assistant_secretary]',
+            'role_password'         => 'required|min_length[8]',
+            'role_password_confirm' => 'required|matches[role_password]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $userModel = new UserModel();
+        $userId = $userModel->insert([
+            'name'          => trim((string) $name),
+            'email'         => strtolower(trim((string) $email)),
+            'role'          => (string) $role,
+            'password_hash' => password_hash('unused_' . bin2hex(random_bytes(8)), PASSWORD_DEFAULT),
+            'role_password' => password_hash((string) $rolePassword, PASSWORD_DEFAULT),
+        ]);
+
+        if (! $userId) {
+            return $this->failServerError('Unable to add role.');
+        }
+
+        return $this->respondCreated([
+            'message' => 'Role added successfully.',
+            'user_id' => $userId,
+        ]);
+    }
 }

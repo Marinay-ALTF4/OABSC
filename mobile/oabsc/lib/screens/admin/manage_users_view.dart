@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 
-class ManageUsersView extends StatelessWidget {
+class ManageUsersView extends StatefulWidget {
   final VoidCallback onAddUser;
   final VoidCallback onAddRole;
 
@@ -10,6 +11,39 @@ class ManageUsersView extends StatelessWidget {
     required this.onAddUser,
     required this.onAddRole,
   });
+
+  @override
+  State<ManageUsersView> createState() => _ManageUsersViewState();
+}
+
+class _ManageUsersViewState extends State<ManageUsersView> {
+  final ApiService _apiService = ApiService();
+  List<dynamic> _users = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await _apiService.get('users');
+      if (response['success'] == true) {
+        setState(() {
+          _users = response['users'] ?? [];
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching users: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +86,7 @@ class ManageUsersView extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: onAddUser,
+                    onPressed: widget.onAddUser,
                     icon: const Icon(Icons.person_add_alt_1_outlined, size: 16),
                     label: const Text('Add User'),
                     style: ElevatedButton.styleFrom(
@@ -61,7 +95,7 @@ class ManageUsersView extends StatelessWidget {
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: onAddRole,
+                    onPressed: widget.onAddRole,
                     icon: const Icon(Icons.shield_outlined, size: 16),
                     label: const Text('Add Role'),
                     style: OutlinedButton.styleFrom(
@@ -70,15 +104,10 @@ class ManageUsersView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: () {}, // Handled by parent view typically
-                    icon: const Icon(Icons.arrow_back, size: 16),
-                    label: const Text('Back'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.border),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
+                  IconButton(
+                    onPressed: _fetchUsers,
+                    icon: const Icon(Icons.refresh, size: 20),
+                    tooltip: 'Refresh',
                   ),
                 ],
               ),
@@ -93,44 +122,56 @@ class ManageUsersView extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.border),
             ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: MediaQuery.of(context).size.width - (AppSpacing.lg * 2),
-                ),
-                child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(AppColors.background.withValues(alpha: 0.5)),
-                  dataRowMaxHeight: 65,
-                  dataRowMinHeight: 60,
-                  headingTextStyle: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 1.0,
-                  ),
-                  columns: const [
-                    DataColumn(label: Text('ID')),
-                    DataColumn(label: Text('NAME')),
-                    DataColumn(label: Text('EMAIL')),
-                    DataColumn(label: Text('ROLE')),
-                    DataColumn(label: Text('STATUS')),
-                    DataColumn(label: Text('REGISTERED')),
-                    DataColumn(label: Text('ACTIONS')),
-                  ],
-                  rows: [
-                    _buildUserRow(id: '8', name: 'Client', email: 'client@example.com', role: 'Client', date: '2026-05-02 02:56:40'),
-                    _buildUserRow(id: '7', name: 'Ramon Garcia', email: 'dr.garcia@example.com', role: 'Doctor', date: '2026-05-02 02:56:40'),
-                    _buildUserRow(id: '6', name: 'Ana Cruz', email: 'dr.cruz@example.com', role: 'Doctor', date: '2026-05-02 02:56:40'),
-                    _buildUserRow(id: '5', name: 'Jose Reyes', email: 'dr.reyes@example.com', role: 'Doctor', date: '2026-05-02 02:56:40'),
-                    _buildUserRow(id: '4', name: 'Maria Santos', email: 'dr.santos@example.com', role: 'Doctor', date: '2026-05-02 02:56:40'),
-                    _buildUserRow(id: '3', name: 'Doctor', email: 'doctor@example.com', role: 'Doctor', date: '2026-05-02 02:56:28'),
-                    _buildUserRow(id: '2', name: 'Secretary', email: 'secretary@example.com', role: 'Secretary', date: '2026-05-02 02:56:28'),
-                    _buildUserRow(id: '1', name: 'Admin', email: 'admin@example.com', role: 'Admin', date: '2026-05-02 02:56:28', isYou: true),
-                  ],
-                ),
-              ),
-            ),
+            child: _isLoading
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : _users.isEmpty
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(40.0),
+                          child: Text('No users found'),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width - (AppSpacing.lg * 2),
+                          ),
+                          child: DataTable(
+                            headingRowColor: WidgetStateProperty.all(AppColors.background.withValues(alpha: 0.5)),
+                            dataRowMaxHeight: 65,
+                            dataRowMinHeight: 60,
+                            headingTextStyle: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textSecondary,
+                              letterSpacing: 1.0,
+                            ),
+                            columns: const [
+                              DataColumn(label: Text('ID')),
+                              DataColumn(label: Text('NAME')),
+                              DataColumn(label: Text('EMAIL')),
+                              DataColumn(label: Text('ROLE')),
+                              DataColumn(label: Text('REGISTERED')),
+                              DataColumn(label: Text('ACTIONS')),
+                            ],
+                            rows: _users.map((user) {
+                              return _buildUserRow(
+                                id: user['id'].toString(),
+                                name: user['name'] ?? '',
+                                email: user['email'] ?? '',
+                                role: user['role'] ?? '',
+                                date: user['created_at'] ?? '',
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
           ),
         ],
       ),
@@ -147,7 +188,7 @@ class ManageUsersView extends StatelessWidget {
   }) {
     Color roleBgColor;
     Color roleTextColor;
-    
+
     switch (role.toLowerCase()) {
       case 'client':
         roleBgColor = const Color(0xFFDCFCE7); // Light green
@@ -164,6 +205,11 @@ class ManageUsersView extends StatelessWidget {
       case 'admin':
         roleBgColor = const Color(0xFFFEE2E2); // Light red
         roleTextColor = const Color(0xFF991B1B); // Dark red
+        break;
+      case 'assistant_admin':
+      case 'assistant_secretary':
+        roleBgColor = const Color(0xFFF3E8FF); // Light purple
+        roleTextColor = const Color(0xFF6B21A8); // Dark purple
         break;
       default:
         roleBgColor = AppColors.border;
@@ -204,28 +250,11 @@ class ManageUsersView extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              role,
+              role.replaceAll('_', ' ').toUpperCase(),
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
                 color: roleTextColor,
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'Active',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF166534),
               ),
             ),
           ),
@@ -235,29 +264,18 @@ class ManageUsersView extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              OutlinedButton.icon(
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.accentLight),
                 onPressed: () {},
-                icon: const Icon(Icons.edit_outlined, size: 14),
-                label: const Text('Edit'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.accentLight,
-                  side: BorderSide(color: AppColors.accentLight.withValues(alpha: 0.3)),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  minimumSize: const Size(0, 32),
-                ),
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
               ),
               const SizedBox(width: 8),
-              TextButton.icon(
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
                 onPressed: () {},
-                icon: const Icon(Icons.delete_outline, size: 14),
-                label: const Text('Delete'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFDC2626),
-                  backgroundColor: const Color(0xFFFEF2F2),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  minimumSize: const Size(0, 32),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
               ),
             ],
           ),

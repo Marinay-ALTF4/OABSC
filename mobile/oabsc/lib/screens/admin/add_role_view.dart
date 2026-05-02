@@ -1,10 +1,92 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 
-class AddRoleView extends StatelessWidget {
+class AddRoleView extends StatefulWidget {
   final VoidCallback onBack;
 
   const AddRoleView({super.key, required this.onBack});
+
+  @override
+  State<AddRoleView> createState() => _AddRoleViewState();
+}
+
+class _AddRoleViewState extends State<AddRoleView> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  String? _selectedRole;
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  final ApiService _apiService = ApiService();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _addRole() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (name.isEmpty || email.isEmpty || _selectedRole == null || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _apiService.post('admin/roles/add', body: {
+        'name': name,
+        'email': email,
+        'role': _selectedRole,
+        'role_password': password,
+        'role_password_confirm': confirmPassword,
+      });
+
+      if (mounted) {
+        if (response['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Role added successfully')),
+          );
+          widget.onBack();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response['message'] ?? 'Failed to add role')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +125,7 @@ class AddRoleView extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               OutlinedButton.icon(
-                onPressed: onBack,
+                onPressed: widget.onBack,
                 icon: const Icon(Icons.arrow_back, size: 16),
                 label: const Text('Back to List'),
                 style: OutlinedButton.styleFrom(
@@ -78,6 +160,7 @@ class AddRoleView extends StatelessWidget {
                 children: [
                   _buildLabel('Full Name'),
                   TextField(
+                    controller: _nameController,
                     decoration: InputDecoration(
                       hintText: 'Enter full name',
                       prefixIcon: const Icon(Icons.person_outline, size: 20),
@@ -88,6 +171,8 @@ class AddRoleView extends StatelessWidget {
 
                   _buildLabel('Email Address (for records only)'),
                   TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'Enter email',
                       prefixIcon: const Icon(Icons.email_outlined, size: 20),
@@ -98,6 +183,7 @@ class AddRoleView extends StatelessWidget {
 
                   _buildLabel('Role'),
                   DropdownButtonFormField<String>(
+                    value: _selectedRole,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.shield_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -107,17 +193,27 @@ class AddRoleView extends StatelessWidget {
                       DropdownMenuItem(value: 'assistant_admin', child: Text('Assistant Admin')),
                       DropdownMenuItem(value: 'assistant_secretary', child: Text('Assistant Secretary')),
                     ],
-                    onChanged: (val) {},
+                    onChanged: (val) {
+                      setState(() => _selectedRole = val);
+                    },
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
                   _buildLabel('Role Password'),
                   TextField(
-                    obscureText: true,
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Min. 8 characters',
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                      suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppColors.textHint,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
@@ -133,11 +229,19 @@ class AddRoleView extends StatelessWidget {
 
                   _buildLabel('Confirm Role Password'),
                   TextField(
-                    obscureText: true,
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
                     decoration: InputDecoration(
                       hintText: 'Confirm password',
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                      suffixIcon: const Icon(Icons.visibility_outlined, size: 20, color: AppColors.textHint),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppColors.textHint,
+                        ),
+                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
@@ -147,9 +251,11 @@ class AddRoleView extends StatelessWidget {
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.check, size: 16),
-                        label: const Text('Add Role'),
+                        onPressed: _isLoading ? null : _addRole,
+                        icon: _isLoading 
+                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.check, size: 16),
+                        label: Text(_isLoading ? 'Adding...' : 'Add Role'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -157,7 +263,7 @@ class AddRoleView extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.md),
                       OutlinedButton(
-                        onPressed: onBack,
+                        onPressed: widget.onBack,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           side: BorderSide.none,
