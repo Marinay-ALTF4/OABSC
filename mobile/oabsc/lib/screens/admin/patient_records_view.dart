@@ -3,8 +3,13 @@ import '../../theme/app_theme.dart';
 
 class PatientRecordsView extends StatelessWidget {
   final VoidCallback onBackToDashboard;
+  final VoidCallback onViewPatientList;
 
-  const PatientRecordsView({super.key, required this.onBackToDashboard});
+  const PatientRecordsView({
+    super.key,
+    required this.onBackToDashboard,
+    required this.onViewPatientList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +94,7 @@ class PatientRecordsView extends StatelessWidget {
                       iconColor: const Color(0xFF0F766E), // Dark Teal
                       iconBgColor: const Color(0xFFCCFBF1), // Light Teal
                       isPrimaryAction: true,
+                      onPressed: onViewPatientList,
                     ),
                   ),
                   SizedBox(
@@ -101,6 +107,7 @@ class PatientRecordsView extends StatelessWidget {
                       icon: Icons.search,
                       iconColor: const Color(0xFF0369A1), // Dark Blue
                       iconBgColor: const Color(0xFFE0F2FE), // Light Blue
+                      onPressed: () {},
                     ),
                   ),
                   SizedBox(
@@ -113,6 +120,7 @@ class PatientRecordsView extends StatelessWidget {
                       icon: Icons.access_time_rounded,
                       iconColor: const Color(0xFF0F766E), // Dark Teal
                       iconBgColor: const Color(0xFFCCFBF1), // Light Teal
+                      onPressed: () {},
                     ),
                   ),
                   SizedBox(
@@ -125,6 +133,7 @@ class PatientRecordsView extends StatelessWidget {
                       icon: Icons.edit_outlined,
                       iconColor: const Color(0xFF0369A1), // Dark Blue
                       iconBgColor: const Color(0xFFE0F2FE), // Light Blue
+                      onPressed: () {},
                     ),
                   ),
                 ],
@@ -144,6 +153,7 @@ class PatientRecordsView extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
     required Color iconBgColor,
+    required VoidCallback onPressed,
     bool isPrimaryAction = false,
   }) {
     return Container(
@@ -209,7 +219,7 @@ class PatientRecordsView extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: isPrimaryAction
                 ? ElevatedButton(
-                    onPressed: () {},
+                    onPressed: onPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary, // Dark navy
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -219,7 +229,7 @@ class PatientRecordsView extends StatelessWidget {
                     child: Text(buttonText, style: const TextStyle(fontSize: 12)),
                   )
                 : OutlinedButton(
-                    onPressed: () {},
+                    onPressed: onPressed,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textPrimary,
                       side: const BorderSide(color: AppColors.border),

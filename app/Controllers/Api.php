@@ -562,6 +562,25 @@ class Api extends BaseController
     }
 
     /**
+     * GET /api/patients
+     * List all registered patients (clients).
+     */
+    public function patients()
+    {
+        $userModel = new UserModel();
+        $patients = $userModel
+            ->select('id, name, email, phone, role, created_at')
+            ->where('role', 'client')
+            ->orderBy('id', 'DESC')
+            ->findAll();
+
+        return $this->respond([
+            'count' => count($patients),
+            'patients' => $patients,
+        ]);
+    }
+
+    /**
      * POST /api/admin/users/add
      * Add a new user (for admin).
      */

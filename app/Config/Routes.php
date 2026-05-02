@@ -94,6 +94,7 @@ $routes->post('/api/login', 'Api::login');
 $routes->post('/api/register', 'Api::register');
 $routes->post('/api/role-selection', 'Api::roleSelection');
 $routes->get('/api/users', 'Api::users');
+$routes->get('/api/patients', 'Api::patients');
 $routes->get('/api/appointments', 'Api::appointments');
 $routes->post('/api/appointments', 'Api::createAppointment');
 $routes->get('/api/dashboard', 'Api::dashboard');
