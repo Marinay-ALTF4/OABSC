@@ -89,15 +89,19 @@ class AppDrawer extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.1),
+                      color: (roleName.toLowerCase().contains('secretary') 
+                          ? const Color(0xFF166534) 
+                          : AppColors.accent).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       roleName.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.accent,
+                        color: roleName.toLowerCase().contains('secretary') 
+                            ? const Color(0xFF166534) 
+                            : AppColors.accent,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -140,7 +144,9 @@ class AppDrawer extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isActive
-                                ? AppColors.accent
+                                ? (roleName.toLowerCase().contains('secretary') 
+                                    ? const Color(0xFF166534) 
+                                    : AppColors.accent)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
