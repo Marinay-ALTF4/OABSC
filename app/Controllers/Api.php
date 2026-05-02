@@ -593,6 +593,7 @@ class Api extends BaseController
         $json = $this->request->getJSON(true);
         $name             = $json['name']             ?? $this->request->getPost('name');
         $email            = $json['email']            ?? $this->request->getPost('email');
+        $phone            = $json['phone']            ?? $this->request->getPost('phone');
         $role             = $json['role']             ?? $this->request->getPost('role');
         $password         = $json['password']         ?? $this->request->getPost('password');
         $passwordConfirm  = $json['password_confirm'] ?? $this->request->getPost('password_confirm');
@@ -600,6 +601,7 @@ class Api extends BaseController
         $this->request->setGlobal('post', [
             'name'             => $name,
             'email'            => $email,
+            'phone'            => $phone,
             'role'             => $role,
             'password'         => $password,
             'password_confirm' => $passwordConfirm,
@@ -608,6 +610,7 @@ class Api extends BaseController
         $rules = [
             'name'             => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
             'email'            => 'required|valid_email|is_unique[users.email]',
+            'phone'            => 'required|regex_match[/^(09|\+639)\d{9}$/]',
             'role'             => 'required|in_list[admin,assistant_admin,client,secretary,doctor]',
             'password'         => 'required|min_length[8]',
             'password_confirm' => 'required|matches[password]',
@@ -621,6 +624,7 @@ class Api extends BaseController
         $userId = $userModel->insert([
             'name'          => trim((string) $name),
             'email'         => strtolower(trim((string) $email)),
+            'phone'         => trim((string) $phone),
             'role'          => (string) $role,
             'password_hash' => password_hash((string) $password, PASSWORD_DEFAULT),
         ]);

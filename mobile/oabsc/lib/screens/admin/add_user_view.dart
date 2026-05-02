@@ -14,6 +14,7 @@ class AddUserView extends StatefulWidget {
 class _AddUserViewState extends State<AddUserView> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String? _selectedRole;
@@ -27,20 +28,35 @@ class _AddUserViewState extends State<AddUserView> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
+  bool _isValidPHPhone(String phone) {
+    // Matches 09XXXXXXXXX or +639XXXXXXXXX
+    final regExp = RegExp(r'^(09|\+639)\d{9}$');
+    return regExp.hasMatch(phone);
+  }
+
   Future<void> _addUser() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (name.isEmpty || email.isEmpty || _selectedRole == null || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || phone.isEmpty || _selectedRole == null || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    if (!_isValidPHPhone(phone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid Philippine phone number')),
       );
       return;
     }
@@ -58,6 +74,7 @@ class _AddUserViewState extends State<AddUserView> {
       final response = await _apiService.post('admin/users/add', body: {
         'name': name,
         'email': email,
+        'phone': phone,
         'role': _selectedRole,
         'password': password,
         'password_confirm': confirmPassword,
@@ -177,6 +194,19 @@ class _AddUserViewState extends State<AddUserView> {
                     decoration: InputDecoration(
                       hintText: 'Enter email address',
                       prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      fillColor: const Color(0xFFF8FAFC),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  _buildLabel('Phone Number'),
+                  TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: 'e.g., 09123456789',
+                      prefixIcon: const Icon(Icons.phone_android_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
                     ),
