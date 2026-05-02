@@ -4,11 +4,13 @@ import '../../theme/app_theme.dart';
 class PatientRecordsView extends StatelessWidget {
   final VoidCallback onBackToDashboard;
   final VoidCallback onViewPatientList;
+  final VoidCallback onManageUsers;
 
   const PatientRecordsView({
     super.key,
     required this.onBackToDashboard,
     required this.onViewPatientList,
+    required this.onManageUsers,
   });
 
   @override
@@ -133,7 +135,7 @@ class PatientRecordsView extends StatelessWidget {
                       icon: Icons.edit_outlined,
                       iconColor: const Color(0xFF0369A1), // Dark Blue
                       iconBgColor: const Color(0xFFE0F2FE), // Light Blue
-                      onPressed: () {},
+                      onPressed: onManageUsers,
                     ),
                   ),
                 ],

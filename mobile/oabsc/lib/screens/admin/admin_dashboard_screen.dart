@@ -189,6 +189,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return PatientRecordsView(
           onBackToDashboard: () => setState(() => _currentView = 'dashboard'),
           onViewPatientList: () => setState(() => _currentView = 'patient_list'),
+          onManageUsers: () => setState(() => _currentView = 'manage_users'),
         );
       case 'patient_list':
         return PatientListView(
