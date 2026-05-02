@@ -19,7 +19,7 @@ localStorage.removeItem('oabsc_session_active');
     <div class="login-card bg-white p-4 p-md-5 mx-auto">
         <div class="mb-3 text-center">
             <div class="brand-pill mb-2">
-                <img src="/OABSC/images/logo.png" alt="Clinic Logo" class="logo">
+                <img src="<?= base_url('images/logo.png') ?>" alt="Clinic Logo" class="logo">
                 <span>Clinic Appointment Portal</span>
             </div>
             <h1 class="h4 fw-bold text-slate-900 mb-1">Login</h1>

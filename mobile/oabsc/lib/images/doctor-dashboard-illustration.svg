@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+    <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad-doc)"/>
+    <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
+    <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
+    <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
+    <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
+    <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
+    <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+    <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
+    <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
+    <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
+    <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
+    <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
+    <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
+    <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
+    <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
+    <circle cx="286" cy="98" r="3" fill="#2d3748"/>
+    <circle cx="302" cy="98" r="3" fill="#2d3748"/>
+    <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+    <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
+    <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
+    <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
+    <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
+    <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
+    <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
+    <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+    <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
+    <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
+    <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
+    <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
+    <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
+    <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
+    <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
+    <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
+    <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
+    <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
+    <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
+    <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
+    <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
+    <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
+    <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
+    <defs>
+        <linearGradient id="bldg-grad-doc" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d6e8f8"/>
+            <stop offset="100%" stop-color="#b8d0ee"/>
+        </linearGradient>
+    </defs>
+</svg>

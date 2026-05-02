@@ -88,8 +88,17 @@ $routes->post('/admin/patients/restore/(:num)', 'Admin::restoreUser/$1');
 $routes->get('/admin/settings', 'Admin::clinicSettings');
 $routes->post('/admin/settings', 'Admin::clinicSettings');
 
-// API (Postman)
+// API (Flutter Mobile App)
 $routes->get('/api/health', 'Api::health');
+$routes->post('/api/login', 'Api::login');
 $routes->post('/api/register', 'Api::register');
+$routes->post('/api/role-selection', 'Api::roleSelection');
 $routes->get('/api/users', 'Api::users');
-$routes->post('/api/login', 'Auth::apiLogin');   // ✅ used by Android app
+$routes->get('/api/appointments', 'Api::appointments');
+$routes->post('/api/appointments', 'Api::createAppointment');
+$routes->get('/api/dashboard', 'Api::dashboard');
+$routes->get('/api/doctors', 'Api::doctors');
+$routes->get('/api/profile', 'Api::profile');
+$routes->post('/api/profile/update', 'Api::updateProfile');
+$routes->get('/api/notifications', 'Api::notifications');
+
