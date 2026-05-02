@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 import '../services/auth_service.dart';
 import '../utils/responsive_helper.dart';
+import 'register_screen.dart';
 
 /// Login screen matching the website's login page design
 class LoginScreen extends StatefulWidget {
@@ -285,7 +286,9 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                           GestureDetector(
                             onTap: () {
-                              // TODO: Navigate to registration page
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                              );
                             },
                             child: const Text(
                               'Register',
