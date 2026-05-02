@@ -10,6 +10,7 @@ import 'patient_queue_view.dart';
 import 'patient_records_view.dart';
 import 'register_patient_view.dart';
 import 'doctor_schedules_view.dart';
+import 'pending_approvals_view.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -78,6 +79,8 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         return const RegisterPatientView();
       case 5:
         return const DoctorSchedulesView();
+      case 6:
+        return const PendingApprovalsView();
       default:
         return _buildDashboard();
     }
@@ -89,7 +92,12 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const WelcomeBanner(panelLabel: 'SECRETARY PANEL', title: 'Welcome back, Secretary', subtitle: 'Here is your front-desk overview for today.'),
+          const WelcomeBanner(
+            panelLabel: 'SECRETARY PANEL', 
+            title: 'Welcome back, Secretary', 
+            subtitle: 'Here is your front-desk overview for today.',
+            illustrationPath: 'lib/images/doctor-dashboard-illustration.svg',
+          ),
           const SizedBox(height: 20),
           LayoutBuilder(
             builder: (context, constraints) {
