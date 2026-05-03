@@ -1,0 +1,13 @@
+question,answer
+What is OABSC?,OABSC stands for Orthopedic and Aesthetic Bracing Specialist Clinic. It is a comprehensive healthcare management system designed to streamline clinic operations and patient care.
+What are the main features of the app?,The app allows patients to book appointments view their medical history receive notifications and chat with clinic support in real-time.
+What roles are available in the system?,The system supports five main roles: Admin Assistant Admin Secretary Doctor and Client (Patient).
+What does the Admin do?,The Admin has full control over the system including managing users doctors schedules and clinic settings.
+What is the role of the Secretary?,The Secretary manages the front desk operations including appointment approvals patient queue management and basic record keeping.
+What can a Doctor do in the app?,Doctors can view their daily schedules manage patient consultations and update medical records for the patients they treat.
+What can a Client or Patient do?,Clients can use the Patient Portal to book new appointments track their upcoming visits view past medical records and use the MediTalk AI chat for support.
+What technology was used to build this app?,The mobile application is built using Flutter and Dart for a premium cross-platform experience while the backend is powered by PHP and MySQL.
+Is my data secure?,Yes all patient data and medical records are stored securely and are only accessible by authorized clinic staff and the patient themselves.
+How does the appointment process work?,Patients request an appointment through the app which is then reviewed and approved by the clinic Secretary. Once approved the patient receives a notification.
+Can I use the app for emergencies?,The app is intended for scheduling and information. In case of a medical emergency please call emergency services or visit the nearest hospital immediately.
+What is MediTalk?,MediTalk is the AI-powered support assistant of the OABSC app designed to provide instant answers to patient inquiries 24/7.

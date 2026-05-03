@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import 'book_appointment_view.dart';
 import 'my_appointments_view.dart';
 import 'profile_settings_view.dart';
+import 'chat_view.dart';
 
 /// Client Dashboard screen with sub-views
 class ClientDashboardScreen extends StatefulWidget {
@@ -27,8 +28,34 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
+        leading: _currentView != 'dashboard' 
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+              onPressed: () => setState(() => _currentView = 'dashboard'),
+            )
+          : null,
+        title: _currentView == 'chat'
+          ? const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'MediTalk AI Support',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Chat with our staff in real-time',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            )
+          : Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             ClipOval(
@@ -144,6 +171,35 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
         ],
       ),
       body: _buildBody(),
+      floatingActionButton: _currentView == 'dashboard' 
+        ? Container(
+            height: 60,
+            width: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: FloatingActionButton(
+              onPressed: () => setState(() => _currentView = 'chat'),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              highlightElevation: 0,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.forum_rounded, color: Colors.white, size: 26),
+            ),
+          )
+        : null,
     );
   }
 
@@ -163,6 +219,10 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
         );
       case 'settings':
         return ProfileSettingsView(
+          onBack: () => setState(() => _currentView = 'dashboard'),
+        );
+      case 'chat':
+        return ChatView(
           onBack: () => setState(() => _currentView = 'dashboard'),
         );
       default:
@@ -235,7 +295,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
             icon: Icons.chat_bubble_outline_rounded,
             iconColor: const Color(0xFF8B5CF6),
             iconBgColor: const Color(0xFFF3E8FF),
-            onButtonTap: () {},
+            onButtonTap: () => setState(() => _currentView = 'chat'),
           ),
           const SizedBox(height: AppSpacing.xxl),
 
