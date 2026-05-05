@@ -40,9 +40,6 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/patients') ?>" class="adm-nav-item">
                 <i class="bi bi-folder2-open"></i> Patient Records
             </a>
-            <a href="<?= site_url('/admin/patients/add') ?>" class="adm-nav-item">
-                <i class="bi bi-person-plus"></i> Add Patient
-            </a>
             <a href="<?= site_url('/admin/permissions') ?>" class="adm-nav-item">
                 <i class="bi bi-shield-lock"></i> Manage Permissions
             </a>
