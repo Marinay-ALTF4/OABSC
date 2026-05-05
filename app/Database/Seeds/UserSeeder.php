@@ -84,13 +84,6 @@ class UserSeeder extends Seeder
                 'password_hash' => password_hash('client123', PASSWORD_DEFAULT),
                 'role'          => 'client',
             ],
-            [
-                'name'          => 'Assistant Admin',
-                'email'         => 'assistant@example.com',
-                'password_hash' => password_hash('assistant123', PASSWORD_DEFAULT),
-                'role'          => 'assistant_admin',
-                'role_password' => password_hash('assistant123', PASSWORD_DEFAULT),
-            ],
         ];
 
         foreach ($users as $user) {

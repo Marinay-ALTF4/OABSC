@@ -31,6 +31,19 @@ class ClinicSettingsSeeder extends Seeder
             ]);
         }
 
+        // Set global assistant admin role password in clinic_settings
+        $existingAsstPw = $db->table('clinic_settings')->where('key', 'assistant_admin_role_password')->get()->getRowArray();
+        if ($existingAsstPw) {
+            $db->table('clinic_settings')->where('key', 'assistant_admin_role_password')->update([
+                'value' => password_hash('Assistant123', PASSWORD_DEFAULT),
+            ]);
+        } else {
+            $db->table('clinic_settings')->insert([
+                'key'   => 'assistant_admin_role_password',
+                'value' => password_hash('Assistant123', PASSWORD_DEFAULT),
+            ]);
+        }
+
         // Set default assistant admin role password if exists
         $assistantAdmins = $db->table('users')->where('role', 'assistant_admin')->get()->getResultArray();
         foreach ($assistantAdmins as $asst) {
@@ -44,6 +57,6 @@ class ClinicSettingsSeeder extends Seeder
         echo "Clinic settings seeded successfully.\n";
         echo "Clinic Access Code: CLINIC2026\n";
         echo "Admin Role Password: Admin123\n";
-        echo "Assistant Admin default Role Password: Assistant123 (only for existing ones without password)\n";
+        echo "Assistant Admin Role Password: Assistant123\n";
     }
 }
