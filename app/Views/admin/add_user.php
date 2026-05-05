@@ -69,10 +69,11 @@ if (! is_array($errors)) { $errors = []; }
                     <i class="bi bi-shield au-icon"></i>
                     <select id="role" name="role" class="au-input <?= isset($errors['role']) ? 'au-input-error' : '' ?>" required>
                         <option value="">— Select Role —</option>
-                        <option value="client"    <?= old('role') === 'client'    ? 'selected' : '' ?>>Client</option>
-                        <option value="secretary" <?= old('role') === 'secretary' ? 'selected' : '' ?>>Secretary</option>
-                        <option value="doctor"    <?= old('role') === 'doctor'    ? 'selected' : '' ?>>Doctor</option>
-                        <option value="admin"     <?= old('role') === 'admin'     ? 'selected' : '' ?>>Admin</option>
+                        <option value="client"           <?= old('role') === 'client'           ? 'selected' : '' ?>>Client</option>
+                        <option value="secretary"        <?= old('role') === 'secretary'        ? 'selected' : '' ?>>Secretary</option>
+                        <option value="doctor"           <?= old('role') === 'doctor'           ? 'selected' : '' ?>>Doctor</option>
+                        <option value="assistant_admin" <?= old('role') === 'assistant_admin' ? 'selected' : '' ?>>Assistant Admin</option>
+                        <option value="admin"            <?= old('role') === 'admin'            ? 'selected' : '' ?>>Admin</option>
                     </select>
                 </div>
                 <?php if (isset($errors['role'])): ?>

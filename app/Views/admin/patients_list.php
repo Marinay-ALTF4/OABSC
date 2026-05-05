@@ -60,7 +60,6 @@ $name = session('user_name') ?? 'User';
                     </div>
                     <div class="d-flex gap-2">
                         <a href="<?= site_url('/admin/patients/add') ?>" class="pl-btn pl-btn-filled"><i class="bi bi-person-plus me-1"></i>Add User</a>
-                        <a href="<?= site_url('/admin/patients/add-role') ?>" class="pl-btn pl-btn-outline"><i class="bi bi-shield-plus me-1"></i>Add Role</a>
                     </div>
                 </div>
 
