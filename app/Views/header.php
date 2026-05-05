@@ -59,10 +59,6 @@ $isPatientsPage = url_is('admin/patients*');
                     <?= esc($roleLabel) ?>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end account-menu">
-                    <?php if ($role === 'admin' || $role === 'assistant_admin'): ?>
-                    <li><a class="dropdown-item" href="<?= site_url('/admin/settings') ?>"><i class="bi bi-key me-2"></i>Clinic Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <?php endif; ?>
                     <li><a class="dropdown-item" href="<?= site_url('/settings') ?>">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="<?= site_url('/logout') ?>">Logout</a></li>

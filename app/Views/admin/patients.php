@@ -39,6 +39,24 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/permissions') ?>" class="adm-nav-item">
                 <i class="bi bi-shield-lock"></i> Manage Permissions
             </a>
+            <a href="<?= site_url('/admin/appointments') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar-event"></i> Appointments
+            </a>
+            <a href="<?= site_url('/admin/doctor-schedules') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar2-check"></i> Doctor Schedules
+            </a>
+            <a href="<?= site_url('/admin/settings') ?>" class="adm-nav-item">
+                <i class="bi bi-gear"></i> System Settings
+            </a>
+            <a href="<?= site_url('/admin/reports') ?>" class="adm-nav-item">
+                <i class="bi bi-bar-chart"></i> Reports
+            </a>
+            <a href="<?= site_url('/admin/access-requests') ?>" class="adm-nav-item">
+                <i class="bi bi-check-circle"></i> Access Requests
+            </a>
+            <a href="<?= site_url('/admin/announcements') ?>" class="adm-nav-item">
+                <i class="bi bi-megaphone"></i> Announcements
+            </a>
             <?php else: ?>
             <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
                 <i class="bi bi-people-fill"></i> Manage Users
