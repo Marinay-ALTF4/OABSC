@@ -45,6 +45,30 @@ class Home extends BaseController
             $data['recent_appointments'] = $apptModel->orderBy('created_at', 'DESC')->findAll(10);
         }
 
+        if (session('user_role') === 'admin' || session('user_role') === 'assistant_admin') {
+            $userModel = new UserModel();
+            $apptModel = new AppointmentModel();
+            $today = date('Y-m-d');
+
+            // Total appointments
+            $data['total_appointments'] = $apptModel->countAllResults();
+
+            // Today's appointments
+            $data['today_appointments'] = $apptModel->where('appointment_date', $today)->countAllResults();
+
+            // Total patients (clients)
+            $data['total_patients'] = $userModel->where('role', 'client')->where('deleted_at IS NULL')->countAllResults();
+
+            // Doctors available
+            $data['doctors_available'] = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->countAllResults();
+
+            // Pending requests (pending appointments)
+            $data['pending_requests'] = $apptModel->where('status', 'pending')->countAllResults();
+
+            // Secretaries
+            $data['secretaries'] = $userModel->where('role', 'secretary')->where('deleted_at IS NULL')->countAllResults();
+        }
+
         if (session('user_role') === 'doctor') {
             $doctorName = 'Dr. ' . session('user_name');
             $doctorId   = (int) session('user_id');

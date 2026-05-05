@@ -130,42 +130,42 @@ $name = session('user_name') ?? 'User';
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-calendar-check"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($total_appointments) ? $total_appointments : 0 ?></div>
                 <div class="adm-stat-label">Total Appointments</div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-calendar-day"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($today_appointments) ? $today_appointments : 0 ?></div>
                 <div class="adm-stat-label">Today's Appointments</div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#a4ccd8;color:#164a5c;"><i class="bi bi-people"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($total_patients) ? $total_patients : 0 ?></div>
                 <div class="adm-stat-label">Total Patients</div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#4e8a9e;color:#e0f4fa;"><i class="bi bi-person-badge"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($doctors_available) ? $doctors_available : 0 ?></div>
                 <div class="adm-stat-label">Doctors Available</div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-hourglass-split"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($pending_requests) ? $pending_requests : 0 ?></div>
                 <div class="adm-stat-label">Pending Requests</div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="adm-stat-card">
                 <div class="adm-stat-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-person-workspace"></i></div>
-                <div class="adm-stat-value">0</div>
+                <div class="adm-stat-value"><?= isset($secretaries) ? $secretaries : 0 ?></div>
                 <div class="adm-stat-label">Secretaries</div>
             </div>
         </div>
