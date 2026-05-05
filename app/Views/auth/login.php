@@ -58,14 +58,22 @@ localStorage.removeItem('oabsc_session_active');
                 <label for="password" class="form-label d-flex justify-content-between align-items-center">
                     <span>Password</span>
                 </label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    required
-                >
+                <div class="password-input-wrapper position-relative">
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <button type="button" class="btn-show-password" id="togglePassword" title="Show/hide password">
+                        <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             
@@ -154,9 +162,51 @@ localStorage.removeItem('oabsc_session_active');
         .small-text {
             font-size: 0.78rem;
         }
+        .password-input-wrapper {
+            position: relative;
+        }
+        .btn-show-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 0.3rem;
+            cursor: pointer;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        .btn-show-password:hover {
+            color: #2563eb;
+        }
+        .btn-show-password .eye-icon {
+            width: 18px;
+            height: 18px;
+        }
     </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButton = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    if (toggleButton && passwordInput) {
+        toggleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            // Update icon visual state
+            toggleButton.classList.toggle('showing');
+        });
+    }
+});
+</script>
 </body>
 </html>
 

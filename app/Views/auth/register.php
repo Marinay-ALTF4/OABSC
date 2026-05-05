@@ -14,7 +14,8 @@ if (! is_array($errors)) {
     $errors = [];
 }
 $nameErr = $errors['name'] ?? null;
-$emailErr = $errors['email'] ?? null;
+$contactMethodErr = $errors['contact_method'] ?? null;
+$contactValueErr = $errors['contact_value'] ?? ($errors['email'] ?? null);
 $passwordErr = $errors['password'] ?? null;
 $passwordConfirmErr = $errors['password_confirm'] ?? null;
 $formErr = $errors['_form'] ?? null;
@@ -39,12 +40,13 @@ $formErr = $errors['_form'] ?? null;
             </div>
         <?php endif; ?>
 
-        <?php if ($nameErr || $emailErr || $passwordErr || $passwordConfirmErr): ?>
+        <?php if ($nameErr || $contactMethodErr || $contactValueErr || $passwordErr || $passwordConfirmErr): ?>
             <div class="alert alert-danger py-2 mb-3" role="alert">
                 <strong>Please correct the following:</strong>
                 <ul class="mb-0 mt-1 ps-3">
                     <?php if ($nameErr): ?><li><?= esc($nameErr) ?></li><?php endif; ?>
-                    <?php if ($emailErr): ?><li><?= esc($emailErr) ?></li><?php endif; ?>
+                    <?php if ($contactMethodErr): ?><li><?= esc($contactMethodErr) ?></li><?php endif; ?>
+                    <?php if ($contactValueErr): ?><li><?= esc($contactValueErr) ?></li><?php endif; ?>
                     <?php if ($passwordErr): ?><li><?= esc($passwordErr) ?></li><?php endif; ?>
                     <?php if ($passwordConfirmErr): ?><li><?= esc($passwordConfirmErr) ?></li><?php endif; ?>
                 </ul>
@@ -74,21 +76,33 @@ $formErr = $errors['_form'] ?? null;
             </div>
 
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="contact_method" class="form-label">Register using</label>
+                <select id="contact_method" name="contact_method" class="form-control <?= $contactMethodErr ? 'is-invalid' : '' ?>" style="text-align: center;" required>
+                    <option value="" disabled <?= !old('contact_method') ? 'selected' : '' ?>>—— Select Register Option ——</option>
+                    <option value="email" <?= old('contact_method') === 'email' ? 'selected' : '' ?>>Email</option>
+                    <option value="phone" <?= old('contact_method') === 'phone' ? 'selected' : '' ?>>Phone Number</option>
+                </select>
+                <?php if ($contactMethodErr): ?>
+                    <div class="invalid-feedback d-block"><?= esc($contactMethodErr) ?></div>
+                <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+                <label for="contact_value" class="form-label" id="contactLabel">Email Address</label>
                 <input
                     type="email"
-                    class="form-control <?= $emailErr ? 'is-invalid' : '' ?>"
-                    id="email"
-                    name="email"
+                    class="form-control <?= $contactValueErr ? 'is-invalid' : '' ?>"
+                    id="contact_value"
+                    name="contact_value"
                     placeholder="Enter your email"
-                    value="<?= old('email') ?>"
+                    value="<?= old('contact_value', old('email')) ?>"
                     required
                 >
-                <?php if ($emailErr): ?>
-                    <div class="invalid-feedback d-block"><?= esc($emailErr) ?></div>
+                <?php if ($contactValueErr): ?>
+                    <div class="invalid-feedback d-block"><?= esc($contactValueErr) ?></div>
                 <?php endif; ?>
-                <div id="emailLiveError" class="invalid-feedback" style="display:none;">Email allows maximum 5 numbers and 3 special characters before @.</div>
-                <div class="form-text">We will send a 6-digit verification code to this email before creating the account.</div>
+                <div id="contactLiveError" class="invalid-feedback" style="display:none;">Please enter a valid email address.</div>
+                <div class="form-text" id="contactHelp">We will send a 6-digit verification code to this email before creating the account.</div>
             </div>
 
             <div class="mb-3">
@@ -246,14 +260,51 @@ $formErr = $errors['_form'] ?? null;
 
     var form = document.getElementById('registerForm');
     var nameInput = document.getElementById('name');
-    var emailInput = document.getElementById('email');
+    var contactMethodInput = document.getElementById('contact_method');
+    var contactValueInput = document.getElementById('contact_value');
     var passwordInput = document.getElementById('password');
     var passwordConfirmInput = document.getElementById('password_confirm');
 
     var nameLiveError = document.getElementById('nameLiveError');
-    var emailLiveError = document.getElementById('emailLiveError');
+    var contactLiveError = document.getElementById('contactLiveError');
     var passwordLiveError = document.getElementById('passwordLiveError');
     var passwordConfirmLiveError = document.getElementById('passwordConfirmLiveError');
+    var contactLabel = document.getElementById('contactLabel');
+    var contactHelp = document.getElementById('contactHelp');
+
+    function syncContactField() {
+        if (!contactMethodInput || !contactValueInput || !contactLabel || !contactHelp) {
+            return;
+        }
+
+        var method = contactMethodInput.value || '';
+        var contactFieldContainer = contactValueInput.closest('.mb-3');
+
+        // Hide field if no selection made (placeholder selected)
+        if (!method) {
+            if (contactFieldContainer) {
+                contactFieldContainer.style.display = 'none';
+            }
+            return;
+        }
+
+        // Show field when selection is made
+        if (contactFieldContainer) {
+            contactFieldContainer.style.display = 'block';
+        }
+
+        if (method === 'phone') {
+            contactValueInput.type = 'tel';
+            contactValueInput.placeholder = 'Enter your phone number';
+            contactLabel.textContent = 'Phone Number';
+            contactHelp.textContent = 'We will send a 6-digit verification code to this phone number before creating the account.';
+        } else {
+            contactValueInput.type = 'email';
+            contactValueInput.placeholder = 'Enter your email';
+            contactLabel.textContent = 'Email Address';
+            contactHelp.textContent = 'We will send a 6-digit verification code to this email before creating the account.';
+        }
+    }
 
     function toggleError(input, errorEl, isInvalid, message) {
         if (!input || !errorEl) {
@@ -290,29 +341,36 @@ $formErr = $errors['_form'] ?? null;
         return !isInvalid;
     }
 
-    function validateEmailLimits(force) {
-        var value = (emailInput.value || '').trim();
+    function validateContact(force) {
+        var method = (contactMethodInput.value || 'email').trim();
+        var value = (contactValueInput.value || '').trim();
 
         if (force && value === '') {
-            toggleError(emailInput, emailLiveError, true, 'Email is required.');
-            return false;
-        }
-
-        if (value.length > 0 && value.indexOf('@') === -1) {
-            toggleError(emailInput, emailLiveError, true, 'Please enter a valid email address.');
+            toggleError(contactValueInput, contactLiveError, true, method === 'phone' ? 'Phone number is required.' : 'Email is required.');
             return false;
         }
 
         if (value === '') {
-            toggleError(emailInput, emailLiveError, false);
+            toggleError(contactValueInput, contactLiveError, false);
             return true;
+        }
+
+        if (method === 'phone') {
+            var isPhoneValid = /^[\d\s\+\-\(\)]{10,}$/.test(value);
+            toggleError(contactValueInput, contactLiveError, !isPhoneValid, 'Please enter a valid phone number.');
+            return isPhoneValid;
+        }
+
+        if (value.indexOf('@') === -1) {
+            toggleError(contactValueInput, contactLiveError, true, 'Please enter a valid email address.');
+            return false;
         }
 
         var localPart = value.split('@')[0] || '';
         var numberCount = (localPart.match(/\d/g) || []).length;
         var specialCount = (localPart.match(/[^a-z0-9]/gi) || []).length;
         var isInvalid = numberCount > 10 || specialCount > 3;
-        toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
+        toggleError(contactValueInput, contactLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
         return !isInvalid;
     }
 
@@ -353,11 +411,20 @@ $formErr = $errors['_form'] ?? null;
         });
     }
 
-    if (emailInput) {
-        emailInput.addEventListener('input', function() {
-            validateEmailLimits(false);
+    if (contactMethodInput) {
+        contactMethodInput.addEventListener('change', function() {
+            syncContactField();
+            validateContact(false);
         });
     }
+
+    if (contactValueInput) {
+        contactValueInput.addEventListener('input', function() {
+            validateContact(false);
+        });
+    }
+
+    syncContactField();
 
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
@@ -375,11 +442,11 @@ $formErr = $errors['_form'] ?? null;
     if (form) {
         form.addEventListener('submit', function(event) {
             var okName = validateName(true);
-            var okEmail = validateEmailLimits(true);
+            var okContact = validateContact(true);
             var okPassword = validatePassword(true);
             var okPasswordConfirm = validatePasswordConfirm(true);
 
-            if (!okName || !okEmail || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
+            if (!okName || !okContact || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }

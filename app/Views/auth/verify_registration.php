@@ -17,6 +17,8 @@ if (! is_array($errors)) {
 $codeErr = $errors['verification_code'] ?? null;
 $formErr = $errors['_form'] ?? null;
 $pendingEmail = $pendingEmail ?? '';
+$pendingContact = $pendingContact ?? $pendingEmail;
+$contactMethod = $contactMethod ?? 'email';
 $expiresAt = (int) ($expiresAt ?? 0);
 $minutesLeft = $expiresAt > time() ? (int) ceil(($expiresAt - time()) / 60) : 0;
 ?>
@@ -31,10 +33,10 @@ $minutesLeft = $expiresAt > time() ? (int) ceil(($expiresAt - time()) / 60) : 0;
                 <?php endif; ?>
                 <span>Clinic Appointment Portal</span>
             </div>
-            <h1 class="h4 fw-bold text-dark mb-1">Verify Email</h1>
+            <h1 class="h4 fw-bold text-dark mb-1">Verify Registration</h1>
         </div>
 
-        <p class="verify-copy text-center">Enter the 6-digit code we sent to <?= esc($pendingEmail) ?>. Your account will be created after the code matches.</p>
+        <p class="verify-copy text-center">Enter the 6-digit code we sent to <?= esc($pendingContact) ?>. Your account will be created after the code matches.</p>
 
         <?php if ($success): ?>
             <div class="alert alert-success py-2 mb-3"><?= esc($success) ?></div>
@@ -87,7 +89,7 @@ $minutesLeft = $expiresAt > time() ? (int) ceil(($expiresAt - time()) / 60) : 0;
         </form>
 
         <p class="text-center text-muted small-text mb-0">
-            Wrong email?
+            Wrong contact method?
             <a href="<?= site_url('/register/reset') ?>" class="fw-semibold">Try Again</a>
         </p>
     </div>

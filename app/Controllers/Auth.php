@@ -28,7 +28,7 @@ class Auth extends BaseController
     public function attemptLogin()
     {
         $validationRules = [
-            'email'    => 'required|valid_email',
+            'email'    => 'required',
             'password' => 'required|min_length[6]',
         ];
 
@@ -36,11 +36,11 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Please check your login details.');
         }
 
-        $email    = $this->request->getPost('email');
+        $identifier = trim((string) $this->request->getPost('email'));
         $password = $this->request->getPost('password');
 
         $userModel = new UserModel();
-        $user      = $userModel->where('email', $email)->first();
+        $user      = $userModel->groupStart()->where('email', $identifier)->orWhere('phone', $identifier)->groupEnd()->first();
 
         if (! $user) {
             return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
@@ -58,6 +58,7 @@ class Auth extends BaseController
                 'user_id'    => $user['id'],
                 'user_name'  => $user['name'] ?? '',
                 'user_email' => $user['email'] ?? '',
+                'user_phone' => $user['phone'] ?? '',
                 'user_role'  => $user['role'] ?? 'client',
                 'isLoggedIn' => true,
             ]);
@@ -87,6 +88,7 @@ class Auth extends BaseController
             'user_id'        => $user['id'],
             'user_name'      => $user['name'] ?? '',
             'user_email'     => $user['email'] ?? '',
+            'user_phone'     => $user['phone'] ?? '',
             'user_role'      => $user['role'] ?? 'client',
             'email'          => $user['email'],
             'mfa_code_hash'  => password_hash($mfaCode, PASSWORD_DEFAULT),
@@ -259,16 +261,28 @@ class Auth extends BaseController
         }
 
         if ($this->request->is('post')) {
+            $contactMethod = strtolower(trim((string) $this->request->getPost('contact_method')));
+            $contactValue = trim((string) $this->request->getPost('contact_value'));
+
             $rules = [
-                'name'              => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
-                'email'             => 'required|valid_email|is_unique[users.email]',
-                'password'          => 'required|min_length[8]',
-                'password_confirm'  => 'required|matches[password]',
+                'name'            => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
+                'contact_method'   => 'required|in_list[email,phone]',
+                'contact_value'    => 'required',
+                'password'         => 'required|min_length[8]',
+                'password_confirm' => 'required|matches[password]',
             ];
 
+            if ($contactMethod === 'phone') {
+                $rules['contact_value'] .= '|regex_match[/^[\d\s\+\-\(\)]{10,}$/]';
+            } else {
+                $rules['contact_value'] .= '|valid_email|is_unique[users.email]';
+            }
+
             $messages = [
-                'email' => [
-                    'is_unique' => 'This email is already taken.',
+                'contact_value' => [
+                    'is_unique'   => 'This email is already taken.',
+                    'valid_email' => 'Please enter a valid email address.',
+                    'regex_match' => 'Please enter a valid phone number.',
                 ],
             ];
 
@@ -277,8 +291,15 @@ class Auth extends BaseController
             }
 
             $name     = trim((string) $this->request->getPost('name'));
-            $email    = strtolower(trim((string) $this->request->getPost('email')));
             $password = (string) $this->request->getPost('password');
+
+            if ($contactMethod === 'phone') {
+                return redirect()->back()->withInput()->with('errors', [
+                    '_form' => 'Phone registration is selected, but SMS delivery is not configured yet. Please choose Email for now.',
+                ]);
+            }
+
+            $email = strtolower($contactValue);
 
             $emailLocalPart = explode('@', $email)[0] ?? '';
             $emailNumberCount = preg_match_all('/\d/', $emailLocalPart);
@@ -294,6 +315,8 @@ class Auth extends BaseController
             $pendingRegistration = [
                 'name'                   => $name,
                 'email'                  => $email,
+                'contact_method'         => $contactMethod,
+                'contact_value'          => $contactValue,
                 'password_hash'          => password_hash($password, PASSWORD_DEFAULT),
                 'role'                   => 'client',
                 'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
@@ -309,7 +332,7 @@ class Auth extends BaseController
 
             session()->set(self::PENDING_REGISTRATION_KEY, $pendingRegistration);
 
-            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to your Gmail address.');
+            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to your email address.');
         }
 
         return view('auth/register');
@@ -394,8 +417,10 @@ class Auth extends BaseController
         }
 
         return view('auth/verify_registration', [
-            'pendingEmail' => $pendingRegistration['email'] ?? '',
-            'expiresAt'    => (int) ($pendingRegistration['verification_expires_at'] ?? 0),
+            'pendingEmail'   => $pendingRegistration['email'] ?? '',
+            'pendingContact' => $pendingRegistration['contact_value'] ?? ($pendingRegistration['email'] ?? ''),
+            'contactMethod'  => $pendingRegistration['contact_method'] ?? 'email',
+            'expiresAt'      => (int) ($pendingRegistration['verification_expires_at'] ?? 0),
         ]);
     }
 
