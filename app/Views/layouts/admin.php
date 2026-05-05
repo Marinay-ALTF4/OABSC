@@ -11,6 +11,7 @@
             background: #f3f4f6;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
+        main.container { padding-top: 1.5rem; }
         .navbar-brand span {
             font-weight: 700;
         }
