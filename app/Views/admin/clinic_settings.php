@@ -81,7 +81,7 @@ $name = session('user_name') ?? 'User';
     <div class="adm-section-label mb-3">Clinic Settings</div>
 
     <div class="row">
-        <div class="col-md-6 offset-md-3">
+        <div class="col-md-6">
             <div class="adm-card">
                 <div class="d-flex align-items-start gap-3">
                     <div class="adm-card-icon" style="background:#e6f3ef;color:#166a51;"><i class="bi bi-key-fill"></i></div>
@@ -116,7 +116,6 @@ $name = session('user_name') ?? 'User';
 <style>
     .dashboard-wrapper {
         display: flex;
-        margin-right: -50vw;
         margin-top: 0;
         min-height: calc(100vh - 60px);
         background: #edf2f7;
