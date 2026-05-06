@@ -61,6 +61,9 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/announcements') ?>" class="adm-nav-item">
                 <i class="bi bi-megaphone"></i> Announcements
             </a>
+            <a href="<?= site_url('/admin/audit-log') ?>" class="adm-nav-item">
+                <i class="bi bi-clock-history"></i> System Audit Log
+            </a>
             <?php else: ?>
             <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
                 <i class="bi bi-people-fill"></i> Manage Users
