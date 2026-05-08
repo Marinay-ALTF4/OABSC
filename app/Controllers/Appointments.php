@@ -190,4 +190,56 @@ class Appointments extends BaseController
             'appointments' => $appointments,
         ]);
     }
+
+    public function cancel(int $id = 0)
+    {
+        if (! session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        if (session('user_role') !== 'client') {
+            return redirect()->to('/dashboard')->with('error', 'Only clients can cancel their appointments.');
+        }
+
+        $ownerColumn = $this->ownerColumn();
+        if ($ownerColumn === null) {
+            return redirect()->back()->with('error', 'Unable to cancel appointment.');
+        }
+
+        $model = new AppointmentModel();
+        $appointment = $model->find($id);
+
+        if (! $appointment) {
+            return redirect()->to('/appointments/my')->with('error', 'Appointment not found.');
+        }
+
+        $clientId = (int) session('user_id');
+        $appointmentOwnerId = (int) ($appointment[$ownerColumn] ?? 0);
+
+        if ($appointmentOwnerId !== $clientId) {
+            return redirect()->to('/appointments/my')->with('error', 'You cannot cancel this appointment.');
+        }
+
+        $updated = $model->update($id, ['status' => 'cancelled']);
+
+        if (! $updated) {
+            return redirect()->back()->with('error', 'Unable to cancel appointment. Please try again.');
+        }
+
+        if (! empty($appointment['doctor_id'])) {
+            $notifModel = new \App\Models\NotificationModel();
+            $clientName = session('user_name') ?? 'A patient';
+            $appointmentDate = $appointment['appointment_date'] ?? 'scheduled date';
+            $appointmentTime = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
+
+            $notifModel->send(
+                (int) $appointment['doctor_id'],
+                'Appointment Cancelled',
+                "{$clientName} has cancelled their appointment scheduled for {$appointmentDate} at {$appointmentTime}.",
+                'appointment'
+            );
+        }
+
+        return redirect()->to('/appointments/my')->with('success', 'Appointment cancelled successfully.');
+    }
 }

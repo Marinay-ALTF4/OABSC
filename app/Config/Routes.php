@@ -41,6 +41,7 @@ $routes->post('/secretary/update-status', 'Secretary::updateStatus');
 $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
+$routes->post('/appointments/cancel/(:num)', 'Appointments::cancel/$1');
 
 // Notifications
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
