@@ -4,6 +4,8 @@ $appointments = $appointments ?? [];
 $upcoming  = [];
 $completed = [];
 $cancelled = [];
+$approved  = [];
+$pending   = [];
 $today     = date('Y-m-d');
 
 foreach ($appointments as $appt) {
@@ -14,6 +16,12 @@ foreach ($appointments as $appt) {
         $completed[] = $appt;
     } else {
         $upcoming[] = $appt;
+        // Further separate approved and pending
+        if ($status === 'approved') {
+            $approved[] = $appt;
+        } else {
+            $pending[] = $appt;
+        }
     }
 }
 ?>
@@ -96,11 +104,37 @@ foreach ($appointments as $appt) {
                 <?= emptyState('calendar-x', 'No upcoming appointments', 'You have no scheduled appointments. Book one now!') ?>
             <?php else: ?>
                 <div class="row g-3">
-                    <?php foreach ($upcoming as $appt): ?>
+                    <!-- APPROVED SECTION -->
+                    <?php if (!empty($approved)): ?>
                         <div class="col-12">
-                            <?= appointmentCard($appt, 'upcoming') ?>
+                            <div class="appt-section-header">
+                                <i class="bi bi-check-circle-fill me-2" style="color:#10b981;"></i>
+                                <strong>Confirmed</strong>
+                                <span class="appt-section-count"><?= count($approved) ?></span>
+                            </div>
                         </div>
-                    <?php endforeach; ?>
+                        <?php foreach ($approved as $appt): ?>
+                            <div class="col-12">
+                                <?= appointmentCard($appt, 'upcoming') ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <!-- PENDING SECTION -->
+                    <?php if (!empty($pending)): ?>
+                        <div class="col-12">
+                            <div class="appt-section-header">
+                                <i class="bi bi-hourglass-split me-2" style="color:#f59e0b;"></i>
+                                <strong>Pending Confirmation</strong>
+                                <span class="appt-section-count"><?= count($pending) ?></span>
+                            </div>
+                        </div>
+                        <?php foreach ($pending as $appt): ?>
+                            <div class="col-12">
+                                <?= appointmentCard($appt, 'upcoming') ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -341,6 +375,22 @@ function emptyState(string $icon, string $title, string $sub): string {
         box-shadow: 0 2px 8px rgba(30,64,175,0.25);
     }
     .btn-book:hover { background: linear-gradient(135deg, #1e40af, #1e3a8a); color: white; }
+
+    /* Section Headers */
+    .appt-section-header {
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px 16px; border-radius: 12px;
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        font-size: 0.92rem; color: #0f172a;
+        margin-top: 12px; margin-bottom: 12px;
+    }
+    .appt-section-count {
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e2e8f0; color: #475569;
+        width: 24px; height: 24px; border-radius: 50%;
+        font-size: 0.75rem; font-weight: 700;
+        margin-left: auto;
+    }
 
     /* Summary Badges */
     .summary-badge {
