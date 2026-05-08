@@ -61,6 +61,37 @@ class DoctorAppointments extends BaseController
         return $appointments;
     }
 
+    private function notesStoragePath(int $doctorId): string
+    {
+        return WRITEPATH . 'doctor_notes_' . $doctorId . '.json';
+    }
+
+    private function loadDoctorNotes(int $doctorId): array
+    {
+        $path = $this->notesStoragePath($doctorId);
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $json = @file_get_contents($path);
+        if ($json === false || $json === '') {
+            return [];
+        }
+
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        return $decoded;
+    }
+
+    private function saveDoctorNotes(int $doctorId, array $notes): void
+    {
+        $path = $this->notesStoragePath($doctorId);
+        @file_put_contents($path, json_encode(array_values($notes), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     public function index()
     {
         $access = $this->ensureDoctor();
@@ -198,6 +229,78 @@ class DoctorAppointments extends BaseController
             'search'       => $search,
             'stats'        => $stats,
         ]);
+    }
+
+    public function notes()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $doctorId = (int) session('user_id');
+        $notes = $this->loadDoctorNotes($doctorId);
+
+        $appointments = $this->loadDoctorAppointments('all');
+        $patients = [];
+        foreach ($appointments as $appt) {
+            $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
+            if ($clientId <= 0) {
+                continue;
+            }
+            if (! isset($patients[$clientId])) {
+                $patients[$clientId] = [
+                    'id' => $clientId,
+                    'name' => $appt['patient_name'] ?? 'Unknown',
+                ];
+            }
+        }
+        $patients = array_values($patients);
+        usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
+
+        usort($notes, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
+
+        return view('doctor/notes', [
+            'notes' => $notes,
+            'patients' => $patients,
+        ]);
+    }
+
+    public function saveNote()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $doctorId = (int) session('user_id');
+        $action = (string) $this->request->getPost('action');
+        $notes = $this->loadDoctorNotes($doctorId);
+
+        if ($action === 'delete') {
+            $noteId = (string) $this->request->getPost('note_id');
+            $notes = array_values(array_filter($notes, fn($n) => (string) ($n['id'] ?? '') !== $noteId));
+            $this->saveDoctorNotes($doctorId, $notes);
+            return redirect()->to('/doctor/notes')->with('success', 'Note deleted.');
+        }
+
+        $title = trim((string) $this->request->getPost('title'));
+        $body = trim((string) $this->request->getPost('body'));
+        $patientId = (int) $this->request->getPost('patient_id');
+        $patientName = trim((string) $this->request->getPost('patient_name'));
+
+        if ($title === '' || $body === '') {
+            return redirect()->back()->with('error', 'Title and note content are required.');
+        }
+
+        $notes[] = [
+            'id' => uniqid('note_', true),
+            'title' => mb_substr($title, 0, 120),
+            'body' => mb_substr($body, 0, 3000),
+            'patient_id' => $patientId > 0 ? $patientId : null,
+            'patient_name' => $patientName !== '' ? mb_substr($patientName, 0, 120) : null,
+            'created_at' => date('Y-m-d H:i:s'),
+            'author' => 'Dr. ' . session('user_name'),
+        ];
+
+        $this->saveDoctorNotes($doctorId, $notes);
+        return redirect()->to('/doctor/notes')->with('success', 'Note saved successfully.');
     }
 
     public function updateStatus()

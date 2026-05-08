@@ -59,6 +59,8 @@ $routes->get('/api/doctor/(:num)/schedule', 'DoctorSchedule::getByDoctor/$1');
 // Doctor Appointments
 $routes->get('/doctor/records', 'DoctorAppointments::records');
 $routes->get('/doctor/records/(:num)', 'DoctorAppointments::records/$1');
+$routes->get('/doctor/notes', 'DoctorAppointments::notes');
+$routes->post('/doctor/notes', 'DoctorAppointments::saveNote');
 $routes->get('/doctor/queue', 'DoctorAppointments::queue');
 $routes->get('/doctor/appointments', 'DoctorAppointments::index');
 $routes->post('/doctor/appointments/status', 'DoctorAppointments::updateStatus');
