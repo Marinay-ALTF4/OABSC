@@ -92,6 +92,37 @@ class DoctorAppointments extends BaseController
         @file_put_contents($path, json_encode(array_values($notes), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
+    private function prescriptionsStoragePath(int $doctorId): string
+    {
+        return WRITEPATH . 'doctor_prescriptions_' . $doctorId . '.json';
+    }
+
+    private function loadDoctorPrescriptions(int $doctorId): array
+    {
+        $path = $this->prescriptionsStoragePath($doctorId);
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $json = @file_get_contents($path);
+        if ($json === false || $json === '') {
+            return [];
+        }
+
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        return $decoded;
+    }
+
+    private function saveDoctorPrescriptions(int $doctorId, array $prescriptions): void
+    {
+        $path = $this->prescriptionsStoragePath($doctorId);
+        @file_put_contents($path, json_encode(array_values($prescriptions), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     public function index()
     {
         $access = $this->ensureDoctor();
@@ -301,6 +332,84 @@ class DoctorAppointments extends BaseController
 
         $this->saveDoctorNotes($doctorId, $notes);
         return redirect()->to('/doctor/notes')->with('success', 'Note saved successfully.');
+    }
+
+    public function prescriptions()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $doctorId = (int) session('user_id');
+        $prescriptions = $this->loadDoctorPrescriptions($doctorId);
+
+        $appointments = $this->loadDoctorAppointments('all');
+        $patients = [];
+        foreach ($appointments as $appt) {
+            $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
+            if ($clientId <= 0) {
+                continue;
+            }
+            if (! isset($patients[$clientId])) {
+                $patients[$clientId] = [
+                    'id' => $clientId,
+                    'name' => $appt['patient_name'] ?? 'Unknown',
+                ];
+            }
+        }
+        $patients = array_values($patients);
+        usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
+
+        usort($prescriptions, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
+
+        return view('doctor/prescriptions', [
+            'prescriptions' => $prescriptions,
+            'patients' => $patients,
+        ]);
+    }
+
+    public function savePrescription()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $doctorId = (int) session('user_id');
+        $action = (string) $this->request->getPost('action');
+        $prescriptions = $this->loadDoctorPrescriptions($doctorId);
+
+        if ($action === 'delete') {
+            $prescriptionId = (string) $this->request->getPost('prescription_id');
+            $prescriptions = array_values(array_filter($prescriptions, fn($p) => (string) ($p['id'] ?? '') !== $prescriptionId));
+            $this->saveDoctorPrescriptions($doctorId, $prescriptions);
+            return redirect()->to('/doctor/prescriptions')->with('success', 'Prescription deleted.');
+        }
+
+        $patientId = (int) $this->request->getPost('patient_id');
+        $patientName = trim((string) $this->request->getPost('patient_name'));
+        $medicine = trim((string) $this->request->getPost('medicine'));
+        $dosage = trim((string) $this->request->getPost('dosage'));
+        $frequency = trim((string) $this->request->getPost('frequency'));
+        $duration = trim((string) $this->request->getPost('duration'));
+        $instructions = trim((string) $this->request->getPost('instructions'));
+
+        if ($patientName === '' || $medicine === '' || $dosage === '' || $frequency === '' || $duration === '') {
+            return redirect()->back()->with('error', 'Patient, medicine, dosage, frequency, and duration are required.');
+        }
+
+        $prescriptions[] = [
+            'id' => uniqid('rx_', true),
+            'patient_id' => $patientId > 0 ? $patientId : null,
+            'patient_name' => mb_substr($patientName, 0, 120),
+            'medicine' => mb_substr($medicine, 0, 200),
+            'dosage' => mb_substr($dosage, 0, 120),
+            'frequency' => mb_substr($frequency, 0, 120),
+            'duration' => mb_substr($duration, 0, 120),
+            'instructions' => mb_substr($instructions, 0, 2000),
+            'created_at' => date('Y-m-d H:i:s'),
+            'doctor_name' => 'Dr. ' . session('user_name'),
+        ];
+
+        $this->saveDoctorPrescriptions($doctorId, $prescriptions);
+        return redirect()->to('/doctor/prescriptions')->with('success', 'Prescription saved successfully.');
     }
 
     public function updateStatus()
