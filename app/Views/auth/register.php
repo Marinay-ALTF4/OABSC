@@ -354,8 +354,9 @@ $formErr = $errors['_form'] ?? null;
             return true;
         }
 
-        var isPhoneValid = /^[\d\s\+\-\(\)]{7,}$/.test(value);
-        toggleError(phoneInput, phoneLiveError, !isPhoneValid, 'Please enter a valid phone number.');
+        // Philippine phone: +63 or 0 followed by 9-10 digits
+        var isPhoneValid = /^(\+63|0)[0-9\s\-\(\)]{9,12}$/.test(value);
+        toggleError(phoneInput, phoneLiveError, !isPhoneValid, 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).');
         return isPhoneValid;
     }
 

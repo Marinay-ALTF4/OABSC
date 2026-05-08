@@ -267,7 +267,7 @@ class Auth extends BaseController
             $rules = [
                 'name'            => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
                 'email'           => 'required|valid_email|is_unique[users.email]',
-                'phone'           => 'required|regex_match[/^[\d\s\+\-\(\)]{7,}$/]',
+                'phone'           => 'required|regex_match[/^(\+63|0)[0-9\s\-\(\)]{9,12}$/]',
                 'password'         => 'required|min_length[8]',
                 'password_confirm' => 'required|matches[password]',
             ];
@@ -278,7 +278,7 @@ class Auth extends BaseController
                     'valid_email' => 'Please enter a valid email address.',
                 ],
                 'phone' => [
-                    'regex_match' => 'Please enter a valid phone number.',
+                    'regex_match' => 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).',
                 ],
             ];
 
