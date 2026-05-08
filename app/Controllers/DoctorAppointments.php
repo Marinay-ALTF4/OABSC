@@ -98,6 +98,108 @@ class DoctorAppointments extends BaseController
         ]);
     }
 
+    public function records(int $patientId = 0)
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $doctorName = 'Dr. ' . session('user_name');
+        $doctorId   = (int) session('user_id');
+        $model      = new AppointmentModel();
+        $userModel  = new UserModel();
+
+        $allAppts = $model->findAll();
+        $doctorAppts = array_values(array_filter($allAppts, function (array $appt) use ($doctorName, $doctorId): bool {
+            return ($appt['doctor_name'] === $doctorName) || ((int) ($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
+        }));
+
+        if ($patientId > 0) {
+            $patient = $userModel->withDeleted()->find($patientId);
+
+            if (! $patient || (string) ($patient['role'] ?? '') !== 'client') {
+                return redirect()->to('/doctor/records')->with('error', 'Patient not found.');
+            }
+
+            $appointments = array_values(array_filter($doctorAppts, function (array $appt) use ($patientId): bool {
+                $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
+                return $clientId === $patientId;
+            }));
+
+            usort($appointments, fn($a, $b) => strcmp(($b['appointment_date'] ?? '') . ($b['appointment_time'] ?? ''), ($a['appointment_date'] ?? '') . ($a['appointment_time'] ?? '')));
+
+            return view('doctor/records', [
+                'patient'      => $patient,
+                'appointments' => $appointments,
+                'patients'     => [],
+                'search'       => '',
+            ]);
+        }
+
+        $search = trim((string) $this->request->getGet('search'));
+        $patients = [];
+
+        foreach ($doctorAppts as $appt) {
+            $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
+            if ($clientId <= 0) {
+                continue;
+            }
+
+            $patient = $userModel->withDeleted()->find($clientId);
+            if (! $patient || (string) ($patient['role'] ?? '') !== 'client') {
+                continue;
+            }
+
+            if ($search !== '') {
+                $needle = mb_strtolower($search);
+                $haystack = mb_strtolower(($patient['name'] ?? '') . ' ' . ($patient['email'] ?? '') . ' ' . ($patient['phone'] ?? ''));
+                if (mb_strpos($haystack, $needle) === false) {
+                    continue;
+                }
+            }
+
+            if (! isset($patients[$clientId])) {
+                $patients[$clientId] = [
+                    'id'             => $clientId,
+                    'name'           => $patient['name'] ?? 'Unknown',
+                    'email'          => $patient['email'] ?? '',
+                    'phone'          => $patient['phone'] ?? '',
+                    'appointment_count' => 0,
+                    'latest_date'    => '',
+                    'latest_time'    => '',
+                    'latest_status'  => '',
+                ];
+            }
+
+            $patients[$clientId]['appointment_count']++;
+
+            $currentStamp = ($appt['appointment_date'] ?? '') . ' ' . ($appt['appointment_time'] ?? '');
+            $latestStamp  = $patients[$clientId]['latest_date'] . ' ' . $patients[$clientId]['latest_time'];
+            if ($currentStamp >= $latestStamp) {
+                $patients[$clientId]['latest_date']   = (string) ($appt['appointment_date'] ?? '');
+                $patients[$clientId]['latest_time']   = (string) ($appt['appointment_time'] ?? '');
+                $patients[$clientId]['latest_status'] = (string) ($appt['status'] ?? '');
+            }
+        }
+
+        $patients = array_values($patients);
+        usort($patients, fn($a, $b) => strcmp(($b['latest_date'] ?? '') . ($b['latest_time'] ?? ''), ($a['latest_date'] ?? '') . ($a['latest_time'] ?? '')));
+
+        $today = date('Y-m-d');
+        $stats = [
+            'patients'    => count($patients),
+            'appointments'=> count($doctorAppts),
+            'today'       => count(array_filter($doctorAppts, fn($appt) => ($appt['appointment_date'] ?? '') === $today)),
+        ];
+
+        return view('doctor/records', [
+            'patient'      => null,
+            'appointments' => [],
+            'patients'     => $patients,
+            'search'       => $search,
+            'stats'        => $stats,
+        ]);
+    }
+
     public function updateStatus()
     {
         $access = $this->ensureDoctor();
