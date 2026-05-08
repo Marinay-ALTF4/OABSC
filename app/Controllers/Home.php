@@ -84,6 +84,7 @@ class Home extends BaseController
             $data['doc_upcoming']     = count(array_filter($myAppts, fn($a) => $a['appointment_date'] >= $today && in_array($a['status'], ['pending', 'approved'])));
             $data['doc_completed']    = count(array_filter($myAppts, fn($a) => $a['status'] === 'completed'));
             $data['doc_total']        = count($myAppts);
+            $data['doc_pending_count'] = count(array_filter($myAppts, fn($a) => $a['status'] === 'pending'));
         }
 
         return view('auth/dashboard', $data);
