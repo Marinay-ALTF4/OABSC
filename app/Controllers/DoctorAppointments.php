@@ -15,43 +15,34 @@ class DoctorAppointments extends BaseController
         return null;
     }
 
-    public function index()
+    private function loadDoctorAppointments(string $filter = 'all'): array
     {
-        $access = $this->ensureDoctor();
-        if ($access !== null) return $access;
-
         $doctorName = 'Dr. ' . session('user_name');
         $doctorId   = (int) session('user_id');
         $model      = new AppointmentModel();
         $userModel  = new UserModel();
+        $today      = date('Y-m-d');
 
-        $filter = $this->request->getGet('filter') ?? 'all';
-        $today  = date('Y-m-d');
-
-        // Get ALL appointments - no filter first
         $allAppts = $model->findAll();
 
-        // Filter by doctor
-        $appointments = array_filter($allAppts, function($appt) use ($doctorName, $doctorId) {
+        $appointments = array_filter($allAppts, function ($appt) use ($doctorName, $doctorId) {
             return ($appt['doctor_name'] === $doctorName) ||
-                   ((int)($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
-        }); 
+                   ((int) ($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
+        });
         $appointments = array_values($appointments);
 
-        // Apply date filter
         if ($filter === 'today') {
             $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] === $today);
         } elseif ($filter === 'upcoming') {
-            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] >= $today && in_array($a['status'], ['pending', 'approved']));
+            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] > $today && in_array($a['status'], ['pending', 'approved']));
         } elseif ($filter === 'past') {
             $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] < $today);
         }
+
         $appointments = array_values($appointments);
 
-        // Sort by date and time
-        usort($appointments, fn($a, $b) => strcmp($a['appointment_date'].$a['appointment_time'], $b['appointment_date'].$b['appointment_time']));
+        usort($appointments, fn($a, $b) => strcmp($a['appointment_date'] . $a['appointment_time'], $b['appointment_date'] . $b['appointment_time']));
 
-        // Attach patient info
         foreach ($appointments as &$appt) {
             $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
             if ($clientId) {
@@ -65,10 +56,45 @@ class DoctorAppointments extends BaseController
                 $appt['patient_phone'] = '';
             }
         }
+        unset($appt);
+
+        return $appointments;
+    }
+
+    public function index()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $filter = $this->request->getGet('filter') ?? 'all';
+        $appointments = $this->loadDoctorAppointments($filter);
 
         return view('doctor/appointments', [
             'appointments' => $appointments,
             'filter'       => $filter,
+        ]);
+    }
+
+    public function queue()
+    {
+        $access = $this->ensureDoctor();
+        if ($access !== null) return $access;
+
+        $today = date('Y-m-d');
+        $appointments = $this->loadDoctorAppointments('all');
+
+        $todayQueue = array_values(array_filter($appointments, function (array $appt) use ($today): bool {
+            return $appt['appointment_date'] === $today && in_array($appt['status'], ['pending', 'approved']);
+        }));
+
+        $upcomingQueue = array_values(array_filter($appointments, function (array $appt) use ($today): bool {
+            return $appt['appointment_date'] > $today && in_array($appt['status'], ['pending', 'approved']);
+        }));
+
+        return view('doctor/queue', [
+            'todayQueue'    => $todayQueue,
+            'upcomingQueue' => $upcomingQueue,
+            'today'         => $today,
         ]);
     }
 
