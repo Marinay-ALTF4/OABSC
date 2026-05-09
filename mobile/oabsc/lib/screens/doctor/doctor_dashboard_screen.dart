@@ -10,6 +10,7 @@ import 'doctor_queue_view.dart';
 import 'doctor_patient_records_view.dart';
 import 'doctor_notes_view.dart';
 import 'doctor_prescriptions_view.dart';
+import 'doctor_schedule_settings_view.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -72,6 +73,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         return DoctorNotesView(onBack: () => setState(() => _activeNavIndex = 0));
       case 5:
         return DoctorPrescriptionsView(onBack: () => setState(() => _activeNavIndex = 0));
+      case 6:
+        return DoctorScheduleSettingsView(onBack: () => setState(() => _activeNavIndex = 0));
       default:
         return _buildDashboard();
     }
