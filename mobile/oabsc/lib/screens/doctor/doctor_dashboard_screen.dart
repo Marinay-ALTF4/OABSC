@@ -6,6 +6,7 @@ import '../../widgets/stat_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
 import 'doctor_appointments_view.dart';
+import 'doctor_queue_view.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({super.key});
@@ -60,6 +61,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         return _buildDashboard();
       case 1:
         return DoctorAppointmentsView(onBack: () => setState(() => _activeNavIndex = 0));
+      case 2:
+        return DoctorQueueView(onBack: () => setState(() => _activeNavIndex = 0));
       default:
         return _buildDashboard();
     }
