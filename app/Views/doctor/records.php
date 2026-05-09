@@ -14,54 +14,59 @@ $search       = $search ?? '';
     <?php endif; ?>
 
     <?php if (empty($patient)): ?>
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h4 class="fw-bold mb-1">Patient Records</h4>
-                <p class="text-muted small mb-0">View patients and the appointment history linked to your account.</p>
+                <h5 class="doc-page-title"><i class="bi bi-folder2-open me-2"></i>Patient Records</h5>
+                <p class="doc-page-sub">View patients and the appointment history linked to your account.</p>
             </div>
         </div>
 
+        <!-- Stat Cards -->
         <div class="row g-3 mb-4">
             <div class="col-12 col-md-4">
-                <div class="record-stat">
-                    <div class="record-icon text-primary bg-primary-subtle"><i class="bi bi-people"></i></div>
-                    <div class="text-muted small text-uppercase fw-semibold">Patients</div>
-                    <div class="h4 fw-bold mb-0"><?= esc((string) $stats['patients']) ?></div>
-                    <div class="text-muted small">Unique patients in your records</div>
+                <div class="doc-stat-card">
+                    <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-people"></i></div>
+                    <div class="doc-stat-label">Patients</div>
+                    <div class="doc-stat-value"><?= esc((string) $stats['patients']) ?></div>
+                    <div class="doc-stat-sub">Unique patients in your records</div>
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="record-stat">
-                    <div class="record-icon text-info bg-info-subtle"><i class="bi bi-journal-medical"></i></div>
-                    <div class="text-muted small text-uppercase fw-semibold">Appointments</div>
-                    <div class="h4 fw-bold mb-0"><?= esc((string) $stats['appointments']) ?></div>
-                    <div class="text-muted small">Total linked appointments</div>
+                <div class="doc-stat-card">
+                    <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-journal-medical"></i></div>
+                    <div class="doc-stat-label">Appointments</div>
+                    <div class="doc-stat-value"><?= esc((string) $stats['appointments']) ?></div>
+                    <div class="doc-stat-sub">Total linked appointments</div>
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="record-stat">
-                    <div class="record-icon text-success bg-success-subtle"><i class="bi bi-calendar-day"></i></div>
-                    <div class="text-muted small text-uppercase fw-semibold">Today</div>
-                    <div class="h4 fw-bold mb-0"><?= esc((string) $stats['today']) ?></div>
-                    <div class="text-muted small">Records scheduled for today</div>
+                <div class="doc-stat-card">
+                    <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-calendar-day"></i></div>
+                    <div class="doc-stat-label">Today</div>
+                    <div class="doc-stat-value"><?= esc((string) $stats['today']) ?></div>
+                    <div class="doc-stat-sub">Records scheduled for today</div>
                 </div>
             </div>
         </div>
 
-        <div class="record-panel mb-4">
-            <div class="record-panel-head d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <!-- Patient List -->
+        <div class="doc-table-card">
+            <div class="doc-table-card-head d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
-                    <div class="fw-semibold text-dark small"><i class="bi bi-folder2-open me-2 text-primary"></i>Patient List</div>
-                    <div class="record-panel-sub">Select a patient to open their appointment history.</div>
+                    <div class="fw-semibold" style="font-size:0.88rem;color:#1b3a1e;">
+                        <i class="bi bi-folder2-open me-2" style="color:#2e5c32;"></i>Patient List
+                    </div>
+                    <div class="doc-page-sub">Select a patient to open their appointment history.</div>
                 </div>
                 <form method="get" class="d-flex gap-2 flex-wrap">
-                    <input type="text" name="search" class="form-control form-control-sm record-search" placeholder="Search name, email, or phone..." value="<?= esc($search) ?>">
-                    <button class="btn btn-sm btn-primary px-3">Search</button>
+                    <input type="text" name="search" class="doc-search-input" placeholder="Search name, email, or phone..." value="<?= esc($search) ?>">
+                    <button class="doc-save-btn">Search</button>
                 </form>
             </div>
             <div class="table-responsive">
-                <table class="table record-table table-hover align-middle mb-0 table-sm">
-                    <thead class="table-light">
+                <table class="doc-table">
+                    <thead>
                         <tr>
                             <th>#</th>
                             <th>Patient</th>
@@ -82,11 +87,11 @@ $search       = $search ?? '';
                                 <?php
                                     $status = strtolower((string) ($p['latest_status'] ?? ''));
                                     $statusClass = match ($status) {
-                                        'approved'  => 'bg-success-subtle text-success',
-                                        'pending'   => 'bg-warning-subtle text-warning',
-                                        'completed' => 'bg-primary-subtle text-primary',
-                                        'cancelled' => 'bg-danger-subtle text-danger',
-                                        default     => 'bg-secondary-subtle text-secondary',
+                                        'approved'  => 'doc-badge-approved',
+                                        'pending'   => 'doc-badge-pending',
+                                        'completed' => 'doc-badge-completed',
+                                        'cancelled' => 'doc-badge-cancelled',
+                                        default     => 'doc-badge-default',
                                     };
                                 ?>
                                 <tr>
@@ -94,13 +99,18 @@ $search       = $search ?? '';
                                     <td><div class="fw-semibold"><?= esc($p['name'] ?? 'Unknown') ?></div></td>
                                     <td><?= esc($p['email'] ?? '—') ?></td>
                                     <td><?= esc($p['phone'] ?? '—') ?></td>
-                                    <td><span class="badge bg-light text-dark border rounded-pill px-3 py-2"><?= esc((string) ($p['appointment_count'] ?? 0)) ?></span></td>
+                                    <td><span class="doc-count-badge"><?= esc((string) ($p['appointment_count'] ?? 0)) ?></span></td>
                                     <td>
                                         <div class="small fw-semibold"><?= esc(($p['latest_date'] ?? '-') !== '' ? date('M j, Y', strtotime((string) $p['latest_date'])) : '-') ?></div>
-                                        <div class="small text-muted"><?= esc(substr((string) ($p['latest_time'] ?? ''), 0, 5) ?: '-') ?> <?php if ($status !== ''): ?><span class="badge <?= $statusClass ?> ms-1"><?= esc(ucfirst($status)) ?></span><?php endif; ?></div>
+                                        <div class="small text-muted">
+                                            <?= esc(substr((string) ($p['latest_time'] ?? ''), 0, 5) ?: '-') ?>
+                                            <?php if ($status !== ''): ?>
+                                                <span class="doc-badge <?= $statusClass ?> ms-1"><?= esc(ucfirst($status)) ?></span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td class="text-end">
-                                        <a href="<?= site_url('/doctor/records/' . (int) ($p['id'] ?? 0)) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="<?= site_url('/doctor/records/' . (int) ($p['id'] ?? 0)) ?>" class="doc-action-btn doc-action-view">View</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -109,38 +119,44 @@ $search       = $search ?? '';
                 </table>
             </div>
         </div>
+
     <?php else: ?>
-        <div class="record-profile mb-4">
-            <div class="record-avatar"><?= strtoupper(substr((string) ($patient['name'] ?? 'PT'), 0, 2)) ?></div>
+
+        <!-- Patient Profile Header -->
+        <div class="doc-profile-card mb-4">
+            <div class="doc-profile-avatar"><?= strtoupper(substr((string) ($patient['name'] ?? 'PT'), 0, 2)) ?></div>
             <div>
-                <div class="record-name"><?= esc($patient['name'] ?? 'Unknown') ?></div>
-                <div class="record-meta"><i class="bi bi-envelope me-1"></i><?= esc($patient['email'] ?? '—') ?></div>
+                <div class="doc-profile-name"><?= esc($patient['name'] ?? 'Unknown') ?></div>
+                <div class="doc-profile-meta"><i class="bi bi-envelope me-1"></i><?= esc($patient['email'] ?? '—') ?></div>
                 <?php if (! empty($patient['phone'])): ?>
-                    <div class="record-meta"><i class="bi bi-telephone me-1"></i><?= esc($patient['phone']) ?></div>
+                    <div class="doc-profile-meta"><i class="bi bi-telephone me-1"></i><?= esc($patient['phone']) ?></div>
                 <?php endif; ?>
             </div>
-            <div class="ms-auto d-flex gap-2">
-                <a href="<?= site_url('/doctor/records') ?>" class="btn btn-sm btn-outline-secondary">All Records</a>
+            <div class="ms-auto">
+                <a href="<?= site_url('/doctor/records') ?>" class="doc-action-btn doc-action-view">All Records</a>
             </div>
         </div>
 
-        <div class="record-panel">
-            <div class="record-panel-head d-flex justify-content-between align-items-center gap-2">
+        <!-- Appointment History -->
+        <div class="doc-table-card">
+            <div class="doc-table-card-head d-flex justify-content-between align-items-center gap-2">
                 <div>
-                    <div class="fw-semibold text-dark small"><i class="bi bi-calendar2-check me-2 text-primary"></i>Appointment History</div>
-                    <div class="record-panel-sub">Appointments connected to this patient.</div>
+                    <div class="fw-semibold" style="font-size:0.88rem;color:#1b3a1e;">
+                        <i class="bi bi-calendar2-check me-2" style="color:#2e5c32;"></i>Appointment History
+                    </div>
+                    <div class="doc-page-sub">Appointments connected to this patient.</div>
                 </div>
-                <span class="badge bg-primary rounded-pill px-3 py-2"><?= count($appointments) ?> record<?= count($appointments) === 1 ? '' : 's' ?></span>
+                <span class="doc-count-badge"><?= count($appointments) ?> record<?= count($appointments) === 1 ? '' : 's' ?></span>
             </div>
             <?php if (empty($appointments)): ?>
                 <div class="text-center text-muted py-5">
-                    <i class="bi bi-calendar-x d-block mb-2" style="font-size:1.5rem;"></i>
+                    <i class="bi bi-calendar-x d-block mb-2" style="font-size:1.5rem;color:#6aaa70;"></i>
                     No appointment records found for this patient.
                 </div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table record-table table-hover align-middle mb-0 table-sm">
-                        <thead class="table-light">
+                    <table class="doc-table">
+                        <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Time</th>
@@ -153,11 +169,11 @@ $search       = $search ?? '';
                                 <?php
                                     $status = strtolower((string) ($appt['status'] ?? 'pending'));
                                     $statusClass = match ($status) {
-                                        'approved'  => 'bg-success-subtle text-success',
-                                        'pending'   => 'bg-warning-subtle text-warning',
-                                        'completed' => 'bg-primary-subtle text-primary',
-                                        'cancelled' => 'bg-danger-subtle text-danger',
-                                        default     => 'bg-secondary-subtle text-secondary',
+                                        'approved'  => 'doc-badge-approved',
+                                        'pending'   => 'doc-badge-pending',
+                                        'completed' => 'doc-badge-completed',
+                                        'cancelled' => 'doc-badge-cancelled',
+                                        default     => 'doc-badge-default',
                                     };
                                 ?>
                                 <tr>
@@ -166,7 +182,7 @@ $search       = $search ?? '';
                                     <td style="max-width:320px;">
                                         <span class="d-block text-truncate" title="<?= esc((string) ($appt['reason'] ?? '')) ?>"><?= esc((string) ($appt['reason'] ?? '-')) ?></span>
                                     </td>
-                                    <td><span class="badge <?= $statusClass ?> rounded-pill px-3 py-2"><?= esc(ucfirst($status)) ?></span></td>
+                                    <td><span class="doc-badge <?= $statusClass ?>"><?= esc(ucfirst($status)) ?></span></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -174,57 +190,7 @@ $search       = $search ?? '';
                 </div>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
 
-<style>
-    .record-stat {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        padding: 12px 14px;
-        height: 100%;
-    }
-    .record-icon {
-        width: 34px; height: 34px;
-        border-radius: 10px;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 0.95rem; margin-bottom: 8px;
-    }
-    .record-panel {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-    }
-    .record-panel-head { padding: 12px 14px 8px; }
-    .record-panel-sub { color: #64748b; font-size: 0.8rem; }
-    .record-search { min-width: 240px; }
-    .record-table thead th {
-        font-size: 0.68rem; text-transform: uppercase;
-        letter-spacing: 0.04em; color: #475569;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .record-table { font-size: 0.86rem; }
-    .record-table td, .record-table th { padding-top: 0.55rem; padding-bottom: 0.55rem; vertical-align: middle; }
-    .record-profile {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        padding: 14px 16px;
-        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    }
-    .record-avatar {
-        width: 46px; height: 46px;
-        border-radius: 14px;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: linear-gradient(135deg, #1d4ed8, #60a5fa);
-        color: #fff; font-weight: 700;
-    }
-    .record-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .record-meta { font-size: 0.8rem; color: #64748b; }
-</style>
+    <?php endif; ?>
 
 <?= view('doctor/_layout_bottom') ?>

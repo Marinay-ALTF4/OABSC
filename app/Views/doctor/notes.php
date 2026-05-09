@@ -11,62 +11,70 @@ $patients = $patients ?? [];
         <div class="alert alert-danger py-2"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif; ?>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1">Write Notes</h4>
-            <p class="text-muted small mb-0">Create private doctor notes and tag them to your patients.</p>
+            <h5 class="doc-page-title"><i class="bi bi-journal-text me-2"></i>Write Notes</h5>
+            <p class="doc-page-sub">Create private doctor notes and tag them to your patients.</p>
         </div>
     </div>
 
     <div class="row g-3">
+        <!-- New Note Form -->
         <div class="col-12 col-lg-5">
-            <div class="notes-card p-3 p-md-4">
-                <div class="fw-semibold mb-3"><i class="bi bi-journal-plus me-2 text-primary"></i>New Note</div>
-                <form method="post" action="<?= site_url('/doctor/notes') ?>">
-                    <?= csrf_field() ?>
-                    <div class="mb-2">
-                        <label class="form-label small text-muted mb-1">Title</label>
-                        <input type="text" name="title" class="form-control form-control-sm" maxlength="120" required>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label small text-muted mb-1">Patient (optional)</label>
-                        <select name="patient_id" class="form-select form-select-sm" id="patientSelect">
-                            <option value="">No specific patient</option>
-                            <?php foreach ($patients as $p): ?>
-                                <option value="<?= (int) ($p['id'] ?? 0) ?>" data-name="<?= esc((string) ($p['name'] ?? 'Unknown')) ?>">
-                                    <?= esc((string) ($p['name'] ?? 'Unknown')) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="hidden" name="patient_name" id="patientNameInput" value="">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-muted mb-1">Note</label>
-                        <textarea name="body" class="form-control form-control-sm" rows="6" maxlength="3000" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm px-3">Save Note</button>
-                </form>
+            <div class="doc-form-card">
+                <div class="doc-form-card-head">
+                    <i class="bi bi-journal-plus me-2" style="color:#2e5c32;"></i>New Note
+                </div>
+                <div class="p-3">
+                    <form method="post" action="<?= site_url('/doctor/notes') ?>">
+                        <?= csrf_field() ?>
+                        <div class="mb-2">
+                            <label class="doc-label">Title</label>
+                            <input type="text" name="title" class="doc-input" maxlength="120" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="doc-label">Patient (optional)</label>
+                            <select name="patient_id" class="doc-input" id="patientSelect">
+                                <option value="">No specific patient</option>
+                                <?php foreach ($patients as $p): ?>
+                                    <option value="<?= (int) ($p['id'] ?? 0) ?>" data-name="<?= esc((string) ($p['name'] ?? 'Unknown')) ?>">
+                                        <?= esc((string) ($p['name'] ?? 'Unknown')) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="hidden" name="patient_name" id="patientNameInput" value="">
+                        </div>
+                        <div class="mb-3">
+                            <label class="doc-label">Note</label>
+                            <textarea name="body" class="doc-input" rows="6" maxlength="3000" required></textarea>
+                        </div>
+                        <button type="submit" class="doc-save-btn">Save Note</button>
+                    </form>
+                </div>
             </div>
         </div>
 
+        <!-- Saved Notes List -->
         <div class="col-12 col-lg-7">
-            <div class="notes-card p-0">
-                <div class="notes-head d-flex justify-content-between align-items-center">
-                    <div class="fw-semibold"><i class="bi bi-journal-text me-2 text-primary"></i>Saved Notes</div>
-                    <span class="badge bg-primary rounded-pill"><?= count($notes) ?></span>
+            <div class="doc-table-card">
+                <div class="doc-table-card-head d-flex justify-content-between align-items-center">
+                    <div class="fw-semibold" style="font-size:0.88rem;color:#1b3a1e;">
+                        <i class="bi bi-journal-text me-2" style="color:#2e5c32;"></i>Saved Notes
+                    </div>
+                    <span class="doc-count-badge"><?= count($notes) ?></span>
                 </div>
                 <?php if (empty($notes)): ?>
                     <div class="text-center text-muted py-5">
-                        <i class="bi bi-inbox d-block mb-2" style="font-size:1.5rem;"></i>
+                        <i class="bi bi-inbox d-block mb-2" style="font-size:1.5rem;color:#6aaa70;"></i>
                         No notes yet.
                     </div>
                 <?php else: ?>
-                    <div class="notes-list">
+                    <div style="max-height:560px;overflow:auto;">
                         <?php foreach ($notes as $note): ?>
-                            <div class="note-item">
+                            <div class="doc-list-item">
                                 <div class="d-flex justify-content-between align-items-start gap-2">
                                     <div>
-                                        <div class="fw-semibold"><?= esc((string) ($note['title'] ?? 'Untitled')) ?></div>
+                                        <div class="fw-semibold" style="color:#1b3a1e;"><?= esc((string) ($note['title'] ?? 'Untitled')) ?></div>
                                         <div class="small text-muted">
                                             <?= esc(date('M j, Y g:i A', strtotime((string) ($note['created_at'] ?? date('Y-m-d H:i:s'))))) ?>
                                             <?php if (! empty($note['patient_name'])): ?>
@@ -79,10 +87,10 @@ $patients = $patients ?? [];
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="note_id" value="<?= esc((string) ($note['id'] ?? '')) ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Delete</button>
+                                        <button type="submit" class="doc-action-btn doc-action-cancel">Delete</button>
                                     </form>
                                 </div>
-                                <div class="mt-2 text-dark small" style="white-space: pre-wrap;"><?= esc((string) ($note['body'] ?? '')) ?></div>
+                                <div class="mt-2 small" style="color:#2d3748;white-space:pre-wrap;"><?= esc((string) ($note['body'] ?? '')) ?></div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -90,24 +98,6 @@ $patients = $patients ?? [];
             </div>
         </div>
     </div>
-
-<style>
-    .notes-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-    }
-    .notes-head {
-        padding: 12px 14px;
-        border-bottom: 1px solid #eef2f7;
-        background: #f8fafc;
-    }
-    .notes-list { max-height: 560px; overflow: auto; }
-    .note-item { padding: 12px 14px; border-bottom: 1px solid #eef2f7; }
-    .note-item:last-child { border-bottom: none; }
-</style>
 
 <script>
 const patientSelect = document.getElementById('patientSelect');
