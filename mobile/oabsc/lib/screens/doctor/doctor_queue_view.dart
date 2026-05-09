@@ -265,22 +265,27 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
             ),
           ),
           
-          // Table Headers
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-            color: AppColors.background.withValues(alpha: 0.5),
-            child: Row(
-              children: columns.map((col) => Expanded(
-                child: Text(
-                  col,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 0.5,
+          // Table Headers with horizontal scroll
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              width: 650, // Increased to accommodate children + padding
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+              color: AppColors.background.withValues(alpha: 0.5),
+              child: Row(
+                children: columns.map((col) => SizedBox(
+                  width: (650 - 32) / columns.length, // Adjust for padding
+                  child: Text(
+                    col,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-              )).toList(),
+                )).toList(),
+              ),
             ),
           ),
           
