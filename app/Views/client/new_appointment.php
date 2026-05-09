@@ -31,10 +31,13 @@ $bookedSlots = $bookedSlots ?? [];
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                         <div>
+                            <div class="section-label-book mb-1">Book</div>
                             <h4 class="mb-1">Book New Appointment</h4>
                             <p class="text-muted small mb-0">Select doctor, date, and time slot, then confirm your booking.</p>
                         </div>
-                        <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm btn-outline-secondary">My Appointments</a>
+                        <a href="<?= site_url('/appointments/my') ?>" class="btn btn-sm" style="background:white;border:1px solid #dbe4ef;color:#475569;font-weight:600;border-radius:10px;font-family:'DM Sans',sans-serif;">
+                            <i class="bi bi-arrow-left me-1"></i>My Appointments
+                        </a>
                     </div>
 
                     <?php if (session()->getFlashdata('success')): ?>
@@ -665,28 +668,44 @@ $bookedSlots = $bookedSlots ?? [];
 </script>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
     body {
         margin: 0;
         padding: 0;
-        background: linear-gradient(180deg, #f5f8fa 0%, #eef4fb 100%);
+        background: #edf2f7;
         min-height: 100vh;
+        font-family: 'DM Sans', 'Inter', sans-serif;
     }
 
     .booking-page {
         max-width: 1120px;
     }
 
+    /* Page heading */
+    h4 { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; }
+    .text-muted.small { font-family: 'DM Sans', sans-serif; color: #64748b !important; }
+
+    /* Section label — matches dashboard */
+    .section-label-book {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1.8px; color: #64748b;
+        margin-bottom: 0.5rem; display: block;
+    }
+
+    /* Booking card — matches dashboard .action-card */
     .booking-card {
-        border: 1px solid #e1e8ed;
-        border-left: 4px solid #4a90e2;
+        border: 1px solid #dbe4ef;
         background: white;
-        border-radius: 14px;
+        border-radius: 18px;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
     }
 
     .summary-card {
-        border: 1px solid #dbe7f6;
+        border: 1px solid #dbe4ef;
         background: #f8fbff;
-        border-radius: 10px;
+        border-radius: 14px;
         padding: 14px 16px;
     }
     .location-line {
@@ -701,115 +720,132 @@ $bookedSlots = $bookedSlots ?? [];
         gap: 10px;
     }
 
+    /* Slot buttons — matches dashboard .btn-outline / .btn-filled */
     .slot-btn {
-        border: 1px solid #bfd2ec;
+        border: 1.5px solid #bfdbfe;
         background: #fff;
-        color: #204b83;
-        border-radius: 8px;
+        color: #1e40af;
+        border-radius: 10px;
         padding: 8px 10px;
         font-weight: 600;
         font-size: 0.86rem;
+        font-family: 'DM Sans', sans-serif;
         transition: all 0.15s ease;
     }
 
     .slot-btn:hover {
-        border-color: #4a90e2;
-        color: #1f67bc;
+        border-color: #1d4ed8;
+        background: #eff6ff;
+        color: #1d4ed8;
     }
 
     .slot-btn.active {
-        background: #4a90e2;
-        border-color: #4a90e2;
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+        border-color: #1d4ed8;
         color: #fff;
-        box-shadow: 0 4px 10px rgba(74, 144, 226, 0.25);
+        box-shadow: 0 4px 10px rgba(30,64,175,0.25);
     }
 
     .slot-btn.booked,
     .slot-btn:disabled {
-        background: #f1f5fa;
-        border-color: #d2dce7;
-        color: #95a3b5;
+        background: #f1f5f9;
+        border-color: #dbe4ef;
+        color: #94a3b8;
         cursor: not-allowed;
     }
 
+    /* Primary button — matches dashboard .btn-filled */
     .btn-primary {
-        background: #4a90e2;
-        border: none;
-        font-weight: 500;
-        color: white;
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a) !important;
+        border: none !important;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        color: white !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 10px rgba(30,64,175,0.3);
+        transition: all 0.18s ease;
     }
 
     .btn-primary:hover {
-        background: #357abd;
-        color: white;
+        background: linear-gradient(135deg, #1e40af, #1e3a8a) !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(30,64,175,0.35);
     }
 
-    /* Doctor Cards */
+    /* Doctor Cards — matches dashboard .action-card */
     .doctor-card {
-        border: 2px solid #e1e8ed;
-        border-radius: 12px;
+        border: 1.5px solid #dbe4ef;
+        border-radius: 18px;
         padding: 1rem 0.75rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
         background: white;
         height: 100%;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.05);
     }
     .doctor-card:hover {
-        border-color: #4a90e2;
-        box-shadow: 0 4px 12px rgba(74,144,226,0.15);
+        border-color: #1d4ed8;
+        box-shadow: 0 6px 20px rgba(30,64,175,0.12);
         transform: translateY(-2px);
     }
     .doctor-card.selected {
-        border-color: #4a90e2;
-        background: #f0f7ff;
-        box-shadow: 0 4px 14px rgba(74,144,226,0.2);
+        border-color: #1d4ed8;
+        background: #eff6ff;
+        box-shadow: 0 4px 14px rgba(30,64,175,0.18);
     }
     .doctor-avatar {
         width: 72px;
         height: 72px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid #e1e8ed;
+        border: 3px solid #dbe4ef;
         margin-bottom: 0.6rem;
     }
     .doctor-card.selected .doctor-avatar {
-        border-color: #4a90e2;
+        border-color: #1d4ed8;
     }
     .doctor-name {
-        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
         font-size: 0.9rem;
-        color: #222;
+        color: #0f172a;
         margin-bottom: 0.2rem;
     }
     .doctor-spec {
         font-size: 0.78rem;
-        color: #4a90e2;
-        font-weight: 500;
+        color: #1e40af;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
         margin-bottom: 0.35rem;
     }
     .doctor-exp {
         font-size: 0.75rem;
-        color: #888;
+        color: #64748b;
+        font-family: 'DM Sans', sans-serif;
         margin-bottom: 0.5rem;
     }
     .btn-view-profile {
-        background: none;
-        border: 1px solid #4a90e2;
-        color: #4a90e2;
-        border-radius: 6px;
+        background: #eff6ff;
+        border: 1.5px solid #bfdbfe;
+        color: #1e40af;
+        border-radius: 8px;
         font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
         padding: 0.25rem 0.6rem;
         cursor: pointer;
         transition: all 0.15s;
     }
     .btn-view-profile:hover {
-        background: #4a90e2;
-        color: white;
+        background: #dbeafe;
+        border-color: #93c5fd;
     }
+
     /* Doctor Profile Modal */
     .doctor-modal-header {
-        background: linear-gradient(135deg, #4a90e2, #357abd);
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
         color: white;
         padding: 1.75rem 1rem 1.25rem;
         text-align: center;
@@ -827,24 +863,28 @@ $bookedSlots = $bookedSlots ?? [];
         justify-content: space-between;
         align-items: flex-start;
         padding: 0.6rem 0;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f1f5f9;
         gap: 1rem;
     }
     .profile-label {
         font-weight: 600;
         font-size: 0.82rem;
-        color: #555;
+        color: #64748b;
         min-width: 110px;
+        font-family: 'DM Sans', sans-serif;
     }
     .profile-value {
         font-size: 0.85rem;
-        color: #333;
+        color: #0f172a;
         text-align: right;
+        font-family: 'DM Sans', sans-serif;
     }
+
     /* Map */
     .map-label {
         font-size: 0.82rem;
         color: #334155;
+        font-family: 'DM Sans', sans-serif;
     }
     .map-sublabel {
         font-size: 0.75rem;
@@ -853,9 +893,9 @@ $bookedSlots = $bookedSlots ?? [];
     }
     .map-wrapper {
         position: relative;
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #dbe4ef;
     }
     .clinic-map {
         width: 100%;
@@ -867,19 +907,44 @@ $bookedSlots = $bookedSlots ?? [];
         position: absolute;
         bottom: 10px;
         right: 10px;
-        background: #1e40af;
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
         color: white;
         font-size: 0.78rem;
         font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
         padding: 0.4rem 0.85rem;
         border-radius: 8px;
         text-decoration: none;
         box-shadow: 0 2px 8px rgba(30,64,175,0.35);
-        transition: background 0.15s;
+        transition: opacity 0.15s;
     }
     .map-directions-btn:hover {
-        background: #1d4ed8;
+        opacity: 0.9;
         color: white;
+    }
+
+    /* Form labels */
+    .form-label {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    /* Form controls */
+    .form-control {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        color: #0f172a;
+        background: #fafafa;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        background: white;
     }
 
     @media (max-width: 992px) {

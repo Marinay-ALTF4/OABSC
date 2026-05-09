@@ -16,6 +16,7 @@
     <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
+            <div style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:#64748b;margin-bottom:4px;">Account</div>
             <h4 class="page-title mb-1">Profile Settings</h4>
             <p class="page-sub mb-0">Manage your personal information and account security.</p>
         </div>
@@ -527,11 +528,13 @@ function checkStrength(val) {
 </script>
 
 <style>
-    body { background: #edf2f7; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
+    body { background: #edf2f7; min-height: 100vh; font-family: 'DM Sans', 'Inter', sans-serif; }
     .profile-page { min-height: calc(100vh - 60px); }
 
-    .page-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
-    .page-sub   { font-size: 0.875rem; color: #64748b; }
+    .page-title { font-size: 1.4rem; font-weight: 800; color: #0f172a; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.3px; }
+    .page-sub   { font-size: 0.875rem; color: #64748b; font-family: 'DM Sans', sans-serif; }
 
     .btn-back-link {
         font-size: 0.85rem; font-weight: 600; color: #475569;
@@ -544,8 +547,8 @@ function checkStrength(val) {
     /* Avatar */
     .profile-card {
         background: white; border-radius: 18px; padding: 1.75rem 1.25rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        border: 1px solid #dbe4ef;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
     }
     .avatar-circle {
         width: 80px; height: 80px; border-radius: 50%;
@@ -586,11 +589,11 @@ function checkStrength(val) {
     /* Section Card */
     .section-card {
         background: white; border-radius: 18px; padding: 1.75rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        border: 1px solid #dbe4ef;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
     }
-    .section-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .section-card-sub   { font-size: 0.83rem; color: #64748b; margin-top: 3px; }
+    .section-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .section-card-sub   { font-size: 0.83rem; color: #64748b; margin-top: 3px; font-family: 'DM Sans', sans-serif; }
 
     /* Fields */
     .field-label {
@@ -605,7 +608,7 @@ function checkStrength(val) {
     .field-input {
         width: 100%; padding: 0.6rem 0.9rem 0.6rem 2.2rem;
         border: 1.5px solid #e2e8f0; border-radius: 10px;
-        font-size: 0.875rem; font-family: 'Segoe UI', sans-serif;
+        font-size: 0.875rem; font-family: 'DM Sans', 'Inter', sans-serif;
         color: #0f172a; background: #fafafa; outline: none;
         transition: border-color 0.15s, box-shadow 0.15s;
     }
@@ -669,6 +672,29 @@ function checkStrength(val) {
     .history-item-meta span { color: #64748b; font-size: 0.82rem; }
     .history-item-details { margin-top: 0.5rem; color: #475569; font-size: 0.875rem; }
     .history-empty { background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 14px; }
+
+    /* Language options */
+    .lang-options { display: flex; flex-direction: column; gap: 0.75rem; }
+    .lang-option {
+        cursor: pointer; border-radius: 14px;
+        border: 1.5px solid #e2e8f0; overflow: hidden;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .lang-option:has(input:checked) {
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+    }
+    .lang-option input[type="radio"] { display: none; }
+    .lang-option-inner {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 1rem 1.25rem;
+    }
+    .lang-flag { font-size: 1.75rem; flex-shrink: 0; }
+    .lang-name { font-weight: 700; font-size: 0.95rem; color: #0f172a; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .lang-desc { font-size: 0.8rem; color: #64748b; font-family: 'DM Sans', sans-serif; margin-top: 2px; }
+    .lang-check { color: #dbe4ef; font-size: 1.1rem; transition: color 0.15s; }
+    .lang-option:has(input:checked) .lang-check { color: #1d4ed8; }
+    .lang-note { font-size: 0.8rem; color: #94a3b8; font-family: 'DM Sans', sans-serif; }
 </style>
 </body>
 </html>
