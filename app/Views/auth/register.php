@@ -14,8 +14,8 @@ if (! is_array($errors)) {
     $errors = [];
 }
 $nameErr = $errors['name'] ?? null;
-$contactMethodErr = $errors['contact_method'] ?? null;
-$contactValueErr = $errors['contact_value'] ?? ($errors['email'] ?? null);
+$emailErr = $errors['email'] ?? $errors['contact_value'] ?? null;
+$phoneErr = $errors['phone'] ?? null;
 $passwordErr = $errors['password'] ?? null;
 $passwordConfirmErr = $errors['password_confirm'] ?? null;
 $formErr = $errors['_form'] ?? null;
@@ -40,13 +40,13 @@ $formErr = $errors['_form'] ?? null;
             </div>
         <?php endif; ?>
 
-        <?php if ($nameErr || $contactMethodErr || $contactValueErr || $passwordErr || $passwordConfirmErr): ?>
+        <?php if ($nameErr || $emailErr || $phoneErr || $passwordErr || $passwordConfirmErr): ?>
             <div class="alert alert-danger py-2 mb-3" role="alert">
                 <strong>Please correct the following:</strong>
                 <ul class="mb-0 mt-1 ps-3">
                     <?php if ($nameErr): ?><li><?= esc($nameErr) ?></li><?php endif; ?>
-                    <?php if ($contactMethodErr): ?><li><?= esc($contactMethodErr) ?></li><?php endif; ?>
-                    <?php if ($contactValueErr): ?><li><?= esc($contactValueErr) ?></li><?php endif; ?>
+                    <?php if ($emailErr): ?><li><?= esc($emailErr) ?></li><?php endif; ?>
+                    <?php if ($phoneErr): ?><li><?= esc($phoneErr) ?></li><?php endif; ?>
                     <?php if ($passwordErr): ?><li><?= esc($passwordErr) ?></li><?php endif; ?>
                     <?php if ($passwordConfirmErr): ?><li><?= esc($passwordConfirmErr) ?></li><?php endif; ?>
                 </ul>
@@ -75,34 +75,41 @@ $formErr = $errors['_form'] ?? null;
                 <div id="nameLiveError" class="invalid-feedback" style="display:none;">Name allows letters and spaces only (ñ is allowed).</div>
             </div>
 
+            
+
             <div class="mb-3">
-                <label for="contact_method" class="form-label">Register using</label>
-                <select id="contact_method" name="contact_method" class="form-control <?= $contactMethodErr ? 'is-invalid' : '' ?>" style="text-align: center;" required>
-                    <option value="" disabled <?= !old('contact_method') ? 'selected' : '' ?>>—— Select Register Option ——</option>
-                    <option value="email" <?= old('contact_method') === 'email' ? 'selected' : '' ?>>Email</option>
-                    <option value="phone" <?= old('contact_method') === 'phone' ? 'selected' : '' ?>>Phone Number</option>
-                </select>
-                <?php if ($contactMethodErr): ?>
-                    <div class="invalid-feedback d-block"><?= esc($contactMethodErr) ?></div>
+                <label for="email" class="form-label">Email Address</label>
+                <input
+                    type="email"
+                    class="form-control <?= $emailErr ? 'is-invalid' : '' ?>"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    value="<?= old('email') ?>"
+                    required
+                >
+                <?php if ($emailErr): ?>
+                    <div class="invalid-feedback d-block"><?= esc($emailErr) ?></div>
                 <?php endif; ?>
+                <div id="emailLiveError" class="invalid-feedback" style="display:none;">Please enter a valid email address.</div>
+                <div class="form-text" id="emailHelp">We will send a 6-digit verification code to this email before creating the account.</div>
             </div>
 
             <div class="mb-3">
-                <label for="contact_value" class="form-label" id="contactLabel">Email Address</label>
+                <label for="phone" class="form-label">Phone Number</label>
                 <input
-                    type="email"
-                    class="form-control <?= $contactValueErr ? 'is-invalid' : '' ?>"
-                    id="contact_value"
-                    name="contact_value"
-                    placeholder="Enter your email"
-                    value="<?= old('contact_value', old('email')) ?>"
+                    type="tel"
+                    class="form-control <?= $phoneErr ? 'is-invalid' : '' ?>"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    value="<?= old('phone') ?>"
                     required
                 >
-                <?php if ($contactValueErr): ?>
-                    <div class="invalid-feedback d-block"><?= esc($contactValueErr) ?></div>
+                <?php if ($phoneErr): ?>
+                    <div class="invalid-feedback d-block"><?= esc($phoneErr) ?></div>
                 <?php endif; ?>
-                <div id="contactLiveError" class="invalid-feedback" style="display:none;">Please enter a valid email address.</div>
-                <div class="form-text" id="contactHelp">We will send a 6-digit verification code to this email before creating the account.</div>
+                <div id="phoneLiveError" class="invalid-feedback" style="display:none;">Please enter a valid phone number.</div>
             </div>
 
             <div class="mb-3">
@@ -260,51 +267,18 @@ $formErr = $errors['_form'] ?? null;
 
     var form = document.getElementById('registerForm');
     var nameInput = document.getElementById('name');
-    var contactMethodInput = document.getElementById('contact_method');
-    var contactValueInput = document.getElementById('contact_value');
+    var emailInput = document.getElementById('email');
+    var phoneInput = document.getElementById('phone');
     var passwordInput = document.getElementById('password');
     var passwordConfirmInput = document.getElementById('password_confirm');
 
     var nameLiveError = document.getElementById('nameLiveError');
-    var contactLiveError = document.getElementById('contactLiveError');
+    var emailLiveError = document.getElementById('emailLiveError');
+    var phoneLiveError = document.getElementById('phoneLiveError');
     var passwordLiveError = document.getElementById('passwordLiveError');
     var passwordConfirmLiveError = document.getElementById('passwordConfirmLiveError');
-    var contactLabel = document.getElementById('contactLabel');
-    var contactHelp = document.getElementById('contactHelp');
 
-    function syncContactField() {
-        if (!contactMethodInput || !contactValueInput || !contactLabel || !contactHelp) {
-            return;
-        }
-
-        var method = contactMethodInput.value || '';
-        var contactFieldContainer = contactValueInput.closest('.mb-3');
-
-        // Hide field if no selection made (placeholder selected)
-        if (!method) {
-            if (contactFieldContainer) {
-                contactFieldContainer.style.display = 'none';
-            }
-            return;
-        }
-
-        // Show field when selection is made
-        if (contactFieldContainer) {
-            contactFieldContainer.style.display = 'block';
-        }
-
-        if (method === 'phone') {
-            contactValueInput.type = 'tel';
-            contactValueInput.placeholder = 'Enter your phone number';
-            contactLabel.textContent = 'Phone Number';
-            contactHelp.textContent = 'We will send a 6-digit verification code to this phone number before creating the account.';
-        } else {
-            contactValueInput.type = 'email';
-            contactValueInput.placeholder = 'Enter your email';
-            contactLabel.textContent = 'Email Address';
-            contactHelp.textContent = 'We will send a 6-digit verification code to this email before creating the account.';
-        }
-    }
+    // No dynamic contact method: we use explicit email and phone fields
 
     function toggleError(input, errorEl, isInvalid, message) {
         if (!input || !errorEl) {
@@ -341,28 +315,21 @@ $formErr = $errors['_form'] ?? null;
         return !isInvalid;
     }
 
-    function validateContact(force) {
-        var method = (contactMethodInput.value || 'email').trim();
-        var value = (contactValueInput.value || '').trim();
+    function validateEmail(force) {
+        var value = (emailInput.value || '').trim();
 
         if (force && value === '') {
-            toggleError(contactValueInput, contactLiveError, true, method === 'phone' ? 'Phone number is required.' : 'Email is required.');
+            toggleError(emailInput, emailLiveError, true, 'Email is required.');
             return false;
         }
 
         if (value === '') {
-            toggleError(contactValueInput, contactLiveError, false);
+            toggleError(emailInput, emailLiveError, false);
             return true;
         }
 
-        if (method === 'phone') {
-            var isPhoneValid = /^[\d\s\+\-\(\)]{10,}$/.test(value);
-            toggleError(contactValueInput, contactLiveError, !isPhoneValid, 'Please enter a valid phone number.');
-            return isPhoneValid;
-        }
-
         if (value.indexOf('@') === -1) {
-            toggleError(contactValueInput, contactLiveError, true, 'Please enter a valid email address.');
+            toggleError(emailInput, emailLiveError, true, 'Please enter a valid email address.');
             return false;
         }
 
@@ -370,8 +337,27 @@ $formErr = $errors['_form'] ?? null;
         var numberCount = (localPart.match(/\d/g) || []).length;
         var specialCount = (localPart.match(/[^a-z0-9]/gi) || []).length;
         var isInvalid = numberCount > 10 || specialCount > 3;
-        toggleError(contactValueInput, contactLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
+        toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 10 numbers and 3 special characters before @.');
         return !isInvalid;
+    }
+
+    function validatePhone(force) {
+        var value = (phoneInput.value || '').trim();
+
+        if (force && value === '') {
+            toggleError(phoneInput, phoneLiveError, true, 'Phone number is required.');
+            return false;
+        }
+
+        if (value === '') {
+            toggleError(phoneInput, phoneLiveError, false);
+            return true;
+        }
+
+        // Philippine phone: +63 or 0 followed by 9-10 digits
+        var isPhoneValid = /^(\+63|0)[0-9\s\-\(\)]{9,12}$/.test(value);
+        toggleError(phoneInput, phoneLiveError, !isPhoneValid, 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).');
+        return isPhoneValid;
     }
 
     function validatePassword(force) {
@@ -411,20 +397,17 @@ $formErr = $errors['_form'] ?? null;
         });
     }
 
-    if (contactMethodInput) {
-        contactMethodInput.addEventListener('change', function() {
-            syncContactField();
-            validateContact(false);
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            validateEmail(false);
         });
     }
 
-    if (contactValueInput) {
-        contactValueInput.addEventListener('input', function() {
-            validateContact(false);
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            validatePhone(false);
         });
     }
-
-    syncContactField();
 
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
@@ -442,11 +425,12 @@ $formErr = $errors['_form'] ?? null;
     if (form) {
         form.addEventListener('submit', function(event) {
             var okName = validateName(true);
-            var okContact = validateContact(true);
+            var okEmail = validateEmail(true);
+            var okPhone = validatePhone(true);
             var okPassword = validatePassword(true);
             var okPasswordConfirm = validatePasswordConfirm(true);
 
-            if (!okName || !okContact || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
+            if (!okName || !okEmail || !okPhone || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }

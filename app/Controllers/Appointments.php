@@ -117,8 +117,18 @@ class Appointments extends BaseController
             ]);
         }
 
+        $ownerId = (int) session('user_id');
+
+        // Ensure the session user exists to avoid foreign key constraint failures
+        $userModelCheck = new UserModel();
+        if (! $userModelCheck->find($ownerId)) {
+            log_message('error', 'Appointment create failed: session user_id not found - ' . $ownerId);
+
+            return redirect()->to('/login')->with('error', 'Your session is invalid. Please log in again.');
+        }
+
         $insertData = [
-            $ownerColumn => (int) session('user_id'),
+            $ownerColumn => $ownerId,
             'appointment_date' => $appointmentDate,
             'appointment_time' => (string) $this->request->getPost('appointment_time'),
             'reason' => trim((string) $this->request->getPost('reason')),

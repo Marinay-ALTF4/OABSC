@@ -261,28 +261,24 @@ class Auth extends BaseController
         }
 
         if ($this->request->is('post')) {
-            $contactMethod = strtolower(trim((string) $this->request->getPost('contact_method')));
-            $contactValue = trim((string) $this->request->getPost('contact_value'));
+            $email = strtolower(trim((string) $this->request->getPost('email')));
+            $phone = trim((string) $this->request->getPost('phone'));
 
             $rules = [
                 'name'            => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
-                'contact_method'   => 'required|in_list[email,phone]',
-                'contact_value'    => 'required',
+                'email'           => 'required|valid_email|is_unique[users.email]',
+                'phone'           => 'required|regex_match[/^(\+63|0)[0-9\s\-\(\)]{9,12}$/]',
                 'password'         => 'required|min_length[8]',
                 'password_confirm' => 'required|matches[password]',
             ];
 
-            if ($contactMethod === 'phone') {
-                $rules['contact_value'] .= '|regex_match[/^[\d\s\+\-\(\)]{10,}$/]';
-            } else {
-                $rules['contact_value'] .= '|valid_email|is_unique[users.email]';
-            }
-
             $messages = [
-                'contact_value' => [
+                'email' => [
                     'is_unique'   => 'This email is already taken.',
                     'valid_email' => 'Please enter a valid email address.',
-                    'regex_match' => 'Please enter a valid phone number.',
+                ],
+                'phone' => [
+                    'regex_match' => 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).',
                 ],
             ];
 
@@ -290,16 +286,11 @@ class Auth extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
+
             $name     = trim((string) $this->request->getPost('name'));
             $password = (string) $this->request->getPost('password');
 
-            if ($contactMethod === 'phone') {
-                return redirect()->back()->withInput()->with('errors', [
-                    '_form' => 'Phone registration is selected, but SMS delivery is not configured yet. Please choose Email for now.',
-                ]);
-            }
-
-            $email = strtolower($contactValue);
+            // email was already extracted above as $email
 
             $emailLocalPart = explode('@', $email)[0] ?? '';
             $emailNumberCount = preg_match_all('/\d/', $emailLocalPart);
@@ -315,8 +306,7 @@ class Auth extends BaseController
             $pendingRegistration = [
                 'name'                   => $name,
                 'email'                  => $email,
-                'contact_method'         => $contactMethod,
-                'contact_value'          => $contactValue,
+                'phone'                  => $phone,
                 'password_hash'          => password_hash($password, PASSWORD_DEFAULT),
                 'role'                   => 'client',
                 'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
@@ -399,6 +389,7 @@ class Auth extends BaseController
             $userId = $userModel->insert([
                 'name'          => $pendingRegistration['name'] ?? '',
                 'email'         => $pendingRegistration['email'] ?? '',
+                'phone'         => $pendingRegistration['phone'] ?? '',
                 'password_hash' => $pendingRegistration['password_hash'] ?? '',
                 'role'          => $pendingRegistration['role'] ?? 'client',
             ]);
