@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Schedule Settings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body style="background:#f0f4f8;">
-<?= view('header') ?>
+<?= view('doctor/_layout_top', ['pageTitle' => 'Schedule Settings', 'active' => 'schedule']) ?>
 
-<div class="container py-4" style="max-width:700px;">
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold mb-0">My Schedule Settings</h4>
             <p class="text-muted small mb-0">Set your available days and hours for appointments.</p>
         </div>
-        <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
     </div>
-
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
-    <?php endif; ?>
 
     <?php
     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -31,7 +19,7 @@
     }
     ?>
 
-    <div class="card border-0 shadow-sm p-4">
+    <div class="card border-0 shadow-sm p-4" style="max-width:700px;">
         <form action="<?= site_url('/doctor/schedule/save') ?>" method="post">
             <?= csrf_field() ?>
             <div class="d-flex flex-column gap-3">
@@ -64,9 +52,7 @@
             </div>
         </form>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function toggleDay(day, checked) {
     const el = document.getElementById('time_' + day);
@@ -74,5 +60,5 @@ function toggleDay(day, checked) {
     el.style.pointerEvents = checked ? 'auto' : 'none';
 }
 </script>
-</body>
-</html>
+
+<?= view('doctor/_layout_bottom') ?>

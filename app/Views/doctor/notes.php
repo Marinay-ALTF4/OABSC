@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Write Notes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body style="background:#f0f4f8;">
-<?= view('header') ?>
-
 <?php
-$notes = $notes ?? [];
+$notes    = $notes ?? [];
 $patients = $patients ?? [];
 ?>
-
-<div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1">Write Notes</h4>
-            <p class="text-muted small mb-0">Create private doctor notes and tag them to your patients.</p>
-        </div>
-        <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
-    </div>
+<?= view('doctor/_layout_top', ['pageTitle' => 'Write Notes', 'active' => 'notes']) ?>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -30,6 +10,13 @@ $patients = $patients ?? [];
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger py-2"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif; ?>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Write Notes</h4>
+            <p class="text-muted small mb-0">Create private doctor notes and tag them to your patients.</p>
+        </div>
+    </div>
 
     <div class="row g-3">
         <div class="col-12 col-lg-5">
@@ -41,7 +28,6 @@ $patients = $patients ?? [];
                         <label class="form-label small text-muted mb-1">Title</label>
                         <input type="text" name="title" class="form-control form-control-sm" maxlength="120" required>
                     </div>
-
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Patient (optional)</label>
                         <select name="patient_id" class="form-select form-select-sm" id="patientSelect">
@@ -54,12 +40,10 @@ $patients = $patients ?? [];
                         </select>
                         <input type="hidden" name="patient_name" id="patientNameInput" value="">
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label small text-muted mb-1">Note</label>
                         <textarea name="body" class="form-control form-control-sm" rows="6" maxlength="3000" required></textarea>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-sm px-3">Save Note</button>
                 </form>
             </div>
@@ -71,7 +55,6 @@ $patients = $patients ?? [];
                     <div class="fw-semibold"><i class="bi bi-journal-text me-2 text-primary"></i>Saved Notes</div>
                     <span class="badge bg-primary rounded-pill"><?= count($notes) ?></span>
                 </div>
-
                 <?php if (empty($notes)): ?>
                     <div class="text-center text-muted py-5">
                         <i class="bi bi-inbox d-block mb-2" style="font-size:1.5rem;"></i>
@@ -107,7 +90,24 @@ $patients = $patients ?? [];
             </div>
         </div>
     </div>
-</div>
+
+<style>
+    .notes-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+    .notes-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid #eef2f7;
+        background: #f8fafc;
+    }
+    .notes-list { max-height: 560px; overflow: auto; }
+    .note-item { padding: 12px 14px; border-bottom: 1px solid #eef2f7; }
+    .note-item:last-child { border-bottom: none; }
+</style>
 
 <script>
 const patientSelect = document.getElementById('patientSelect');
@@ -120,36 +120,4 @@ if (patientSelect && patientNameInput) {
 }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-<style>
-    .notes-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-    }
-
-    .notes-head {
-        padding: 12px 14px;
-        border-bottom: 1px solid #eef2f7;
-        background: #f8fafc;
-    }
-
-    .notes-list {
-        max-height: 560px;
-        overflow: auto;
-    }
-
-    .note-item {
-        padding: 12px 14px;
-        border-bottom: 1px solid #eef2f7;
-    }
-
-    .note-item:last-child {
-        border-bottom: none;
-    }
-</style>
+<?= view('doctor/_layout_bottom') ?>

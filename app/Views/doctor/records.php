@@ -1,30 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Records</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body style="background:#f0f4f8;">
-<?= view('header') ?>
-
 <?php
-$stats = $stats ?? ['patients' => 0, 'appointments' => 0, 'today' => 0];
-$patients = $patients ?? [];
+$stats        = $stats ?? ['patients' => 0, 'appointments' => 0, 'today' => 0];
+$patients     = $patients ?? [];
 $appointments = $appointments ?? [];
-$search = $search ?? '';
+$search       = $search ?? '';
 ?>
-
-<div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1">Patient Records</h4>
-            <p class="text-muted small mb-0">View patients and the appointment history linked to your account.</p>
-        </div>
-        <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
-    </div>
+<?= view('doctor/_layout_top', ['pageTitle' => 'Patient Records', 'active' => 'records']) ?>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -34,6 +14,13 @@ $search = $search ?? '';
     <?php endif; ?>
 
     <?php if (empty($patient)): ?>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Patient Records</h4>
+                <p class="text-muted small mb-0">View patients and the appointment history linked to your account.</p>
+            </div>
+        </div>
+
         <div class="row g-3 mb-4">
             <div class="col-12 col-md-4">
                 <div class="record-stat">
@@ -104,9 +91,7 @@ $search = $search ?? '';
                                 ?>
                                 <tr>
                                     <td class="text-muted fw-semibold"><?= $i + 1 ?></td>
-                                    <td>
-                                        <div class="fw-semibold"><?= esc($p['name'] ?? 'Unknown') ?></div>
-                                    </td>
+                                    <td><div class="fw-semibold"><?= esc($p['name'] ?? 'Unknown') ?></div></td>
                                     <td><?= esc($p['email'] ?? '—') ?></td>
                                     <td><?= esc($p['phone'] ?? '—') ?></td>
                                     <td><span class="badge bg-light text-dark border rounded-pill px-3 py-2"><?= esc((string) ($p['appointment_count'] ?? 0)) ?></span></td>
@@ -125,9 +110,6 @@ $search = $search ?? '';
             </div>
         </div>
     <?php else: ?>
-        <?php
-            $statusText = 'patient';
-        ?>
         <div class="record-profile mb-4">
             <div class="record-avatar"><?= strtoupper(substr((string) ($patient['name'] ?? 'PT'), 0, 2)) ?></div>
             <div>
@@ -193,11 +175,6 @@ $search = $search ?? '';
             <?php endif; ?>
         </div>
     <?php endif; ?>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
 
 <style>
     .record-stat {
@@ -208,18 +185,12 @@ $search = $search ?? '';
         padding: 12px 14px;
         height: 100%;
     }
-
     .record-icon {
-        width: 34px;
-        height: 34px;
+        width: 34px; height: 34px;
         border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.95rem; margin-bottom: 8px;
     }
-
     .record-panel {
         background: #fff;
         border: 1px solid #e2e8f0;
@@ -227,71 +198,33 @@ $search = $search ?? '';
         box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
         overflow: hidden;
     }
-
-    .record-panel-head {
-        padding: 12px 14px 8px;
-    }
-
-    .record-panel-sub {
-        color: #64748b;
-        font-size: 0.8rem;
-    }
-
-    .record-search {
-        min-width: 240px;
-    }
-
+    .record-panel-head { padding: 12px 14px 8px; }
+    .record-panel-sub { color: #64748b; font-size: 0.8rem; }
+    .record-search { min-width: 240px; }
     .record-table thead th {
-        font-size: 0.68rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
+        font-size: 0.68rem; text-transform: uppercase;
+        letter-spacing: 0.04em; color: #475569;
         border-bottom: 1px solid #e2e8f0;
     }
-
-    .record-table {
-        font-size: 0.86rem;
-    }
-
-    .record-table td,
-    .record-table th {
-        padding-top: 0.55rem;
-        padding-bottom: 0.55rem;
-        vertical-align: middle;
-    }
-
+    .record-table { font-size: 0.86rem; }
+    .record-table td, .record-table th { padding-top: 0.55rem; padding-bottom: 0.55rem; vertical-align: middle; }
     .record-profile {
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 14px;
         box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
         padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
+        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     }
-
     .record-avatar {
-        width: 46px;
-        height: 46px;
+        width: 46px; height: 46px;
         border-radius: 14px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: inline-flex; align-items: center; justify-content: center;
         background: linear-gradient(135deg, #1d4ed8, #60a5fa);
-        color: #fff;
-        font-weight: 700;
+        color: #fff; font-weight: 700;
     }
-
-    .record-name {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .record-meta {
-        font-size: 0.8rem;
-        color: #64748b;
-    }
+    .record-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .record-meta { font-size: 0.8rem; color: #64748b; }
 </style>
+
+<?= view('doctor/_layout_bottom') ?>

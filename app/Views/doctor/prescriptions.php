@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prescriptions</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body style="background:#f0f4f8;">
-<?= view('header') ?>
-
 <?php
 $prescriptions = $prescriptions ?? [];
-$patients = $patients ?? [];
+$patients      = $patients ?? [];
 ?>
-
-<div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1">Prescriptions</h4>
-            <p class="text-muted small mb-0">Create and manage prescriptions linked to your patients.</p>
-        </div>
-        <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
-    </div>
+<?= view('doctor/_layout_top', ['pageTitle' => 'Prescriptions', 'active' => 'prescriptions']) ?>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -31,13 +11,19 @@ $patients = $patients ?? [];
         <div class="alert alert-danger py-2"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif; ?>
 
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Prescriptions</h4>
+            <p class="text-muted small mb-0">Create and manage prescriptions linked to your patients.</p>
+        </div>
+    </div>
+
     <div class="row g-3">
         <div class="col-12 col-xl-5">
             <div class="rx-card p-3 p-md-4">
                 <div class="fw-semibold mb-3"><i class="bi bi-capsule-pill me-2 text-primary"></i>New Prescription</div>
                 <form method="post" action="<?= site_url('/doctor/prescriptions') ?>">
                     <?= csrf_field() ?>
-
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Patient</label>
                         <select name="patient_id" class="form-select form-select-sm" id="rxPatientSelect" required>
@@ -50,12 +36,10 @@ $patients = $patients ?? [];
                         </select>
                         <input type="hidden" name="patient_name" id="rxPatientName" value="">
                     </div>
-
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Medicine</label>
                         <input type="text" name="medicine" class="form-control form-control-sm" maxlength="200" required>
                     </div>
-
                     <div class="row g-2 mb-2">
                         <div class="col-12 col-md-4">
                             <label class="form-label small text-muted mb-1">Dosage</label>
@@ -70,12 +54,10 @@ $patients = $patients ?? [];
                             <input type="text" name="duration" class="form-control form-control-sm" placeholder="e.g. 7 days" maxlength="120" required>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label small text-muted mb-1">Instructions (optional)</label>
                         <textarea name="instructions" class="form-control form-control-sm" rows="4" maxlength="2000" placeholder="Take after meals, avoid alcohol, etc."></textarea>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-sm px-3">Save Prescription</button>
                 </form>
             </div>
@@ -87,7 +69,6 @@ $patients = $patients ?? [];
                     <div class="fw-semibold"><i class="bi bi-prescription2 me-2 text-primary"></i>Saved Prescriptions</div>
                     <span class="badge bg-primary rounded-pill"><?= count($prescriptions) ?></span>
                 </div>
-
                 <?php if (empty($prescriptions)): ?>
                     <div class="text-center text-muted py-5">
                         <i class="bi bi-inbox d-block mb-2" style="font-size:1.5rem;"></i>
@@ -111,7 +92,6 @@ $patients = $patients ?? [];
                                         <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Delete</button>
                                     </form>
                                 </div>
-
                                 <div class="small mb-1"><span class="text-muted">Medicine:</span> <strong><?= esc((string) ($rx['medicine'] ?? '')) ?></strong></div>
                                 <div class="small mb-1"><span class="text-muted">Dose:</span> <?= esc((string) ($rx['dosage'] ?? '-')) ?> | <span class="text-muted">Frequency:</span> <?= esc((string) ($rx['frequency'] ?? '-')) ?> | <span class="text-muted">Duration:</span> <?= esc((string) ($rx['duration'] ?? '-')) ?></div>
                                 <?php if (! empty($rx['instructions'])): ?>
@@ -124,7 +104,24 @@ $patients = $patients ?? [];
             </div>
         </div>
     </div>
-</div>
+
+<style>
+    .rx-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+    .rx-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid #eef2f7;
+        background: #f8fafc;
+    }
+    .rx-list { max-height: 620px; overflow: auto; }
+    .rx-item { padding: 12px 14px; border-bottom: 1px solid #eef2f7; }
+    .rx-item:last-child { border-bottom: none; }
+</style>
 
 <script>
 const rxPatientSelect = document.getElementById('rxPatientSelect');
@@ -137,36 +134,4 @@ if (rxPatientSelect && rxPatientName) {
 }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-<style>
-    .rx-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-    }
-
-    .rx-head {
-        padding: 12px 14px;
-        border-bottom: 1px solid #eef2f7;
-        background: #f8fafc;
-    }
-
-    .rx-list {
-        max-height: 620px;
-        overflow: auto;
-    }
-
-    .rx-item {
-        padding: 12px 14px;
-        border-bottom: 1px solid #eef2f7;
-    }
-
-    .rx-item:last-child {
-        border-bottom: none;
-    }
-</style>
+<?= view('doctor/_layout_bottom') ?>

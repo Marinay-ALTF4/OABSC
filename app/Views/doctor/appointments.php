@@ -1,23 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Appointments</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body style="background:#f0f4f8;">
-<?= view('header') ?>
-
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-0">My Appointments</h4>
-            <p class="text-muted small mb-0">View and manage your patient appointments.</p>
-        </div>
-        <a href="<?= site_url('/dashboard') ?>" class="btn btn-sm btn-outline-secondary">Back</a>
-    </div>
+<?= view('doctor/_layout_top', ['pageTitle' => 'My Appointments', 'active' => 'appointments']) ?>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -25,6 +6,13 @@
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger py-2"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif; ?>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">My Appointments</h4>
+            <p class="text-muted small mb-0">View and manage your patient appointments.</p>
+        </div>
+    </div>
 
     <!-- Filter Tabs -->
     <div class="d-flex gap-2 mb-4">
@@ -115,8 +103,5 @@
             <?php endif; ?>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?= view('doctor/_layout_bottom') ?>
