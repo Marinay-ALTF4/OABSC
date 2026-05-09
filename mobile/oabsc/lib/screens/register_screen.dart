@@ -16,7 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;

@@ -184,7 +184,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2563EB).withOpacity(0.3),
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),

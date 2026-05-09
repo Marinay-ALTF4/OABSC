@@ -48,23 +48,27 @@ class _AddPatientViewState extends State<AddPatientView> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (name.isEmpty || email.isEmpty || phone.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
     if (!_isValidPHPhone(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid Philippine phone number (e.g., 09123456789)')),
+        const SnackBar(
+          content: Text(
+            'Please enter a valid Philippine phone number (e.g., 09123456789)',
+          ),
+        ),
       );
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
     }
 
@@ -72,14 +76,17 @@ class _AddPatientViewState extends State<AddPatientView> {
 
     try {
       // Reusing addUser API but with role fixed to client
-      final response = await _apiService.post('admin/users/add', body: {
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'role': 'client',
-        'password': password,
-        'password_confirm': confirmPassword,
-      });
+      final response = await _apiService.post(
+        'admin/users/add',
+        body: {
+          'name': name,
+          'email': email,
+          'phone': phone,
+          'role': 'client',
+          'password': password,
+          'password_confirm': confirmPassword,
+        },
+      );
 
       if (mounted) {
         if (response['success'] == true) {
@@ -89,15 +96,17 @@ class _AddPatientViewState extends State<AddPatientView> {
           widget.onBack();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Failed to add patient')),
+            SnackBar(
+              content: Text(response['message'] ?? 'Failed to add patient'),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
       }
     } finally {
       if (mounted) {
@@ -149,7 +158,10 @@ class _AddPatientViewState extends State<AddPatientView> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textPrimary,
                   side: const BorderSide(color: AppColors.border),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -188,7 +200,7 @@ class _AddPatientViewState extends State<AddPatientView> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  _buildLabel('Email Address'),
+                  _buildLabel('Email Address (Optional)'),
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -211,7 +223,10 @@ class _AddPatientViewState extends State<AddPatientView> {
                     ],
                     decoration: InputDecoration(
                       hintText: 'e.g., 09123456789',
-                      prefixIcon: const Icon(Icons.phone_android_outlined, size: 20),
+                      prefixIcon: const Icon(
+                        Icons.phone_android_outlined,
+                        size: 20,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
                     ),
@@ -227,11 +242,15 @@ class _AddPatientViewState extends State<AddPatientView> {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 20,
                           color: AppColors.textHint,
                         ),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
@@ -248,11 +267,16 @@ class _AddPatientViewState extends State<AddPatientView> {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscureConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 20,
                           color: AppColors.textHint,
                         ),
-                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        onPressed: () => setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
@@ -265,13 +289,23 @@ class _AddPatientViewState extends State<AddPatientView> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: _isLoading ? null : _addPatient,
-                        icon: _isLoading 
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.check, size: 16),
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check, size: 16),
                         label: Text(_isLoading ? 'Adding...' : 'Add Patient'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -280,7 +314,10 @@ class _AddPatientViewState extends State<AddPatientView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                         ),
                         child: const Text('Cancel'),
                       ),

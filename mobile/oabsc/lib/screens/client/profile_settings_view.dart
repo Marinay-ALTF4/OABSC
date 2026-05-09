@@ -472,7 +472,7 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
           Expanded(
             child: ListView.separated(
               itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return Container(
                   padding: const EdgeInsets.all(16),

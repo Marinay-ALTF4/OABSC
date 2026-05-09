@@ -183,7 +183,7 @@ class _AddRoleViewState extends State<AddRoleView> {
 
                   _buildLabel('Role'),
                   DropdownButtonFormField<String>(
-                    value: _selectedRole,
+                    initialValue: _selectedRole,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.shield_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
