@@ -58,12 +58,12 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+          colors: [Color(0xFF6AAA70), Color(0xFF2E5C32)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.2),
+            color: const Color(0xFF2E5C32).withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -112,7 +112,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
             onPressed: widget.onBack,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF2563EB),
+              foregroundColor: const Color(0xFF2E5C32),
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -147,7 +147,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
               child: StatCard(
                 icon: Icons.calendar_today_rounded,
                 iconColor: AppColors.accentLight,
-                iconBgColor: AppColors.iconBlueBg,
+                iconBgColor: const Color(0xFFEAF6EA),
                 count: _todayCount.toString(),
                 label: 'TODAY',
               ),
@@ -156,8 +156,8 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
               width: w,
               child: StatCard(
                 icon: Icons.access_time_rounded,
-                iconColor: const Color(0xFF0D9488),
-                iconBgColor: const Color(0xFFF0FDFA),
+                iconColor: AppColors.accent,
+                iconBgColor: const Color(0xFFD0E8D2),
                 count: _upcomingCount.toString(),
                 label: 'UPCOMING',
               ),
@@ -166,8 +166,8 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
               width: w,
               child: StatCard(
                 icon: Icons.format_list_bulleted_rounded,
-                iconColor: const Color(0xFF10B981),
-                iconBgColor: AppColors.iconGreenBg,
+                iconColor: AppColors.primary,
+                iconBgColor: const Color(0xFFE0F0E1),
                 count: _totalCount.toString(),
                 label: 'TOTAL',
               ),
@@ -214,7 +214,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.iconBlueBg,
+                        color: const Color(0xFFEAF6EA),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -249,7 +249,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

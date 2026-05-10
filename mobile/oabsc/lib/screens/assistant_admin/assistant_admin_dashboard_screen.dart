@@ -5,6 +5,7 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
+import '../client/profile_settings_view.dart';
 
 class AssistantAdminDashboardScreen extends StatefulWidget {
   const AssistantAdminDashboardScreen({super.key});
@@ -14,12 +15,23 @@ class AssistantAdminDashboardScreen extends StatefulWidget {
 }
 
 class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardScreen> {
-  int _activeNavIndex = 0;
+  String _currentView = 'dashboard';
+
+  int get _activeNavIndex {
+    switch (_currentView) {
+      case 'dashboard': return 0;
+      case 'patient_records': return 1;
+      case 'add_patient': return 2;
+      case 'profile_settings': return 3;
+      default: return 0;
+    }
+  }
 
   List<DrawerNavItem> get _menuItems => [
-    DrawerNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', onTap: () => setState(() => _activeNavIndex = 0)),
-    DrawerNavItem(icon: Icons.folder_outlined, label: 'Patient Records', onTap: () => setState(() => _activeNavIndex = 1)),
-    DrawerNavItem(icon: Icons.person_add_outlined, label: 'Add Patient', onTap: () => setState(() => _activeNavIndex = 2)),
+    DrawerNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', onTap: () => setState(() => _currentView = 'dashboard')),
+    DrawerNavItem(icon: Icons.folder_outlined, label: 'Patient Records', onTap: () => setState(() => _currentView = 'patient_records')),
+    DrawerNavItem(icon: Icons.person_add_outlined, label: 'Add Patient', onTap: () => setState(() => _currentView = 'add_patient')),
+    DrawerNavItem(icon: Icons.settings_outlined, label: 'Profile Settings', onTap: () => setState(() => _currentView = 'profile_settings')),
   ];
 
   @override
@@ -45,26 +57,42 @@ class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardS
         ],
       ),
       drawer: AppDrawer(roleName: 'Assistant Admin', menuItems: _menuItems, activeIndex: _activeNavIndex),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const WelcomeBanner(panelLabel: 'ASSISTANT ADMIN PANEL', title: 'Welcome back, Assistant Admin', subtitle: 'Quick overview of your clinic\'s activity today.'),
-          const SizedBox(height: 20),
-          LayoutBuilder(builder: (context, constraints) {
-            final cols = constraints.maxWidth > 500 ? 3 : 2;
-            final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
-            return Wrap(spacing: 12, runSpacing: 12, children: [
-              SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: 'TOTAL APPOINTMENTS')),
-              SizedBox(width: w, child: const StatCard(icon: Icons.assignment_outlined, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: "TODAY'S APPOINTMENTS")),
-              SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'TOTAL PATIENTS')),
-              SizedBox(width: w, child: const StatCard(icon: Icons.medical_services_outlined, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'DOCTORS AVAILABLE')),
-              SizedBox(width: w, child: const StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: '0', label: 'PENDING REQUESTS')),
-            ]);
-          }),
-          const SizedBox(height: 24),
-          const NotificationSection(),
-        ]),
-      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    switch (_currentView) {
+      case 'profile_settings':
+        return ProfileSettingsView(
+          onBack: () => setState(() => _currentView = 'dashboard'),
+        );
+      case 'dashboard':
+      default:
+        return _buildDashboard();
+    }
+  }
+
+  Widget _buildDashboard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const WelcomeBanner(panelLabel: 'ASSISTANT ADMIN PANEL', title: 'Welcome back, Assistant Admin', subtitle: 'Quick overview of your clinic\'s activity today.'),
+        const SizedBox(height: 20),
+        LayoutBuilder(builder: (context, constraints) {
+          final cols = constraints.maxWidth > 500 ? 3 : 2;
+          final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
+          return Wrap(spacing: 12, runSpacing: 12, children: [
+            SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: 'TOTAL APPOINTMENTS')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.assignment_outlined, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: "TODAY'S APPOINTMENTS")),
+            SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'TOTAL PATIENTS')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.medical_services_outlined, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'DOCTORS AVAILABLE')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: '0', label: 'PENDING REQUESTS')),
+          ]);
+        }),
+        const SizedBox(height: 24),
+        const NotificationSection(),
+      ]),
     );
   }
 }

@@ -103,6 +103,34 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
     }
   }
 
+  Future<void> _updatePassword() async {
+    if (_currentPasswordController.text.isEmpty || _newPasswordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all password fields'), backgroundColor: AppColors.error));
+      return;
+    }
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('New passwords do not match'), backgroundColor: AppColors.error));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    
+    // Simulate API delay
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password updated successfully!'), backgroundColor: AppColors.success),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -386,12 +414,14 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
           _buildTextField('Confirm New Password', _confirmPasswordController, Icons.lock_outline, obscureText: true),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: _isLoading ? null : _updatePassword,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
-            child: const Text('Update Password'),
+            child: _isLoading 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Update Password'),
           ),
         ],
       ),

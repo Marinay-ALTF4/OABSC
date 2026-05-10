@@ -3,13 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary brand colors
-  static const Color primary = Color(0xFF2D3748);
-  static const Color primaryDark = Color(0xFF1A202C);
-  static const Color accent = Color(0xFF2563EB);
-  static const Color accentLight = Color(0xFF3B82F6);
+  static const Color primary = Color(0xFF30374F); // Dark grey/navy from button
+  static const Color primaryDark = Color(0xFF23293A);
+  static const Color accent = Color(0xFF2563EB); // Main Blue (focus border/links)
+  static const Color accentLight = Color(0xFF3B82F6); // Light Blue
+
+  // Doctor-specific brand colors
+  static const Color doctorPrimary = Color(0xFF1B3A1E); // Darkest green
+  static const Color doctorAccent = Color(0xFF2E5C32); // Main Green
+  static const Color doctorAccentLight = Color(0xFF6AAA70); // Light Green
 
   // Backgrounds
-  static const Color background = Color(0xFFF0F4F8);
+  static const Color background = Color(0xFFF9FBFF); // radial-gradient end
+  static const Color backgroundLight = Color(0xFFE0F2FF); // radial-gradient start
   static const Color surface = Color(0xFFFFFFFF);
   static const Color cardShadow = Color(0x0D000000);
 
@@ -36,7 +42,7 @@ class AppColors {
 
   // Drawer / Sidebar
   static const Color drawerBg = Color(0xFFFFFFFF);
-  static const Color drawerActiveItem = Color(0xFF2563EB);
+  static const Color drawerActiveItem = Color(0xFF30374F);
   static const Color drawerInactiveText = Color(0xFF4A5568);
 
   // Borders
@@ -45,8 +51,8 @@ class AppColors {
   static const Color inputFocusBorder = Color(0xFF2563EB);
 
   // Splash screen
-  static const Color splashGradientStart = Color(0xFF2D3748);
-  static const Color splashGradientEnd = Color(0xFF1A202C);
+  static const Color splashGradientStart = Color(0xFFE0F2FF); // #e0f2ff
+  static const Color splashGradientEnd = Color(0xFFF9FBFF); // #f9fbff
 }
 
 class AppSpacing {

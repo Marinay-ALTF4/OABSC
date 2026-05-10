@@ -694,4 +694,51 @@ class Api extends BaseController
             'user_id' => $userId,
         ]);
     }
+
+    /**
+     * POST /api/doctor/schedule/save
+     * Save the doctor's schedule via JSON request.
+     */
+    public function saveDoctorSchedule()
+    {
+        $doctorId = (int) $this->request->getPost('doctor_id');
+        if (!$doctorId) {
+            $json = $this->request->getJSON(true);
+            $doctorId = (int) ($json['doctor_id'] ?? 0);
+        }
+
+        if ($doctorId <= 0) {
+            return $this->failValidationErrors(['doctor_id' => 'Doctor ID is required']);
+        }
+
+        $json = $this->request->getJSON(true);
+        $schedule = $json['schedule'] ?? [];
+
+        if (empty($schedule) || !is_array($schedule)) {
+            return $this->failValidationErrors(['schedule' => 'Schedule data is required']);
+        }
+
+        $model = new \App\Models\DoctorScheduleModel();
+        
+        // Delete existing
+        $model->where('doctor_id', $doctorId)->delete();
+
+        // Insert new
+        foreach ($schedule as $dayData) {
+            if (!empty($dayData['enabled'])) {
+                $model->insert([
+                    'doctor_id'    => $doctorId,
+                    'day'          => $dayData['day'],
+                    'start_time'   => $dayData['startTime'],
+                    'end_time'     => $dayData['endTime'],
+                    'is_available' => 1,
+                ]);
+            }
+        }
+
+        return $this->respondUpdated([
+            'success' => true,
+            'message' => 'Schedule saved successfully'
+        ]);
+    }
 }

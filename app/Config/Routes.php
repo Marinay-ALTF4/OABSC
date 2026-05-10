@@ -112,4 +112,4 @@ $routes->post('/api/profile/update', 'Api::updateProfile');
 $routes->get('/api/notifications', 'Api::notifications');
 $routes->post('/api/admin/users/add', 'Api::addUser');
 $routes->post('/api/admin/roles/add', 'Api::addRole');
-
+$routes->post('/api/doctor/schedule/save', 'Api::saveDoctorSchedule');

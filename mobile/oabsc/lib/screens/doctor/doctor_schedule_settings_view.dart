@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
+import '../../services/doctor_service.dart';
 
 class DoctorScheduleSettingsView extends StatefulWidget {
   final VoidCallback onBack;
@@ -16,6 +18,7 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
   ];
 
   late List<Map<String, dynamic>> _schedule;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -52,6 +55,59 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
     return '${hour.toString().padLeft(2, '0')}:$minute $period';
   }
 
+  Future<void> _saveSchedule() async {
+    setState(() => _isSaving = true);
+    
+    try {
+      final doctorService = DoctorService(ApiService());
+      // In a real scenario, get the actual doctor ID from auth state
+      final int doctorId = 1; 
+
+      final formattedSchedule = _schedule.map((day) => {
+        'day': day['day'],
+        'enabled': day['enabled'],
+        'startTime': '${day['startTime'].hour.toString().padLeft(2, '0')}:${day['startTime'].minute.toString().padLeft(2, '0')}',
+        'endTime': '${day['endTime'].hour.toString().padLeft(2, '0')}:${day['endTime'].minute.toString().padLeft(2, '0')}',
+      }).toList();
+
+      final result = await doctorService.saveSchedule(doctorId, formattedSchedule);
+
+      if (mounted) {
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Schedule saved successfully!'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to save schedule.'),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -82,13 +138,15 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
                 ...List.generate(_schedule.length, (index) => _buildDayRow(index)),
                 const SizedBox(height: AppSpacing.xl),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _isSaving ? null : _saveSchedule,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: const Text('Save Schedule', style: TextStyle(fontWeight: FontWeight.w700)),
+                  child: _isSaving 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Save Schedule', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
                 ),
               ],
             ),
@@ -239,7 +297,7 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
       child: Checkbox(
         value: isEnabled,
         onChanged: (val) => setState(() => _schedule[index]['enabled'] = val),
-        activeColor: const Color(0xFF2563EB),
+        activeColor: AppColors.accent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         visualDensity: VisualDensity.compact,
       ),

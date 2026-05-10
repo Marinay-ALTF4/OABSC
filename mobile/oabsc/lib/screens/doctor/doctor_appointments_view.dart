@@ -78,10 +78,10 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isActive ? const Color(0xFF3B82F6) : Colors.white,
+                        color: isActive ? AppColors.accent : Colors.white,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: isActive ? const Color(0xFF3B82F6) : AppColors.border,
+                          color: isActive ? AppColors.accent : AppColors.border,
                         ),
                       ),
                       child: Text(

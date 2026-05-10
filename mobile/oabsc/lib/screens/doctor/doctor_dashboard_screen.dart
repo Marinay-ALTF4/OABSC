@@ -95,10 +95,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           final cols = constraints.maxWidth > 600 ? 4 : 2;
           final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
           return Wrap(spacing: 12, runSpacing: 12, children: [
-            SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: "TODAY'S PATIENTS")),
-            SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: 'UPCOMING')),
-            SizedBox(width: w, child: const StatCard(icon: Icons.check_circle_outline_rounded, iconColor: Color(0xFF0D9488), iconBgColor: Color(0xFFF0FDFA), count: '0', label: 'COMPLETED')),
-            SizedBox(width: w, child: const StatCard(icon: Icons.assignment_outlined, iconColor: Color(0xFF4F46E5), iconBgColor: Color(0xFFEEF2FF), count: '0', label: 'TOTAL CONSULTATIONS')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: AppColors.accentLight, iconBgColor: Color(0xFFEAF6EA), count: '0', label: "TODAY'S PATIENTS")),
+            SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accent, iconBgColor: Color(0xFFD0E8D2), count: '0', label: 'UPCOMING')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.check_circle_outline_rounded, iconColor: AppColors.primary, iconBgColor: Color(0xFFE0F0E1), count: '0', label: 'COMPLETED')),
+            SizedBox(width: w, child: const StatCard(icon: Icons.assignment_outlined, iconColor: AppColors.accentLight, iconBgColor: Color(0xFFF4F9F4), count: '0', label: 'TOTAL CONSULTATIONS')),
           ]);
         }),
         const SizedBox(height: 24),

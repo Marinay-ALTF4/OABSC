@@ -204,7 +204,7 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: AppColors.accent,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -242,7 +242,7 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
