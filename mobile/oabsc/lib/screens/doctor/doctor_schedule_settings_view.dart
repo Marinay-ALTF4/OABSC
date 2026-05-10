@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 import '../../services/doctor_service.dart';
 
 class DoctorScheduleSettingsView extends StatefulWidget {
@@ -13,23 +14,63 @@ class DoctorScheduleSettingsView extends StatefulWidget {
 }
 
 class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView> {
+  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
+  
   final List<String> _days = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
   ];
 
   late List<Map<String, dynamic>> _schedule;
   bool _isSaving = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with default values
+    _initializeDefaultSchedule();
+    _fetchSchedule();
+  }
+
+  void _initializeDefaultSchedule() {
     _schedule = _days.map((day) => {
       'day': day,
       'enabled': false,
       'startTime': const TimeOfDay(hour: 8, minute: 0),
       'endTime': const TimeOfDay(hour: 17, minute: 0),
     }).toList();
+  }
+
+  Future<void> _fetchSchedule() async {
+    setState(() => _isLoading = true);
+    try {
+      final userId = await _authService.getSavedUserId();
+      // Assuming GET /api/doctor/schedule exists or we use user_id
+      final response = await _apiService.get('doctor/schedule?doctor_id=$userId');
+      if (response['success'] == true && response['schedule'] != null) {
+        final List<dynamic> remoteSchedule = response['schedule'];
+        setState(() {
+          for (var dayData in remoteSchedule) {
+            final index = _days.indexOf(dayData['day']);
+            if (index != -1) {
+              _schedule[index]['enabled'] = dayData['enabled'] == true || dayData['enabled'] == 1 || dayData['enabled'] == '1';
+              if (dayData['start_time'] != null) {
+                final parts = dayData['start_time'].split(':');
+                _schedule[index]['startTime'] = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+              }
+              if (dayData['end_time'] != null) {
+                final parts = dayData['end_time'].split(':');
+                _schedule[index]['endTime'] = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+              }
+            }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching schedule: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _selectTime(BuildContext context, int index, bool isStartTime) async {
@@ -59,18 +100,17 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
     setState(() => _isSaving = true);
     
     try {
-      final doctorService = DoctorService(ApiService());
-      // In a real scenario, get the actual doctor ID from auth state
-      final int doctorId = 1; 
+      final userId = await _authService.getSavedUserId();
+      final doctorService = DoctorService(_apiService);
 
       final formattedSchedule = _schedule.map((day) => {
         'day': day['day'],
-        'enabled': day['enabled'],
+        'enabled': day['enabled'] ? 1 : 0,
         'startTime': '${day['startTime'].hour.toString().padLeft(2, '0')}:${day['startTime'].minute.toString().padLeft(2, '0')}',
         'endTime': '${day['endTime'].hour.toString().padLeft(2, '0')}:${day['endTime'].minute.toString().padLeft(2, '0')}',
       }).toList();
 
-      final result = await doctorService.saveSchedule(doctorId, formattedSchedule);
+      final result = await doctorService.saveSchedule(int.parse(userId ?? '0'), formattedSchedule);
 
       if (mounted) {
         if (result['success'] == true) {
@@ -110,49 +150,58 @@ class _DoctorScheduleSettingsViewState extends State<DoctorScheduleSettingsView>
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: AppSpacing.xxl),
-          Container(
-            constraints: const BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ...List.generate(_schedule.length, (index) => _buildDayRow(index)),
-                const SizedBox(height: AppSpacing.xl),
-                ElevatedButton(
-                  onPressed: _isSaving ? null : _saveSchedule,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                _buildHeader(),
+                const SizedBox(height: AppSpacing.xxl),
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: _isSaving 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Save Schedule', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...List.generate(_schedule.length, (index) => _buildDayRow(index)),
+                      const SizedBox(height: AppSpacing.xl),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _saveSchedule,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: _isSaving 
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Text('Save Schedule Settings', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: AppSpacing.xxl),
               ],
             ),
           ),
-        ],
-      ),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 
 class BookAppointmentView extends StatefulWidget {
   final VoidCallback onBack;
@@ -18,6 +19,7 @@ class BookAppointmentView extends StatefulWidget {
 
 class _BookAppointmentViewState extends State<BookAppointmentView> {
   String? _selectedDoctor;
+  String? _selectedDoctorId;
   String? _selectedTime;
   String? _selectedDate;
   bool _isSubmitting = false;
@@ -86,29 +88,59 @@ class _BookAppointmentViewState extends State<BookAppointmentView> {
 
     setState(() => _isSubmitting = true);
     
-    // Simulate API delay
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      final userId = await AuthService().getSavedUserId();
+      final dateParts = _selectedDate!.split('/');
+      final formattedDate = '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
 
-    if (mounted) {
-      setState(() => _isSubmitting = false);
-      
-      // Show success dialog
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Success'),
-          content: const Text('Appointment submitted successfully.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(); // Close dialog
-                widget.onViewAppointments(); // Go to my appointments
-              },
-              child: const Text('View Appointments'),
+      final response = await _apiService.post('appointments', body: {
+        'user_id': userId,
+        'doctor_id': _selectedDoctorId,
+        'doctor_name': _selectedDoctor,
+        'appointment_date': formattedDate,
+        'appointment_time': _selectedTime,
+        'reason': _reasonController.text.trim(),
+      });
+
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        
+        if (response['success'] == true) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Success'),
+              content: const Text('Appointment submitted successfully.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop(); // Close dialog
+                    widget.onViewAppointments(); // Go to my appointments
+                  },
+                  child: const Text('View Appointments'),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Failed to book appointment.'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -387,7 +419,10 @@ class _BookAppointmentViewState extends State<BookAppointmentView> {
 
   Widget _buildDoctorCard(Map<String, String> doc, bool isSelected) {
     return GestureDetector(
-      onTap: () => setState(() => _selectedDoctor = doc['name']),
+      onTap: () => setState(() {
+        _selectedDoctor = doc['name'];
+        _selectedDoctorId = doc['id'];
+      }),
       child: Container(
         width: 140,
         padding: const EdgeInsets.all(12),

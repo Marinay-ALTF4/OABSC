@@ -11,6 +11,9 @@ import 'patient_records_view.dart';
 import 'register_patient_view.dart';
 import 'doctor_schedules_view.dart';
 import 'pending_approvals_view.dart';
+import '../client/profile_settings_view.dart';
+import '../../services/auth_service.dart';
+import '../../services/api_service.dart';
 
 class SecretaryDashboardScreen extends StatefulWidget {
   const SecretaryDashboardScreen({super.key});
@@ -20,7 +23,46 @@ class SecretaryDashboardScreen extends StatefulWidget {
 }
 
 class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
+  final _authService = AuthService();
+  final _apiService = ApiService();
   int _activeNavIndex = 0;
+  String _secretaryName = 'Secretary';
+  Map<String, dynamic> _stats = {
+    'today_appointments': '0',
+    'pending': '0',
+    'total_patients': '0',
+    'total_doctors': '0',
+  };
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    setState(() => _isLoading = true);
+    final name = await _authService.getSavedName();
+    final userId = await _authService.getSavedUserId();
+    
+    if (name != null) {
+      setState(() => _secretaryName = name);
+    }
+
+    if (userId != null) {
+      final response = await _apiService.get('dashboard?user_id=$userId&role=secretary');
+      if (response['success'] == true || response['today_appointments'] != null) {
+        setState(() {
+          _stats['today_appointments'] = (response['today_appointments'] ?? 0).toString();
+          _stats['pending'] = (response['pending'] ?? 0).toString();
+          _stats['total_patients'] = (response['total_patients'] ?? 0).toString();
+          _stats['total_doctors'] = (response['total_doctors'] ?? 0).toString();
+        });
+      }
+    }
+    setState(() => _isLoading = false);
+  }
 
   List<DrawerNavItem> get _menuItems => [
     DrawerNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', onTap: () => setState(() => _activeNavIndex = 0)),
@@ -30,6 +72,7 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
     DrawerNavItem(icon: Icons.person_add_outlined, label: 'Register New Patient', onTap: () => setState(() => _activeNavIndex = 4)),
     DrawerNavItem(icon: Icons.schedule_rounded, label: 'Doctor Schedules', onTap: () => setState(() => _activeNavIndex = 5)),
     DrawerNavItem(icon: Icons.check_circle_outline_rounded, label: 'Pending Approvals', onTap: () => setState(() => _activeNavIndex = 6)),
+    DrawerNavItem(icon: Icons.person_outline, label: 'Profile Settings', onTap: () => setState(() => _activeNavIndex = 7)),
   ];
 
   @override
@@ -81,6 +124,8 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         return const DoctorSchedulesView();
       case 6:
         return const PendingApprovalsView();
+      case 7:
+        return ProfileSettingsView(onBack: () => setState(() => _activeNavIndex = 0));
       default:
         return _buildDashboard();
     }
@@ -92,9 +137,9 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const WelcomeBanner(
+          WelcomeBanner(
             panelLabel: 'SECRETARY PANEL', 
-            title: 'Welcome back, Secretary', 
+            title: 'Welcome back, $_secretaryName', 
             subtitle: 'Here is your front-desk overview for today.',
             illustrationPath: 'lib/images/doctor-dashboard-illustration.svg',
           ),
@@ -104,10 +149,10 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
               final cols = constraints.maxWidth > 500 ? 4 : 2;
               final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
               return Wrap(spacing: 12, runSpacing: 12, children: [
-                SizedBox(width: w, child: const StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: '0', label: "TODAY'S APPOINTMENTS")),
-                SizedBox(width: w, child: const StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: '0', label: 'PENDING REQUESTS')),
-                SizedBox(width: w, child: const StatCard(icon: Icons.people_outline_rounded, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '1', label: 'TOTAL PATIENTS')),
-                SizedBox(width: w, child: const StatCard(icon: Icons.medical_services_outlined, iconColor: Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: '0', label: 'DOCTORS ON DUTY')),
+                SizedBox(width: w, child: StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: _stats['today_appointments'], label: "TODAY'S APPOINTMENTS")),
+                SizedBox(width: w, child: StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: _stats['pending'], label: 'PENDING REQUESTS')),
+                SizedBox(width: w, child: StatCard(icon: Icons.people_outline_rounded, iconColor: const Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: _stats['total_patients'], label: 'TOTAL PATIENTS')),
+                SizedBox(width: w, child: StatCard(icon: Icons.medical_services_outlined, iconColor: const Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: _stats['total_doctors'], label: 'DOCTORS ON DUTY')),
               ]);
             },
           ),

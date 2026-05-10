@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 
 class DoctorPrescriptionsView extends StatefulWidget {
   final VoidCallback onBack;
@@ -11,12 +13,95 @@ class DoctorPrescriptionsView extends StatefulWidget {
 }
 
 class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
+  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
+  
   final _medicineController = TextEditingController();
   final _dosageController = TextEditingController();
   final _frequencyController = TextEditingController();
   final _durationController = TextEditingController();
   final _instructionsController = TextEditingController();
   String? _selectedPatient;
+  List<Map<String, dynamic>> _savedPrescriptions = [];
+  List<Map<String, dynamic>> _patients = [];
+  bool _isLoading = true;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+    try {
+      final userId = await _authService.getSavedUserId();
+      
+      // Fetch prescriptions
+      final resp = await _apiService.get('prescriptions?user_id=$userId');
+      if (resp['success'] == true) {
+        _savedPrescriptions = List<Map<String, dynamic>>.from(resp['prescriptions'] ?? []);
+      }
+
+      // Fetch patients for dropdown
+      final patientsResp = await _apiService.get('patients');
+      if (patientsResp['success'] == true) {
+        _patients = List<Map<String, dynamic>>.from(patientsResp['patients'] ?? []);
+      }
+    } catch (e) {
+      debugPrint('Error fetching prescriptions: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _savePrescription() async {
+    if (_medicineController.text.isEmpty || _dosageController.text.isEmpty || _selectedPatient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a patient and fill in medicine/dosage')));
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final userId = await _authService.getSavedUserId();
+      final response = await _apiService.post('prescriptions', body: {
+        'doctor_id': userId,
+        'patient_name': _selectedPatient,
+        'medication': _medicineController.text.trim(),
+        'dosage': '${_dosageController.text} - ${_frequencyController.text} - ${_durationController.text}',
+        'instructions': _instructionsController.text.trim(),
+      });
+
+      if (response['success'] == true) {
+        _medicineController.clear();
+        _dosageController.clear();
+        _frequencyController.clear();
+        _durationController.clear();
+        _instructionsController.clear();
+        _selectedPatient = null;
+        _fetchData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Prescription saved successfully'), backgroundColor: AppColors.success));
+        }
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _deletePrescription(dynamic id) async {
+    try {
+      final response = await _apiService.delete('prescriptions/$id');
+      if (response['success'] == true) {
+        _fetchData();
+      }
+    } catch (e) {
+      debugPrint('Error deleting prescription: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -198,17 +283,40 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
               contentPadding: EdgeInsets.all(12),
             ),
           ),
+          _buildLabel('Select Patient'),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedPatient,
+                hint: const Text('Choose a patient...', style: TextStyle(fontSize: 13)),
+                items: _patients.map((p) => DropdownMenuItem(
+                  value: p['name'] as String,
+                  child: Text(p['name'] as String, style: const TextStyle(fontSize: 13)),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedPatient = val),
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: _isSaving ? null : _savePrescription,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              child: const Text('Save Prescription', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              child: _isSaving 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Save Prescription', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ),
         ],
@@ -245,34 +353,73 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    '0',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                  child: Text(
+                    _savedPrescriptions.length.toString(),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
                   ),
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 80),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(Icons.assignment_turned_in_outlined, size: 28, color: Colors.grey.withValues(alpha: 0.2)),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No prescriptions yet.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
+          if (_isLoading)
+            const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
+          else if (_savedPrescriptions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 100),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.assignment_outlined, size: 32, color: Colors.grey.withValues(alpha: 0.2)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No prescriptions yet.',
+                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _savedPrescriptions.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final presc = _savedPrescriptions[index];
+                return ListTile(
+                  title: Text(presc['medication'] ?? 'Medicine', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(
+                    '${presc['patient_name']} • ${presc['dosage']}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    onPressed: () => _deletePrescription(presc['id']),
+                  ),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(presc['medication'] ?? 'Prescription'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Patient: ${presc['patient_name']}'),
+                            Text('Dosage: ${presc['dosage']}'),
+                            const SizedBox(height: 8),
+                            Text('Instructions: ${presc['instructions'] ?? 'None'}'),
+                          ],
+                        ),
+                        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ),
         ],
       ),
     );

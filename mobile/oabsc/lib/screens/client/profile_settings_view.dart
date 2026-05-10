@@ -26,6 +26,12 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   final _addressController = TextEditingController();
+  
+  // Doctor specific controllers
+  final _specializationController = TextEditingController();
+  final _degreeController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _bioController = TextEditingController();
 
   // Controllers for security
   final _currentPasswordController = TextEditingController();
@@ -57,6 +63,10 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
           _phoneController.text = _userData['phone'] ?? '';
           _cityController.text = _userData['city'] ?? '';
           _addressController.text = _userData['address'] ?? '';
+          _specializationController.text = _userData['specialization'] ?? '';
+          _degreeController.text = _userData['degree'] ?? '';
+          _experienceController.text = _userData['experience'] ?? '';
+          _bioController.text = _userData['bio'] ?? '';
           _isLoading = false;
         });
       }
@@ -78,6 +88,10 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
         'phone': _phoneController.text.trim(),
         'city': _cityController.text.trim(),
         'address': _addressController.text.trim(),
+        'specialization': _specializationController.text.trim(),
+        'degree': _degreeController.text.trim(),
+        'experience': _experienceController.text.trim(),
+        'bio': _bioController.text.trim(),
       });
 
       if (mounted) {
@@ -139,6 +153,10 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
     _phoneController.dispose();
     _cityController.dispose();
     _addressController.dispose();
+    _specializationController.dispose();
+    _degreeController.dispose();
+    _experienceController.dispose();
+    _bioController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
@@ -381,6 +399,34 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
           ),
           const SizedBox(height: 16),
           _buildTextField('Home Address', _addressController, Icons.home_outlined),
+          
+          if (_userData['role'] == 'doctor') ...[
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 24),
+            const Text(
+              'Professional Information',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Information visible to patients when booking.',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            _buildTextField('Specialization (e.g. Cardiologist)', _specializationController, Icons.medical_services_outlined),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _buildTextField('Medical School / Degree', _degreeController, Icons.school_outlined)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildTextField('Years of Experience', _experienceController, Icons.history_outlined)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildTextField('Short Biography', _bioController, Icons.description_outlined, maxLines: 3),
+          ],
+          
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: _isLoading ? null : _saveChanges,
@@ -533,7 +579,7 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool enabled = true, bool obscureText = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool enabled = true, bool obscureText = false, int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -543,6 +589,7 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
           controller: controller,
           enabled: enabled,
           obscureText: obscureText,
+          maxLines: maxLines,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 18),
             fillColor: enabled ? Colors.transparent : AppColors.background,
