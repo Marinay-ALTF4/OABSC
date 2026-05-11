@@ -199,6 +199,15 @@ Use migrations instead of manual table changes whenever possible.
 
 ## Notes
 
+## Security
+
+Security guidance and operational controls are documented in the repository:
+
+- Project security overview: [SECURITY.md](SECURITY.md)
+- Detailed checklist and CI examples: [docs/SECURITY_GUIDE.md](docs/SECURITY_GUIDE.md)
+
+Please follow these docs for secure development, dependency scanning, and incident reporting.
+
 - Keep `.env` out of version control.
 - Do not commit real SMTP credentials or database passwords.
 - If you change authentication data in seeders, rerun the relevant seeder.

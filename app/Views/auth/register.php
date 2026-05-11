@@ -14,7 +14,8 @@ if (! is_array($errors)) {
     $errors = [];
 }
 $nameErr = $errors['name'] ?? null;
-$emailErr = $errors['email'] ?? null;
+$emailErr = $errors['email'] ?? $errors['contact_value'] ?? null;
+$phoneErr = $errors['phone'] ?? null;
 $passwordErr = $errors['password'] ?? null;
 $passwordConfirmErr = $errors['password_confirm'] ?? null;
 $formErr = $errors['_form'] ?? null;
@@ -39,12 +40,13 @@ $formErr = $errors['_form'] ?? null;
             </div>
         <?php endif; ?>
 
-        <?php if ($nameErr || $emailErr || $passwordErr || $passwordConfirmErr): ?>
+        <?php if ($nameErr || $emailErr || $phoneErr || $passwordErr || $passwordConfirmErr): ?>
             <div class="alert alert-danger py-2 mb-3" role="alert">
                 <strong>Please correct the following:</strong>
                 <ul class="mb-0 mt-1 ps-3">
                     <?php if ($nameErr): ?><li><?= esc($nameErr) ?></li><?php endif; ?>
                     <?php if ($emailErr): ?><li><?= esc($emailErr) ?></li><?php endif; ?>
+                    <?php if ($phoneErr): ?><li><?= esc($phoneErr) ?></li><?php endif; ?>
                     <?php if ($passwordErr): ?><li><?= esc($passwordErr) ?></li><?php endif; ?>
                     <?php if ($passwordConfirmErr): ?><li><?= esc($passwordConfirmErr) ?></li><?php endif; ?>
                 </ul>
@@ -73,8 +75,10 @@ $formErr = $errors['_form'] ?? null;
                 <div id="nameLiveError" class="invalid-feedback" style="display:none;">Name allows letters and spaces only (ñ is allowed).</div>
             </div>
 
+            
+
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="email" class="form-label">Email Address</label>
                 <input
                     type="email"
                     class="form-control <?= $emailErr ? 'is-invalid' : '' ?>"
@@ -87,8 +91,25 @@ $formErr = $errors['_form'] ?? null;
                 <?php if ($emailErr): ?>
                     <div class="invalid-feedback d-block"><?= esc($emailErr) ?></div>
                 <?php endif; ?>
-                <div id="emailLiveError" class="invalid-feedback" style="display:none;">Email allows maximum 5 numbers and 3 special characters before @.</div>
-                <div class="form-text">We will send a 6-digit verification code to this email before creating the account.</div>
+                <div id="emailLiveError" class="invalid-feedback" style="display:none;">Please enter a valid email address.</div>
+                <div class="form-text" id="emailHelp">We will send a 6-digit verification code to this email before creating the account.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input
+                    type="tel"
+                    class="form-control <?= $phoneErr ? 'is-invalid' : '' ?>"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    value="<?= old('phone') ?>"
+                    required
+                >
+                <?php if ($phoneErr): ?>
+                    <div class="invalid-feedback d-block"><?= esc($phoneErr) ?></div>
+                <?php endif; ?>
+                <div id="phoneLiveError" class="invalid-feedback" style="display:none;">Please enter a valid phone number.</div>
             </div>
 
             <div class="mb-3">
@@ -247,13 +268,17 @@ $formErr = $errors['_form'] ?? null;
     var form = document.getElementById('registerForm');
     var nameInput = document.getElementById('name');
     var emailInput = document.getElementById('email');
+    var phoneInput = document.getElementById('phone');
     var passwordInput = document.getElementById('password');
     var passwordConfirmInput = document.getElementById('password_confirm');
 
     var nameLiveError = document.getElementById('nameLiveError');
     var emailLiveError = document.getElementById('emailLiveError');
+    var phoneLiveError = document.getElementById('phoneLiveError');
     var passwordLiveError = document.getElementById('passwordLiveError');
     var passwordConfirmLiveError = document.getElementById('passwordConfirmLiveError');
+
+    // No dynamic contact method: we use explicit email and phone fields
 
     function toggleError(input, errorEl, isInvalid, message) {
         if (!input || !errorEl) {
@@ -290,16 +315,11 @@ $formErr = $errors['_form'] ?? null;
         return !isInvalid;
     }
 
-    function validateEmailLimits(force) {
+    function validateEmail(force) {
         var value = (emailInput.value || '').trim();
 
         if (force && value === '') {
             toggleError(emailInput, emailLiveError, true, 'Email is required.');
-            return false;
-        }
-
-        if (value.length > 0 && value.indexOf('@') === -1) {
-            toggleError(emailInput, emailLiveError, true, 'Please enter a valid email address.');
             return false;
         }
 
@@ -308,12 +328,36 @@ $formErr = $errors['_form'] ?? null;
             return true;
         }
 
+        if (value.indexOf('@') === -1) {
+            toggleError(emailInput, emailLiveError, true, 'Please enter a valid email address.');
+            return false;
+        }
+
         var localPart = value.split('@')[0] || '';
         var numberCount = (localPart.match(/\d/g) || []).length;
         var specialCount = (localPart.match(/[^a-z0-9]/gi) || []).length;
         var isInvalid = numberCount > 10 || specialCount > 3;
-        toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 5 numbers and 3 special characters before @.');
+        toggleError(emailInput, emailLiveError, isInvalid, 'Email allows maximum 10 numbers and 3 special characters before @.');
         return !isInvalid;
+    }
+
+    function validatePhone(force) {
+        var value = (phoneInput.value || '').trim();
+
+        if (force && value === '') {
+            toggleError(phoneInput, phoneLiveError, true, 'Phone number is required.');
+            return false;
+        }
+
+        if (value === '') {
+            toggleError(phoneInput, phoneLiveError, false);
+            return true;
+        }
+
+        // Philippine phone: +63 or 0 followed by 9-10 digits
+        var isPhoneValid = /^(\+63|0)[0-9\s\-\(\)]{9,12}$/.test(value);
+        toggleError(phoneInput, phoneLiveError, !isPhoneValid, 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).');
+        return isPhoneValid;
     }
 
     function validatePassword(force) {
@@ -355,7 +399,13 @@ $formErr = $errors['_form'] ?? null;
 
     if (emailInput) {
         emailInput.addEventListener('input', function() {
-            validateEmailLimits(false);
+            validateEmail(false);
+        });
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            validatePhone(false);
         });
     }
 
@@ -375,11 +425,12 @@ $formErr = $errors['_form'] ?? null;
     if (form) {
         form.addEventListener('submit', function(event) {
             var okName = validateName(true);
-            var okEmail = validateEmailLimits(true);
+            var okEmail = validateEmail(true);
+            var okPhone = validatePhone(true);
             var okPassword = validatePassword(true);
             var okPasswordConfirm = validatePasswordConfirm(true);
 
-            if (!okName || !okEmail || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
+            if (!okName || !okEmail || !okPhone || !okPassword || !okPasswordConfirm || !form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }

@@ -63,16 +63,29 @@ if (! is_array($errors)) { $errors = []; }
                 <div id="emailLiveError" class="au-error" style="display:none;"></div>
             </div>
 
+            <div class="au-field" id="phoneField" style="display:none;">
+                <label class="au-label">Phone Number</label>
+                <div class="au-input-wrap">
+                    <i class="bi bi-telephone au-icon"></i>
+                    <input type="tel" id="phone" name="phone" class="au-input <?= isset($errors['phone']) ? 'au-input-error' : '' ?>"
+                        placeholder="Enter phone number" value="<?= old('phone') ?>">
+                </div>
+                <?php if (isset($errors['phone'])): ?>
+                    <div class="au-error"><?= esc($errors['phone']) ?></div>
+                <?php endif; ?>
+            </div>
+
             <div class="au-field">
                 <label class="au-label">Role</label>
                 <div class="au-input-wrap">
                     <i class="bi bi-shield au-icon"></i>
                     <select id="role" name="role" class="au-input <?= isset($errors['role']) ? 'au-input-error' : '' ?>" required>
                         <option value="">— Select Role —</option>
-                        <option value="client"    <?= old('role') === 'client'    ? 'selected' : '' ?>>Client</option>
-                        <option value="secretary" <?= old('role') === 'secretary' ? 'selected' : '' ?>>Secretary</option>
-                        <option value="doctor"    <?= old('role') === 'doctor'    ? 'selected' : '' ?>>Doctor</option>
-                        <option value="admin"     <?= old('role') === 'admin'     ? 'selected' : '' ?>>Admin</option>
+                        <option value="client"           <?= old('role') === 'client'           ? 'selected' : '' ?>>Client</option>
+                        <option value="secretary"        <?= old('role') === 'secretary'        ? 'selected' : '' ?>>Secretary</option>
+                        <option value="doctor"           <?= old('role') === 'doctor'           ? 'selected' : '' ?>>Doctor</option>
+                        <option value="assistant_admin" <?= old('role') === 'assistant_admin' ? 'selected' : '' ?>>Assistant Admin</option>
+                        <option value="admin"            <?= old('role') === 'admin'            ? 'selected' : '' ?>>Admin</option>
                     </select>
                 </div>
                 <?php if (isset($errors['role'])): ?>
@@ -197,6 +210,24 @@ function togglePw(id, btn) {
         const ok = validateName(true) & validateEmailLimits(true) & validatePassword(true) & validatePasswordConfirm(true);
         if (!ok || !form.checkValidity()) { e.preventDefault(); e.stopPropagation(); }
     });
+
+    // Toggle phone field based on role selection
+    const roleSelect = document.getElementById('role');
+    const phoneField = document.getElementById('phoneField');
+    const phoneInput = document.getElementById('phone');
+
+    function togglePhoneField() {
+        const isClientRole = roleSelect.value === 'client';
+        phoneField.style.display = isClientRole ? 'block' : 'none';
+        if (!isClientRole) {
+            phoneInput.value = '';
+            phoneInput.removeAttribute('required');
+        }
+    }
+
+    roleSelect?.addEventListener('change', togglePhoneField);
+    // Initialize on page load
+    togglePhoneField();
 })();
 </script>
 

@@ -1,3 +1,7 @@
+<?php
+$role = session('user_role') ?? 'guest';
+$name = session('user_name') ?? 'User';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,21 +14,75 @@
 <body>
 <?= view('header') ?>
 
-<div class="pl-page">
-<div class="container py-4">
-
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="pl-title mb-1">Patients</h4>
-            <p class="pl-sub mb-0">Manage patient records: view list, search, and review appointment history.</p>
+<div class="dashboard-wrapper">
+    <div class="adm-page">
+        <!-- Sidebar -->
+        <div class="adm-sidebar">
+            <div class="adm-sidebar-user">
+                <div class="adm-sidebar-avatar"><i class="bi bi-person-circle"></i></div>
+                <div>
+                    <div class="adm-sidebar-name"><?= esc($name) ?></div>
+                    <div class="adm-sidebar-role"><?= $role === 'assistant_admin' ? 'Assistant Admin' : 'Admin' ?></div>
+                </div>
+            </div>
+            <hr class="adm-sidebar-divider">
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <?php if ($role === 'admin'): ?>
+            <a href="<?= site_url('/admin/patients/list') ?>" class="adm-nav-item">
+                <i class="bi bi-people-fill"></i> Manage Users
+            </a>
+            <a href="<?= site_url('/admin/patients') ?>" class="adm-nav-item active">
+                <i class="bi bi-folder2-open"></i> Patient Records
+            </a>
+            <a href="<?= site_url('/admin/permissions') ?>" class="adm-nav-item">
+                <i class="bi bi-shield-lock"></i> Manage Permissions
+            </a>
+            <a href="<?= site_url('/admin/appointments') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar-event"></i> Appointments
+            </a>
+            <a href="<?= site_url('/admin/doctor-schedules') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar2-check"></i> Doctor Schedules
+            </a>
+            <a href="<?= site_url('/admin/settings') ?>" class="adm-nav-item">
+                <i class="bi bi-gear"></i> System Settings
+            </a>
+            <a href="<?= site_url('/admin/reports') ?>" class="adm-nav-item">
+                <i class="bi bi-bar-chart"></i> Reports
+            </a>
+            <a href="<?= site_url('/admin/access-requests') ?>" class="adm-nav-item">
+                <i class="bi bi-check-circle"></i> Access Requests
+            </a>
+            <a href="<?= site_url('/admin/announcements') ?>" class="adm-nav-item">
+                <i class="bi bi-megaphone"></i> Announcements
+            </a>
+            <a href="<?= site_url('/admin/audit-log') ?>" class="adm-nav-item">
+                <i class="bi bi-clock-history"></i> System Audit Log
+            </a>
+            <?php else: ?>
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
+                <i class="bi bi-people-fill"></i> Manage Users
+            </a>
+            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
+                <i class="bi bi-folder2-open"></i> Patient Records
+            </a>
+            <?php endif; ?>
         </div>
-        <a href="<?= site_url('/dashboard') ?>" class="pl-btn pl-btn-ghost">
-            <i class="bi bi-arrow-left me-1"></i>Dashboard
-        </a>
-    </div>
 
-    <div class="adm-section-label mb-3">Manage Patient Records</div>
-    <div class="row g-3">
+        <!-- Main Content -->
+        <div class="adm-main-content">
+            <div class="adm-wrapper">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                    <div>
+                        <h4 class="pl-title mb-1">Patients</h4>
+                        <p class="pl-sub mb-0">Manage patient records: view list, search, and review appointment history.</p>
+                    </div>
+                </div>
+
+                <div class="adm-section-label mb-3">Manage Patient Records</div>
+                <div class="row g-3">
         <div class="col-md-3">
             <div class="adm-card">
                 <div class="adm-card-icon" style="background:#cce4ed;color:#2a6a7e;"><i class="bi bi-people-fill"></i></div>
@@ -61,15 +119,75 @@
                 <a href="<?= site_url('/admin/patients/list') ?>" class="adm-btn adm-btn-outline">Open</a>
             </div>
         </div>
-    </div>
+        </div>
 
-</div>
-</div>
+            </div><!-- end adm-wrapper -->
+        </div><!-- end adm-main-content -->
+    </div><!-- end adm-page -->
+</div><!-- end dashboard-wrapper -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <style>
-    body { background: #edf2f7; }
-    .pl-page { min-height: calc(100vh - 60px); }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { background: #edf2f7; font-family: 'Inter', sans-serif; }
+    
+    /* Dashboard wrapper */
+    .dashboard-wrapper { width: 100%; }
+    
+    /* Admin sidebar layout */
+    .adm-page {
+        display: flex;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: 0;
+        min-height: calc(100vh - 60px);
+        background: #edf2f7;
+        overflow-x: hidden;
+    }
+    .adm-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-wrapper { width: 100%; }
+    .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
+    .adm-sidebar-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
+        border: 2px solid rgba(42,106,126,0.08);
+    }
+    .adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
+    .adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
+    .adm-nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 12px;
+        font-size: 0.92rem; font-weight: 500;
+        color: #2a6a7e; text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .adm-nav-item i { font-size: 1.15rem; }
+    .adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
+    .adm-nav-item.active {
+        background: #2a6a7e; color: #ffffff;
+        font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
+    }
+    
+    /* Patient records page */
     .pl-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
     .pl-sub   { font-size: 0.85rem; color: #64748b; }
     .pl-btn {

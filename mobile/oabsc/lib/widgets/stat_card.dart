@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Reusable stat card widget matching the website's dashboard stat cards
 class StatCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -21,16 +20,16 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border, width: 0.5),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: AppColors.cardShadow,
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -39,19 +38,22 @@ class StatCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
               color: iconBgColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 20,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             count,
             style: const TextStyle(
-              fontSize: 28,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
@@ -63,9 +65,9 @@ class StatCard extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: AppColors.textSecondary,
-              letterSpacing: 1.2,
+              letterSpacing: 0.5,
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],

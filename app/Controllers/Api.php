@@ -240,6 +240,7 @@ class Api extends BaseController
     public function appointments()
     {
         $userId = $this->request->getGet('user_id');
+        $role   = $this->request->getGet('role') ?? 'client';
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -251,17 +252,24 @@ class Api extends BaseController
         }
 
         $model = new AppointmentModel();
-        $appointments = $model
-            ->where($ownerCol, (int) $userId)
-            ->orderBy('appointment_date', 'DESC')
-            ->orderBy('appointment_time', 'DESC')
-            ->findAll();
+        $query = $model->select('appointments.*, users.name as patient_name')
+                       ->join('users', 'users.id = appointments.' . $ownerCol, 'left');
+
+        if ($role === 'doctor') {
+            $query->where('doctor_id', (int) $userId);
+        } else {
+            $query->where($ownerCol, (int) $userId);
+        }
+
+        $appointments = $query->orderBy('appointment_date', 'DESC')
+                             ->orderBy('appointment_time', 'DESC')
+                             ->findAll();
 
         // Normalize field names for the Flutter model
         $result = array_map(function ($a) {
             return [
                 'id'           => $a['id'] ?? null,
-                'patient_name' => '', // will be filled by Flutter from session
+                'patient_name' => $a['patient_name'] ?? ('Patient #' . $a['id']),
                 'doctor_name'  => $a['doctor_name'] ?? '',
                 'date'         => $a['appointment_date'] ?? '',
                 'time'         => $a['appointment_time'] ?? '',
@@ -316,8 +324,13 @@ class Api extends BaseController
 
         if ($this->hasDoctorNameColumn()) {
             $insertData['doctor_name'] = trim((string) $doctorName);
+        }
 
-            // Resolve doctor_id from name
+        $doctorId = $json['doctor_id'] ?? $this->request->getPost('doctor_id');
+        if ($doctorId) {
+            $insertData['doctor_id'] = (int)$doctorId;
+        } else {
+            // Resolve doctor_id from name if not provided
             $nameOnly   = preg_replace('/^Dr\.\s*/i', '', (string) $doctorName);
             $userModel  = new UserModel();
             $doctorUser = $userModel->where('role', 'doctor')->where('name', $nameOnly)->first();
@@ -382,20 +395,38 @@ class Api extends BaseController
             ]);
         }
 
-        // Admin / Secretary / Doctor — show all counts
+        if ($role === 'doctor') {
+            $total     = $appointmentModel->where('doctor_id', (int) $userId)->countAllResults(false);
+            $upcoming  = $appointmentModel->where('doctor_id', (int) $userId)->whereIn('status', ['pending', 'approved'])->where('appointment_date >=', date('Y-m-d'))->countAllResults(false);
+            $completed = $appointmentModel->where('doctor_id', (int) $userId)->where('status', 'completed')->countAllResults(false);
+            $today     = $appointmentModel->where('doctor_id', (int) $userId)->where('appointment_date', date('Y-m-d'))->countAllResults(false);
+
+            return $this->respond([
+                'total_consultations' => $total,
+                'upcoming'            => $upcoming,
+                'completed'           => $completed,
+                'today_patients'      => $today,
+            ]);
+        }
+
+        // Admin / Secretary — show all counts
         $total    = $appointmentModel->countAllResults(false);
         $pending  = $appointmentModel->where('status', 'pending')->countAllResults(false);
         $approved = $appointmentModel->where('status', 'approved')->countAllResults(false);
+        $today    = $appointmentModel->where('appointment_date', date('Y-m-d'))->countAllResults(false);
 
         $userModel   = new UserModel();
         $totalUsers  = $userModel->where('deleted_at IS NULL')->countAllResults(false);
+        $totalPatients = $userModel->where('role', 'client')->where('deleted_at IS NULL')->countAllResults(false);
         $totalDoctors = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->countAllResults(false);
 
         return $this->respond([
             'total_appointments' => $total,
             'pending'            => $pending,
             'approved'           => $approved,
+            'today_appointments' => $today,
             'total_users'        => $totalUsers,
+            'total_patients'     => $totalPatients,
             'total_doctors'      => $totalDoctors,
         ]);
     }
@@ -467,6 +498,9 @@ class Api extends BaseController
                 'address'        => $user['address'] ?? '',
                 'profile_photo'  => ! empty($user['profile_photo']) ? base_url($user['profile_photo']) : null,
                 'specialization' => $user['specialization'] ?? '',
+                'experience'     => $user['experience'] ?? '',
+                'degree'         => $user['degree'] ?? '',
+                'bio'            => $user['bio'] ?? '',
                 'created_at'     => $user['created_at'] ?? '',
             ],
         ]);
@@ -497,7 +531,7 @@ class Api extends BaseController
         }
 
         $updateData = [];
-        $allowedFields = ['name', 'phone', 'city', 'address'];
+        $allowedFields = ['name', 'phone', 'city', 'address', 'specialization', 'experience', 'degree', 'bio'];
         foreach ($allowedFields as $field) {
             if (isset($json[$field])) {
                 $updateData[$field] = trim((string) $json[$field]);
@@ -513,6 +547,123 @@ class Api extends BaseController
         return $this->respond([
             'message' => 'Profile updated successfully.',
         ]);
+    }
+
+    /**
+     * POST /api/appointments/cancel
+     * Cancel an appointment.
+     */
+    public function cancelAppointment()
+    {
+        $json = $this->request->getJSON(true);
+        $appointmentId = $json['id'] ?? $this->request->getPost('id');
+
+        if (!$appointmentId) {
+            return $this->failValidationErrors(['id' => 'Appointment ID is required.']);
+        }
+
+        $model = new AppointmentModel();
+        $model->update((int) $appointmentId, ['status' => 'cancelled']);
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Appointment cancelled successfully.',
+        ]);
+    }
+
+    /**
+     * POST /api/appointments/update-status
+     */
+    public function updateAppointmentStatus()
+    {
+        $json = $this->request->getJSON(true);
+        $id = $json['id'];
+        $status = $json['status'];
+        
+        $model = new \App\Models\AppointmentModel();
+        $model->update($id, ['status' => $status]);
+        
+        return $this->respond(['success' => true]);
+    }
+
+    // ──────────────────── Notes ──────────────────────────
+
+    /**
+     * GET /api/notes
+     */
+    public function getNotes()
+    {
+        $userId = $this->request->getGet('user_id');
+        $model = new \App\Models\NoteModel();
+        $notes = $model->where('doctor_id', (int)$userId)->orderBy('created_at', 'DESC')->findAll();
+        return $this->respond(['success' => true, 'notes' => $notes]);
+    }
+
+    /**
+     * POST /api/notes
+     */
+    public function saveNote()
+    {
+        $json = $this->request->getJSON(true);
+        $model = new \App\Models\NoteModel();
+        
+        if (isset($json['id']) && $json['id']) {
+            $model->update($json['id'], $json);
+        } else {
+            $model->insert($json);
+        }
+        
+        return $this->respond(['success' => true]);
+    }
+
+    /**
+     * DELETE /api/notes/$id
+     */
+    public function deleteNote($id)
+    {
+        $model = new \App\Models\NoteModel();
+        $model->delete($id);
+        return $this->respond(['success' => true]);
+    }
+
+    // ──────────────────── Prescriptions ────────────────────
+
+    /**
+     * GET /api/prescriptions
+     */
+    public function getPrescriptions()
+    {
+        $userId = $this->request->getGet('user_id');
+        $model = new \App\Models\PrescriptionModel();
+        $items = $model->where('doctor_id', (int)$userId)->orderBy('created_at', 'DESC')->findAll();
+        return $this->respond(['success' => true, 'prescriptions' => $items]);
+    }
+
+    /**
+     * POST /api/prescriptions
+     */
+    public function savePrescription()
+    {
+        $json = $this->request->getJSON(true);
+        $model = new \App\Models\PrescriptionModel();
+        
+        if (isset($json['id']) && $json['id']) {
+            $model->update($json['id'], $json);
+        } else {
+            $model->insert($json);
+        }
+        
+        return $this->respond(['success' => true]);
+    }
+
+    /**
+     * DELETE /api/prescriptions/$id
+     */
+    public function deletePrescription($id)
+    {
+        $model = new \App\Models\PrescriptionModel();
+        $model->delete($id);
+        return $this->respond(['success' => true]);
     }
 
     // ──────────────────── Notifications ──────────────────────
@@ -692,6 +843,56 @@ class Api extends BaseController
         return $this->respondCreated([
             'message' => 'Role added successfully.',
             'user_id' => $userId,
+        ]);
+    }
+
+    /**
+     * POST /api/doctor/schedule/save
+     * Save the doctor's schedule via JSON request.
+     */
+    public function saveDoctorSchedule($doctorId = null)
+    {
+        if ($doctorId === null) {
+            $doctorId = (int) $this->request->getPost('doctor_id');
+        }
+        $doctorId = (int) $doctorId;
+        if (!$doctorId) {
+            $json = $this->request->getJSON(true);
+            $doctorId = (int) ($json['doctor_id'] ?? 0);
+        }
+
+        if ($doctorId <= 0) {
+            return $this->failValidationErrors(['doctor_id' => 'Doctor ID is required']);
+        }
+
+        $json = $this->request->getJSON(true);
+        $schedule = $json['schedule'] ?? [];
+
+        if (empty($schedule) || !is_array($schedule)) {
+            return $this->failValidationErrors(['schedule' => 'Schedule data is required']);
+        }
+
+        $model = new \App\Models\DoctorScheduleModel();
+        
+        // Delete existing
+        $model->where('doctor_id', $doctorId)->delete();
+
+        // Insert new
+        foreach ($schedule as $dayData) {
+            if (!empty($dayData['enabled'])) {
+                $model->insert([
+                    'doctor_id'    => $doctorId,
+                    'day'          => $dayData['day'],
+                    'start_time'   => $dayData['startTime'],
+                    'end_time'     => $dayData['endTime'],
+                    'is_available' => 1,
+                ]);
+            }
+        }
+
+        return $this->respondUpdated([
+            'success' => true,
+            'message' => 'Schedule saved successfully'
         ]);
     }
 }

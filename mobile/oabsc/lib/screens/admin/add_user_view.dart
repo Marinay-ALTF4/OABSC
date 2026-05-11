@@ -48,38 +48,47 @@ class _AddUserViewState extends State<AddUserView> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (name.isEmpty || email.isEmpty || phone.isEmpty || _selectedRole == null || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+    if (name.isEmpty ||
+        email.isEmpty ||
+        phone.isEmpty ||
+        _selectedRole == null ||
+        password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
     if (!_isValidPHPhone(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid Philippine phone number')),
+        const SnackBar(
+          content: Text('Please enter a valid Philippine phone number'),
+        ),
       );
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final response = await _apiService.post('admin/users/add', body: {
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'role': _selectedRole,
-        'password': password,
-        'password_confirm': confirmPassword,
-      });
+      final response = await _apiService.post(
+        'admin/users/add',
+        body: {
+          'name': name,
+          'email': email,
+          'phone': phone,
+          'role': _selectedRole,
+          'password': password,
+          'password_confirm': confirmPassword,
+        },
+      );
 
       if (mounted) {
         if (response['success'] == true) {
@@ -89,15 +98,17 @@ class _AddUserViewState extends State<AddUserView> {
           widget.onBack();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Failed to add user')),
+            SnackBar(
+              content: Text(response['message'] ?? 'Failed to add user'),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
       }
     } finally {
       if (mounted) {
@@ -149,7 +160,10 @@ class _AddUserViewState extends State<AddUserView> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textPrimary,
                   side: const BorderSide(color: AppColors.border),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -188,7 +202,7 @@ class _AddUserViewState extends State<AddUserView> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  _buildLabel('Email Address'),
+                  _buildLabel('Email Address (Optional)'),
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -211,7 +225,10 @@ class _AddUserViewState extends State<AddUserView> {
                     ],
                     decoration: InputDecoration(
                       hintText: 'e.g., 09123456789',
-                      prefixIcon: const Icon(Icons.phone_android_outlined, size: 20),
+                      prefixIcon: const Icon(
+                        Icons.phone_android_outlined,
+                        size: 20,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
                     ),
@@ -220,7 +237,7 @@ class _AddUserViewState extends State<AddUserView> {
 
                   _buildLabel('Role'),
                   DropdownButtonFormField<String>(
-                    value: _selectedRole,
+                    initialValue: _selectedRole,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.shield_outlined, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -230,7 +247,10 @@ class _AddUserViewState extends State<AddUserView> {
                     items: const [
                       DropdownMenuItem(value: 'admin', child: Text('Admin')),
                       DropdownMenuItem(value: 'doctor', child: Text('Doctor')),
-                      DropdownMenuItem(value: 'secretary', child: Text('Secretary')),
+                      DropdownMenuItem(
+                        value: 'secretary',
+                        child: Text('Secretary'),
+                      ),
                       DropdownMenuItem(value: 'client', child: Text('Client')),
                     ],
                     onChanged: (val) {
@@ -248,11 +268,15 @@ class _AddUserViewState extends State<AddUserView> {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 20,
                           color: AppColors.textHint,
                         ),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
@@ -269,11 +293,16 @@ class _AddUserViewState extends State<AddUserView> {
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscureConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 20,
                           color: AppColors.textHint,
                         ),
-                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        onPressed: () => setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       fillColor: const Color(0xFFF8FAFC),
@@ -286,13 +315,23 @@ class _AddUserViewState extends State<AddUserView> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: _isLoading ? null : _addUser,
-                        icon: _isLoading 
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.check, size: 16),
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check, size: 16),
                         label: Text(_isLoading ? 'Adding...' : 'Add User'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -301,7 +340,10 @@ class _AddUserViewState extends State<AddUserView> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                         ),
                         child: const Text('Cancel'),
                       ),

@@ -31,6 +31,7 @@ class _PatientListViewState extends State<PatientListView> {
           _patients = response['patients'] ?? [];
         });
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response['message'] ?? 'Failed to fetch patients')),
         );

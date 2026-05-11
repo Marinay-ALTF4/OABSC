@@ -51,15 +51,28 @@ class RoleSelection extends BaseController
             }
             $finalRole = 'admin';
         } elseif ($selectedRole === 'assistant_admin') {
-            // Find the matching assistant_admin user by role_password
-            $allAssistants = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->findAll();
+            // Check against the global assistant_admin role password stored in clinic_settings
+            $settingsModel2 = new ClinicSettingsModel();
+            $assistantRolePassword = $settingsModel2->getValue('assistant_admin_role_password');
+
+            // Fallback: also check individual assistant_admin users
             $assistantAdmin = null;
-            foreach ($allAssistants as $a) {
-                if (! empty($a['role_password']) && password_verify($rolePassword, $a['role_password'])) {
-                    $assistantAdmin = $a;
-                    break;
+            if ($assistantRolePassword && password_verify($rolePassword, $assistantRolePassword)) {
+                // Global password matched — use a generic assistant admin identity
+                // Try to find an assistant_admin user, otherwise use the logged-in user
+                $allAssistants = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->findAll();
+                $assistantAdmin = ! empty($allAssistants) ? $allAssistants[0] : $user;
+            } else {
+                // Try individual assistant_admin users
+                $allAssistants = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->findAll();
+                foreach ($allAssistants as $a) {
+                    if (! empty($a['role_password']) && password_verify($rolePassword, $a['role_password'])) {
+                        $assistantAdmin = $a;
+                        break;
+                    }
                 }
             }
+
             if (! $assistantAdmin) {
                 return redirect()->back()->with('error', 'Incorrect password for Assistant Admin role.');
             }

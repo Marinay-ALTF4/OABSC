@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
     body { background: #edf2f7; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-    .profile-page { min-height: calc(100vh - 60px); }
+    .profile-page { min-height: calc(100vh - 60px); padding-top: 1.5rem; }
     .page-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
     .page-sub   { font-size: 0.875rem; color: #64748b; }
     .btn-back-link {

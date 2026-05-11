@@ -41,6 +41,7 @@ $routes->post('/secretary/update-status', 'Secretary::updateStatus');
 $routes->get('/appointments/new', 'Appointments::new');
 $routes->post('/appointments', 'Appointments::create');
 $routes->get('/appointments/my', 'Appointments::my');
+$routes->post('/appointments/cancel/(:num)', 'Appointments::cancel/$1');
 
 // Notifications
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
@@ -56,6 +57,13 @@ $routes->post('/doctor/schedule/save', 'DoctorSchedule::save');
 $routes->get('/api/doctor/(:num)/schedule', 'DoctorSchedule::getByDoctor/$1');
 
 // Doctor Appointments
+$routes->get('/doctor/records', 'DoctorAppointments::records');
+$routes->get('/doctor/records/(:num)', 'DoctorAppointments::records/$1');
+$routes->get('/doctor/notes', 'DoctorAppointments::notes');
+$routes->post('/doctor/notes', 'DoctorAppointments::saveNote');
+$routes->get('/doctor/prescriptions', 'DoctorAppointments::prescriptions');
+$routes->post('/doctor/prescriptions', 'DoctorAppointments::savePrescription');
+$routes->get('/doctor/queue', 'DoctorAppointments::queue');
 $routes->get('/doctor/appointments', 'DoctorAppointments::index');
 $routes->post('/doctor/appointments/status', 'DoctorAppointments::updateStatus');
 
@@ -104,4 +112,13 @@ $routes->post('/api/profile/update', 'Api::updateProfile');
 $routes->get('/api/notifications', 'Api::notifications');
 $routes->post('/api/admin/users/add', 'Api::addUser');
 $routes->post('/api/admin/roles/add', 'Api::addRole');
-
+$routes->post('/api/doctor/schedule/save', 'Api::saveDoctorSchedule');
+$routes->post('/api/doctor/(:any)/schedule/save', 'Api::saveDoctorSchedule/$1');
+$routes->post('/api/appointments/cancel', 'Api::cancelAppointment');
+$routes->get('/api/notes', 'Api::getNotes');
+$routes->post('/api/notes', 'Api::saveNote');
+$routes->delete('/api/notes/(:num)', 'Api::deleteNote/$1');
+$routes->get('/api/prescriptions', 'Api::getPrescriptions');
+$routes->post('/api/prescriptions', 'Api::savePrescription');
+$routes->delete('/api/prescriptions/(:num)', 'Api::deletePrescription/$1');
+$routes->post('/api/appointments/update-status', 'Api::updateAppointmentStatus');

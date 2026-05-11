@@ -28,7 +28,7 @@ class Auth extends BaseController
     public function attemptLogin()
     {
         $validationRules = [
-            'email'    => 'required|valid_email',
+            'email'    => 'required',
             'password' => 'required|min_length[6]',
         ];
 
@@ -36,11 +36,11 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Please check your login details.');
         }
 
-        $email    = $this->request->getPost('email');
+        $identifier = trim((string) $this->request->getPost('email'));
         $password = $this->request->getPost('password');
 
         $userModel = new UserModel();
-        $user      = $userModel->where('email', $email)->first();
+        $user      = $userModel->groupStart()->where('email', $identifier)->orWhere('phone', $identifier)->groupEnd()->first();
 
         if (! $user) {
             return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
@@ -58,11 +58,12 @@ class Auth extends BaseController
                 'user_id'    => $user['id'],
                 'user_name'  => $user['name'] ?? '',
                 'user_email' => $user['email'] ?? '',
+                'user_phone' => $user['phone'] ?? '',
                 'user_role'  => $user['role'] ?? 'client',
                 'isLoggedIn' => true,
             ]);
 
-            if (in_array($user['role'], ['admin', 'assistant_admin'], true)) {
+            if ($user['role'] === 'admin') {
                 session()->set([
                     'isLoggedIn'             => false,
                     'pending_role_selection' => true,
@@ -70,6 +71,11 @@ class Auth extends BaseController
                     'pending_user_role'      => $user['role'],
                 ]);
                 return redirect()->to('/role-selection');
+            }
+
+            // assistant_admin users cannot log in directly — they must use the admin account
+            if ($user['role'] === 'assistant_admin') {
+                return redirect()->to('/login')->with('error', 'Assistant Admin accounts cannot log in directly. Please use the Admin account and select the Assistant Admin role.');
             }
 
             return redirect()->to('/dashboard');
@@ -82,6 +88,7 @@ class Auth extends BaseController
             'user_id'        => $user['id'],
             'user_name'      => $user['name'] ?? '',
             'user_email'     => $user['email'] ?? '',
+            'user_phone'     => $user['phone'] ?? '',
             'user_role'      => $user['role'] ?? 'client',
             'email'          => $user['email'],
             'mfa_code_hash'  => password_hash($mfaCode, PASSWORD_DEFAULT),
@@ -151,7 +158,7 @@ class Auth extends BaseController
                 'isLoggedIn' => true,
             ]);
 
-            if (in_array($pendingMfa['user_role'], ['admin', 'assistant_admin'], true)) {
+            if ($pendingMfa['user_role'] === 'admin') {
                 session()->set([
                     'isLoggedIn'             => false,
                     'pending_role_selection' => true,
@@ -254,16 +261,24 @@ class Auth extends BaseController
         }
 
         if ($this->request->is('post')) {
+            $email = strtolower(trim((string) $this->request->getPost('email')));
+            $phone = trim((string) $this->request->getPost('phone'));
+
             $rules = [
-                'name'              => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
-                'email'             => 'required|valid_email|is_unique[users.email]',
-                'password'          => 'required|min_length[8]',
-                'password_confirm'  => 'required|matches[password]',
+                'name'            => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
+                'email'           => 'required|valid_email|is_unique[users.email]',
+                'phone'           => 'required|regex_match[/^(\+63|0)[0-9\s\-\(\)]{9,12}$/]',
+                'password'         => 'required|min_length[8]',
+                'password_confirm' => 'required|matches[password]',
             ];
 
             $messages = [
                 'email' => [
-                    'is_unique' => 'This email is already taken.',
+                    'is_unique'   => 'This email is already taken.',
+                    'valid_email' => 'Please enter a valid email address.',
+                ],
+                'phone' => [
+                    'regex_match' => 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX or +63 9XX-XXX-XXXX).',
                 ],
             ];
 
@@ -271,9 +286,11 @@ class Auth extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
+
             $name     = trim((string) $this->request->getPost('name'));
-            $email    = strtolower(trim((string) $this->request->getPost('email')));
             $password = (string) $this->request->getPost('password');
+
+            // email was already extracted above as $email
 
             $emailLocalPart = explode('@', $email)[0] ?? '';
             $emailNumberCount = preg_match_all('/\d/', $emailLocalPart);
@@ -289,6 +306,7 @@ class Auth extends BaseController
             $pendingRegistration = [
                 'name'                   => $name,
                 'email'                  => $email,
+                'phone'                  => $phone,
                 'password_hash'          => password_hash($password, PASSWORD_DEFAULT),
                 'role'                   => 'client',
                 'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
@@ -304,7 +322,7 @@ class Auth extends BaseController
 
             session()->set(self::PENDING_REGISTRATION_KEY, $pendingRegistration);
 
-            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to your Gmail address.');
+            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to your email address.');
         }
 
         return view('auth/register');
@@ -371,6 +389,7 @@ class Auth extends BaseController
             $userId = $userModel->insert([
                 'name'          => $pendingRegistration['name'] ?? '',
                 'email'         => $pendingRegistration['email'] ?? '',
+                'phone'         => $pendingRegistration['phone'] ?? '',
                 'password_hash' => $pendingRegistration['password_hash'] ?? '',
                 'role'          => $pendingRegistration['role'] ?? 'client',
             ]);
@@ -389,8 +408,10 @@ class Auth extends BaseController
         }
 
         return view('auth/verify_registration', [
-            'pendingEmail' => $pendingRegistration['email'] ?? '',
-            'expiresAt'    => (int) ($pendingRegistration['verification_expires_at'] ?? 0),
+            'pendingEmail'   => $pendingRegistration['email'] ?? '',
+            'pendingContact' => $pendingRegistration['contact_value'] ?? ($pendingRegistration['email'] ?? ''),
+            'contactMethod'  => $pendingRegistration['contact_method'] ?? 'email',
+            'expiresAt'      => (int) ($pendingRegistration['verification_expires_at'] ?? 0),
         ]);
     }
 

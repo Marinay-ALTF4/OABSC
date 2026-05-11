@@ -4,6 +4,8 @@ $appointments = $appointments ?? [];
 $upcoming  = [];
 $completed = [];
 $cancelled = [];
+$approved  = [];
+$pending   = [];
 $today     = date('Y-m-d');
 
 foreach ($appointments as $appt) {
@@ -14,6 +16,12 @@ foreach ($appointments as $appt) {
         $completed[] = $appt;
     } else {
         $upcoming[] = $appt;
+        // Further separate approved and pending
+        if ($status === 'approved') {
+            $approved[] = $appt;
+        } else {
+            $pending[] = $appt;
+        }
     }
 }
 ?>
@@ -35,6 +43,7 @@ foreach ($appointments as $appt) {
     <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
+            <div class="section-label-appt mb-1">My Visits</div>
             <h4 class="mb-1 fw-bold">My Appointments</h4>
             <p class="text-muted small mb-0">Review and manage all your clinic appointments.</p>
         </div>
@@ -96,11 +105,37 @@ foreach ($appointments as $appt) {
                 <?= emptyState('calendar-x', 'No upcoming appointments', 'You have no scheduled appointments. Book one now!') ?>
             <?php else: ?>
                 <div class="row g-3">
-                    <?php foreach ($upcoming as $appt): ?>
+                    <!-- APPROVED SECTION -->
+                    <?php if (!empty($approved)): ?>
                         <div class="col-12">
-                            <?= appointmentCard($appt, 'upcoming') ?>
+                            <div class="appt-section-header">
+                                <i class="bi bi-check-circle-fill me-2" style="color:#10b981;"></i>
+                                <strong>Confirmed</strong>
+                                <span class="appt-section-count"><?= count($approved) ?></span>
+                            </div>
                         </div>
-                    <?php endforeach; ?>
+                        <?php foreach ($approved as $appt): ?>
+                            <div class="col-12">
+                                <?= appointmentCard($appt, 'upcoming') ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <!-- PENDING SECTION -->
+                    <?php if (!empty($pending)): ?>
+                        <div class="col-12">
+                            <div class="appt-section-header">
+                                <i class="bi bi-hourglass-split me-2" style="color:#f59e0b;"></i>
+                                <strong>Pending Confirmation</strong>
+                                <span class="appt-section-count"><?= count($pending) ?></span>
+                            </div>
+                        </div>
+                        <?php foreach ($pending as $appt): ?>
+                            <div class="col-12">
+                                <?= appointmentCard($appt, 'upcoming') ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -324,32 +359,67 @@ function emptyState(string $icon, string $title, string $sub): string {
 ?>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { background: #edf2f7; min-height: 100vh; font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+    body { background: #edf2f7; min-height: 100vh; font-family: 'DM Sans', 'Inter', sans-serif; }
 
     .appt-page { min-height: calc(100vh - 60px); }
+
+    /* Page header */
+    h4.fw-bold { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; }
+    .text-muted.small { font-family: 'DM Sans', sans-serif; color: #64748b !important; }
+
+    /* Section label */
+    .appt-section-label-top {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1.8px; color: #64748b;
+    }
 
     /* Buttons */
     .btn-back {
         background: white; border: 1px solid #dbe4ef; color: #475569;
-        font-weight: 500; border-radius: 10px;
+        font-weight: 600; border-radius: 10px; font-family: 'DM Sans', sans-serif;
     }
-    .btn-back:hover { background: #f1f5f9; }
+    .btn-back:hover { background: #f1f5f9; color: #1e40af; }
     .btn-book {
         background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
         color: white; border: none; font-weight: 600; border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(30,64,175,0.25);
+        box-shadow: 0 2px 8px rgba(30,64,175,0.25); font-family: 'DM Sans', sans-serif;
     }
     .btn-book:hover { background: linear-gradient(135deg, #1e40af, #1e3a8a); color: white; }
+
+    /* Section Headers */
+    .appt-section-header {
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px 16px; border-radius: 12px;
+        background: #f8fafc; border: 1px solid #dbe4ef;
+        font-size: 0.92rem; color: #0f172a; font-family: 'DM Sans', sans-serif;
+        margin-top: 12px; margin-bottom: 12px;
+    }
+    .appt-section-count {
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e2e8f0; color: #475569;
+        width: 24px; height: 24px; border-radius: 50%;
+        font-size: 0.75rem; font-weight: 700;
+        margin-left: auto;
+    }
 
     /* Summary Badges */
     .summary-badge {
         padding: 0.4rem 1rem; border-radius: 999px;
-        font-size: 0.8rem; font-weight: 600;
+        font-size: 0.8rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
     }
     .badge-upcoming  { background: #dbeafe; color: #1e40af; }
     .badge-completed { background: #d1fae5; color: #065f46; }
     .badge-cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* Section label (matches dashboard .section-label) */
+    .section-label-appt {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1.8px; color: #64748b;
+        margin-bottom: 0.75rem; display: block;
+    }
 
     /* Tabs */
     .appt-tabs { border-bottom: 2px solid #e2e8f0; gap: 0; }
@@ -358,6 +428,7 @@ function emptyState(string $icon, string $title, string $sub): string {
         font-size: 0.85rem; font-weight: 600; color: #64748b;
         border-bottom: 3px solid transparent; margin-bottom: -2px;
         transition: all 0.15s; cursor: pointer; border-radius: 0;
+        font-family: 'DM Sans', sans-serif;
     }
     .appt-tab:hover { color: #1e40af; }
     .appt-tab.active { color: #1e40af; border-bottom-color: #1e40af; }
@@ -369,13 +440,14 @@ function emptyState(string $icon, string $title, string $sub): string {
     }
     .appt-tab.active .tab-count { background: #dbeafe; color: #1e40af; }
 
-    /* Appointment Card */
+    /* Appointment Card — matches dashboard .action-card */
     .appt-card {
-        background: white; border-radius: 16px; padding: 1.25rem 1.5rem;
-        border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+        background: white; border-radius: 18px; padding: 1.25rem 1.5rem;
+        border: 1px solid #dbe4ef;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
         transition: box-shadow 0.2s, transform 0.2s;
     }
-    .appt-card:hover { box-shadow: 0 6px 20px rgba(15,23,42,0.1); transform: translateY(-1px); }
+    .appt-card:hover { box-shadow: 0 10px 28px rgba(15,23,42,0.12); transform: translateY(-2px); border-color: #c6d4e4; }
     .appt-card-upcoming  { border-left: 4px solid #3b82f6; }
     .appt-card-completed { border-left: 4px solid #10b981; }
     .appt-card-cancelled { border-left: 4px solid #ef4444; opacity: 0.85; }
@@ -390,11 +462,11 @@ function emptyState(string $icon, string $title, string $sub): string {
     .appt-avatar-completed { background: #d1fae5; color: #065f46; }
     .appt-avatar-cancelled { background: #fee2e2; color: #991b1b; }
 
-    .appt-doctor { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 3px; }
-    .appt-meta   { font-size: 0.8rem; color: #64748b; margin-bottom: 4px; }
+    .appt-doctor { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 3px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .appt-meta   { font-size: 0.8rem; color: #64748b; margin-bottom: 4px; font-family: 'DM Sans', sans-serif; }
     .appt-reason { font-size: 0.8rem; color: #475569; max-width: 420px;
-                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .appt-booked-on { font-size: 0.72rem; color: #94a3b8; margin-top: 0.75rem; }
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Sans', sans-serif; }
+    .appt-booked-on { font-size: 0.72rem; color: #94a3b8; margin-top: 0.75rem; font-family: 'DM Sans', sans-serif; }
 
     /* Status Pills */
     .status-pill {
@@ -406,10 +478,11 @@ function emptyState(string $icon, string $title, string $sub): string {
     .status-completed { background: #d1fae5; color: #065f46; }
     .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-    /* Action Buttons */
+    /* Action Buttons — matches dashboard .action-btn */
     .appt-action-btn {
         font-size: 0.78rem; font-weight: 600; padding: 0.4rem 0.9rem;
         border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s;
+        font-family: 'DM Sans', sans-serif;
     }
     .btn-view       { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .btn-view:hover { background: #dbeafe; }
@@ -421,21 +494,22 @@ function emptyState(string $icon, string $title, string $sub): string {
     /* Empty State */
     .empty-state { text-align: center; padding: 3.5rem 1rem; color: #94a3b8; }
     .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.4; }
-    .empty-state h6 { font-weight: 700; color: #475569; margin-bottom: 0.4rem; }
-    .empty-state p  { font-size: 0.85rem; }
+    .empty-state h6 { font-weight: 700; color: #475569; margin-bottom: 0.4rem; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .empty-state p  { font-size: 0.85rem; font-family: 'DM Sans', sans-serif; }
 
     /* Detail Modal */
     .detail-row {
         display: flex; justify-content: space-between; align-items: flex-start;
         padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem;
     }
-    .detail-label { font-size: 0.82rem; color: #64748b; font-weight: 500; min-width: 90px; }
-    .detail-value { font-size: 0.85rem; color: #0f172a; font-weight: 600; text-align: right; }
+    .detail-label { font-size: 0.82rem; color: #64748b; font-weight: 500; min-width: 90px; font-family: 'DM Sans', sans-serif; }
+    .detail-value { font-size: 0.85rem; color: #0f172a; font-weight: 600; text-align: right; font-family: 'DM Sans', sans-serif; }
 
     /* Reschedule Info */
     .reschedule-info {
         background: #f8fafc; border-radius: 10px; padding: 1rem;
-        border: 1px solid #e2e8f0; font-size: 0.85rem; color: #334155;
+        border: 1px solid #dbe4ef; font-size: 0.85rem; color: #334155;
+        font-family: 'DM Sans', sans-serif;
     }
 </style>
 </body>
