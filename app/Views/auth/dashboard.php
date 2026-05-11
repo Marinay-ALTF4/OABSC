@@ -1524,21 +1524,8 @@ $name = session('user_name') ?? 'User';
         flex-direction: column;
         gap: 6px;
     }
-    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; overflow: hidden; }
-    .adm-wrapper { width: 100%; }
-        width: 260px;
-        flex-shrink: 0;
-        background: rgba(255, 255, 255, 0.55);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-right: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
-        padding: 28px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
     .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-wrapper { width: 100%; }
     .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
     .adm-sidebar-avatar {
         width: 44px; height: 44px; border-radius: 50%;
