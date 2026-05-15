@@ -29,7 +29,7 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-            <?php if ($role === 'admin'): ?>
+            <?php if ($role === 'admin' || $role === 'assistant_admin'): ?>
             <a href="<?= site_url('/admin/patients/list') ?>" class="adm-nav-item active">
                 <i class="bi bi-people-fill"></i> Manage Users
             </a>
@@ -56,13 +56,6 @@ $name = session('user_name') ?? 'User';
             </a>
             <a href="<?= site_url('/admin/audit-log') ?>" class="adm-nav-item">
                 <i class="bi bi-clock-history"></i> System Audit Log
-            </a>
-            <?php else: ?>
-            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
-                <i class="bi bi-people-fill"></i> Manage Users
-            </a>
-            <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
-                <i class="bi bi-folder2-open"></i> Patient Records
             </a>
             <?php endif; ?>
         </div>
