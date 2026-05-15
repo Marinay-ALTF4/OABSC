@@ -71,10 +71,6 @@ $routes->post('/doctor/appointments/status', 'DoctorAppointments::updateStatus')
 $routes->get('/profile', 'Profile::index');
 $routes->post('/profile/save', 'Profile::save');
 
-// Role Selection
-$routes->get('/role-selection', 'RoleSelection::index');
-$routes->post('/role-selection/verify', 'RoleSelection::verify');
-
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
 $routes->get('/admin/patients', 'Admin::patients');
@@ -93,14 +89,11 @@ $routes->get('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
 $routes->post('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
 $routes->post('/admin/patients/delete/(:num)', 'Admin::deleteUser/$1');
 $routes->post('/admin/patients/restore/(:num)', 'Admin::restoreUser/$1');
-$routes->get('/admin/settings', 'Admin::clinicSettings');
-$routes->post('/admin/settings', 'Admin::clinicSettings');
 
 // API (Flutter Mobile App)
 $routes->get('/api/health', 'Api::health');
 $routes->post('/api/login', 'Api::login');
 $routes->post('/api/register', 'Api::register');
-$routes->post('/api/role-selection', 'Api::roleSelection');
 $routes->get('/api/users', 'Api::users');
 $routes->get('/api/patients', 'Api::patients');
 $routes->get('/api/appointments', 'Api::appointments');

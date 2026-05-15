@@ -61,25 +61,6 @@ class Admin extends BaseController
         return view('admin/add_role');
     }
 
-    public function clinicSettings()
-    {
-        $access = $this->ensureAdminAccess();
-        if ($access !== null) return $access;
-
-        $settingsModel = new \App\Models\ClinicSettingsModel();
-
-        if ($this->request->is('post')) {
-            $newCode = trim((string) $this->request->getPost('clinic_access_code'));
-            if ($newCode !== '') {
-                $settingsModel->setValue('clinic_access_code', password_hash($newCode, PASSWORD_DEFAULT));
-                return redirect()->back()->with('success', 'Clinic access code updated.');
-            }
-            return redirect()->back()->with('error', 'Please enter a new access code.');
-        }
-
-        return view('admin/clinic_settings');
-    }
-
     public function patients()
     {
         $access = $this->ensureAdminAccess();

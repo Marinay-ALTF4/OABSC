@@ -63,21 +63,6 @@ class Auth extends BaseController
                 'isLoggedIn' => true,
             ]);
 
-            if ($user['role'] === 'admin') {
-                session()->set([
-                    'isLoggedIn'             => false,
-                    'pending_role_selection' => true,
-                    'pending_user_id'        => $user['id'],
-                    'pending_user_role'      => $user['role'],
-                ]);
-                return redirect()->to('/role-selection');
-            }
-
-            // assistant_admin users cannot log in directly — they must use the admin account
-            if ($user['role'] === 'assistant_admin') {
-                return redirect()->to('/login')->with('error', 'Assistant Admin accounts cannot log in directly. Please use the Admin account and select the Assistant Admin role.');
-            }
-
             return redirect()->to('/dashboard');
         }
 
@@ -157,16 +142,6 @@ class Auth extends BaseController
                 'user_role'  => $pendingMfa['user_role'],
                 'isLoggedIn' => true,
             ]);
-
-            if ($pendingMfa['user_role'] === 'admin') {
-                session()->set([
-                    'isLoggedIn'             => false,
-                    'pending_role_selection' => true,
-                    'pending_user_id'        => $pendingMfa['user_id'],
-                    'pending_user_role'      => $pendingMfa['user_role'],
-                ]);
-                return redirect()->to('/role-selection');
-            }
 
             return redirect()->to('/dashboard');
         }

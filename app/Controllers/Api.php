@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Models\AppointmentModel;
-use App\Models\ClinicSettingsModel;
 use App\Models\DoctorScheduleModel;
 use App\Models\NotificationModel;
 use CodeIgniter\API\ResponseTrait;
@@ -20,6 +19,11 @@ use Config\Database;
 class Api extends BaseController
 {
     use ResponseTrait;
+
+    private function httpRequest(): IncomingRequest
+    {
+        return $this->request instanceof IncomingRequest ? $this->request : service('request');
+    }
 
     // ───────────────────────── Health ─────────────────────────
 
@@ -45,11 +49,7 @@ class Api extends BaseController
      */
     public function login()
     {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
-
-        $request = $this->request;
+        $request = $this->httpRequest();
 
         // Accept both JSON body and form POST
         $json = $request->getJSON(true);
@@ -136,79 +136,6 @@ class Api extends BaseController
         ]);
     }
 
-    // ──────────────────── Role Selection ─────────────────────
-
-    /**
-     * POST /api/role-selection
-     * Verify clinic access code + role password for admin / assistant_admin.
-     */
-    public function roleSelection()
-    {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
-
-        $json = $this->request->getJSON(true);
-        $userId       = $json['user_id']           ?? $this->request->getPost('user_id');
-        $clinicCode   = $json['clinic_access_code'] ?? $this->request->getPost('clinic_access_code');
-        $selectedRole = $json['role']               ?? $this->request->getPost('role');
-        $rolePassword = $json['role_password']      ?? $this->request->getPost('role_password');
-
-        if (! $userId || ! $clinicCode || ! $selectedRole || ! $rolePassword) {
-            return $this->failValidationErrors(['_form' => 'All fields are required.']);
-        }
-
-        // Validate clinic access code
-        $settingsModel = new ClinicSettingsModel();
-        $storedCode = $settingsModel->getValue('clinic_access_code');
-
-        if (! $storedCode || ! password_verify((string) $clinicCode, $storedCode)) {
-            return $this->failUnauthorized('Invalid clinic access code.');
-        }
-
-        $userModel = new UserModel();
-        $user = $userModel->find((int) $userId);
-
-        if (! $user) {
-            return $this->failNotFound('User not found.');
-        }
-
-        if ($selectedRole === 'admin') {
-            $hashToCheck = ! empty($user['role_password']) ? $user['role_password'] : $user['password_hash'];
-            if (! password_verify((string) $rolePassword, $hashToCheck)) {
-                return $this->failUnauthorized('Incorrect password for Admin role.');
-            }
-        } elseif ($selectedRole === 'assistant_admin') {
-            $allAssistants = $userModel->where('role', 'assistant_admin')->where('deleted_at IS NULL')->findAll();
-            $matched = false;
-            foreach ($allAssistants as $a) {
-                if (! empty($a['role_password']) && password_verify((string) $rolePassword, $a['role_password'])) {
-                    $matched = true;
-                    $user = $a; // Use the assistant's data
-                    break;
-                }
-            }
-            if (! $matched) {
-                return $this->failUnauthorized('Incorrect password for Assistant Admin role.');
-            }
-        } else {
-            return $this->failValidationErrors(['role' => 'Invalid role selected.']);
-        }
-
-        $token = bin2hex(random_bytes(32));
-
-        return $this->respond([
-            'message' => 'Role verified',
-            'token'   => $token,
-            'user'    => [
-                'id'    => $user['id'],
-                'name'  => $user['name'] ?? '',
-                'email' => $user['email'] ?? '',
-                'role'  => $selectedRole,
-            ],
-        ]);
-    }
-
     // ──────────────────── Appointments ───────────────────────
 
     /**
@@ -239,8 +166,9 @@ class Api extends BaseController
      */
     public function appointments()
     {
-        $userId = $this->request->getGet('user_id');
-        $role   = $this->request->getGet('role') ?? 'client';
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
+        $role   = $request->getGet('role') ?? 'client';
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -290,16 +218,14 @@ class Api extends BaseController
      */
     public function createAppointment()
     {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
+        $request = $this->httpRequest();
 
-        $json = $this->request->getJSON(true);
-        $userId          = $json['user_id']          ?? $this->request->getPost('user_id');
-        $doctorName      = $json['doctor_name']      ?? $this->request->getPost('doctor_name');
-        $appointmentDate = $json['appointment_date'] ?? $this->request->getPost('appointment_date');
-        $appointmentTime = $json['appointment_time'] ?? $this->request->getPost('appointment_time');
-        $reason          = $json['reason']           ?? $this->request->getPost('reason');
+        $json = $request->getJSON(true);
+        $userId          = $json['user_id']          ?? $request->getPost('user_id');
+        $doctorName      = $json['doctor_name']      ?? $request->getPost('doctor_name');
+        $appointmentDate = $json['appointment_date'] ?? $request->getPost('appointment_date');
+        $appointmentTime = $json['appointment_time'] ?? $request->getPost('appointment_time');
+        $reason          = $json['reason']           ?? $request->getPost('reason');
 
         if (! $userId || ! $doctorName || ! $appointmentDate || ! $appointmentTime || ! $reason) {
             return $this->failValidationErrors(['_form' => 'All fields are required.']);
@@ -326,7 +252,7 @@ class Api extends BaseController
             $insertData['doctor_name'] = trim((string) $doctorName);
         }
 
-        $doctorId = $json['doctor_id'] ?? $this->request->getPost('doctor_id');
+        $doctorId = $json['doctor_id'] ?? $request->getPost('doctor_id');
         if ($doctorId) {
             $insertData['doctor_id'] = (int)$doctorId;
         } else {
@@ -373,8 +299,9 @@ class Api extends BaseController
      */
     public function dashboard()
     {
-        $userId = $this->request->getGet('user_id');
-        $role   = $this->request->getGet('role') ?? 'client';
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
+        $role   = $request->getGet('role') ?? 'client';
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -474,7 +401,8 @@ class Api extends BaseController
      */
     public function profile()
     {
-        $userId = $this->request->getGet('user_id');
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -512,12 +440,10 @@ class Api extends BaseController
      */
     public function updateProfile()
     {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
+        $request = $this->httpRequest();
 
-        $json = $this->request->getJSON(true);
-        $userId  = $json['user_id'] ?? $this->request->getPost('user_id');
+        $json = $request->getJSON(true);
+        $userId  = $json['user_id'] ?? $request->getPost('user_id');
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -555,8 +481,9 @@ class Api extends BaseController
      */
     public function cancelAppointment()
     {
-        $json = $this->request->getJSON(true);
-        $appointmentId = $json['id'] ?? $this->request->getPost('id');
+        $request = $this->httpRequest();
+        $json = $request->getJSON(true);
+        $appointmentId = $json['id'] ?? $request->getPost('id');
 
         if (!$appointmentId) {
             return $this->failValidationErrors(['id' => 'Appointment ID is required.']);
@@ -576,7 +503,8 @@ class Api extends BaseController
      */
     public function updateAppointmentStatus()
     {
-        $json = $this->request->getJSON(true);
+        $request = $this->httpRequest();
+        $json = $request->getJSON(true);
         $id = $json['id'];
         $status = $json['status'];
         
@@ -593,7 +521,8 @@ class Api extends BaseController
      */
     public function getNotes()
     {
-        $userId = $this->request->getGet('user_id');
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
         $model = new \App\Models\NoteModel();
         $notes = $model->where('doctor_id', (int)$userId)->orderBy('created_at', 'DESC')->findAll();
         return $this->respond(['success' => true, 'notes' => $notes]);
@@ -604,7 +533,8 @@ class Api extends BaseController
      */
     public function saveNote()
     {
-        $json = $this->request->getJSON(true);
+        $request = $this->httpRequest();
+        $json = $request->getJSON(true);
         $model = new \App\Models\NoteModel();
         
         if (isset($json['id']) && $json['id']) {
@@ -633,7 +563,8 @@ class Api extends BaseController
      */
     public function getPrescriptions()
     {
-        $userId = $this->request->getGet('user_id');
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
         $model = new \App\Models\PrescriptionModel();
         $items = $model->where('doctor_id', (int)$userId)->orderBy('created_at', 'DESC')->findAll();
         return $this->respond(['success' => true, 'prescriptions' => $items]);
@@ -644,7 +575,8 @@ class Api extends BaseController
      */
     public function savePrescription()
     {
-        $json = $this->request->getJSON(true);
+        $request = $this->httpRequest();
+        $json = $request->getJSON(true);
         $model = new \App\Models\PrescriptionModel();
         
         if (isset($json['id']) && $json['id']) {
@@ -674,7 +606,8 @@ class Api extends BaseController
      */
     public function notifications()
     {
-        $userId = $this->request->getGet('user_id');
+        $request = $this->httpRequest();
+        $userId = $request->getGet('user_id');
 
         if (! $userId) {
             return $this->failValidationErrors(['user_id' => 'user_id is required.']);
@@ -737,19 +670,17 @@ class Api extends BaseController
      */
     public function addUser()
     {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
+        $request = $this->httpRequest();
 
-        $json = $this->request->getJSON(true);
-        $name             = $json['name']             ?? $this->request->getPost('name');
-        $email            = $json['email']            ?? $this->request->getPost('email');
-        $phone            = $json['phone']            ?? $this->request->getPost('phone');
-        $role             = $json['role']             ?? $this->request->getPost('role');
-        $password         = $json['password']         ?? $this->request->getPost('password');
-        $passwordConfirm  = $json['password_confirm'] ?? $this->request->getPost('password_confirm');
+        $json = $request->getJSON(true);
+        $name             = $json['name']             ?? $request->getPost('name');
+        $email            = $json['email']            ?? $request->getPost('email');
+        $phone            = $json['phone']            ?? $request->getPost('phone');
+        $role             = $json['role']             ?? $request->getPost('role');
+        $password         = $json['password']         ?? $request->getPost('password');
+        $passwordConfirm  = $json['password_confirm'] ?? $request->getPost('password_confirm');
 
-        $this->request->setGlobal('post', [
+        $request->setGlobal('post', [
             'name'             => $name,
             'email'            => $email,
             'phone'            => $phone,
@@ -796,18 +727,16 @@ class Api extends BaseController
      */
     public function addRole()
     {
-        if (! $this->request instanceof IncomingRequest) {
-            return $this->failServerError('Invalid request object.');
-        }
+        $request = $this->httpRequest();
 
-        $json = $this->request->getJSON(true);
-        $name                = $json['name']                ?? $this->request->getPost('name');
-        $email               = $json['email']               ?? $this->request->getPost('email');
-        $role                = $json['role']                ?? $this->request->getPost('role');
-        $rolePassword        = $json['role_password']       ?? $this->request->getPost('role_password');
-        $rolePasswordConfirm = $json['role_password_confirm'] ?? $this->request->getPost('role_password_confirm');
+        $json = $request->getJSON(true);
+        $name                = $json['name']                ?? $request->getPost('name');
+        $email               = $json['email']               ?? $request->getPost('email');
+        $role                = $json['role']                ?? $request->getPost('role');
+        $rolePassword        = $json['role_password']       ?? $request->getPost('role_password');
+        $rolePasswordConfirm = $json['role_password_confirm'] ?? $request->getPost('role_password_confirm');
 
-        $this->request->setGlobal('post', [
+        $request->setGlobal('post', [
             'name'                  => $name,
             'email'                 => $email,
             'role'                  => $role,
@@ -852,12 +781,14 @@ class Api extends BaseController
      */
     public function saveDoctorSchedule($doctorId = null)
     {
+        $request = $this->httpRequest();
+
         if ($doctorId === null) {
-            $doctorId = (int) $this->request->getPost('doctor_id');
+            $doctorId = (int) $request->getPost('doctor_id');
         }
         $doctorId = (int) $doctorId;
         if (!$doctorId) {
-            $json = $this->request->getJSON(true);
+            $json = $request->getJSON(true);
             $doctorId = (int) ($json['doctor_id'] ?? 0);
         }
 
@@ -865,7 +796,7 @@ class Api extends BaseController
             return $this->failValidationErrors(['doctor_id' => 'Doctor ID is required']);
         }
 
-        $json = $this->request->getJSON(true);
+        $json = $request->getJSON(true);
         $schedule = $json['schedule'] ?? [];
 
         if (empty($schedule) || !is_array($schedule)) {
