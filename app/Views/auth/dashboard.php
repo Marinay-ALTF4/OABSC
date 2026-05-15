@@ -19,7 +19,6 @@ $name = session('user_name') ?? 'User';
     <?php if ($role === 'admin' || $role === 'assistant_admin') : ?>
     <!-- ==================== ADMIN ==================== -->
     <div class="adm-page">
-
         <!-- Sidebar -->
         <div class="adm-sidebar">
             <div class="adm-sidebar-user">
@@ -40,8 +39,26 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/patients') ?>" class="adm-nav-item">
                 <i class="bi bi-folder2-open"></i> Patient Records
             </a>
-            <a href="<?= site_url('/admin/patients/add') ?>" class="adm-nav-item">
-                <i class="bi bi-person-plus"></i> Add Patient
+            <a href="<?= site_url('/admin/permissions') ?>" class="adm-nav-item">
+                <i class="bi bi-shield-lock"></i> Manage Permissions
+            </a>
+            <a href="<?= site_url('/admin/appointments') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar-event"></i> Appointments
+            </a>
+            <a href="<?= site_url('/admin/doctor-schedules') ?>" class="adm-nav-item">
+                <i class="bi bi-calendar2-check"></i> Doctor Schedules
+            </a>
+            <a href="<?= site_url('/admin/reports') ?>" class="adm-nav-item">
+                <i class="bi bi-bar-chart"></i> Reports
+            </a>
+            <a href="<?= site_url('/admin/access-requests') ?>" class="adm-nav-item">
+                <i class="bi bi-check-circle"></i> Access Requests
+            </a>
+            <a href="<?= site_url('/admin/announcements') ?>" class="adm-nav-item">
+                <i class="bi bi-megaphone"></i> Announcements
+            </a>
+            <a href="<?= site_url('/admin/audit-log') ?>" class="adm-nav-item">
+                <i class="bi bi-clock-history"></i> System Audit Log
             </a>
             <?php else: ?>
             <a href="<?= site_url('/dashboard') ?>" class="adm-nav-item">
@@ -55,7 +72,7 @@ $name = session('user_name') ?? 'User';
 
         <!-- Main Content -->
         <div class="adm-main-content">
-    <div class="adm-wrapper">
+            <div class="adm-wrapper">
 
     <!-- Welcome Banner -->
     <div class="welcome-banner banner-client mb-4">
@@ -1506,7 +1523,7 @@ $name = session('user_name') ?? 'User';
         right: 50%;
         margin-left: -50vw;
         margin-right: -50vw;
-        margin-top: -3rem;
+        margin-top: 0;
         min-height: calc(100vh - 60px);
         background: #edf2f7;
         overflow-x: hidden;
