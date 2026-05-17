@@ -20,10 +20,6 @@ $routes->post('/register/resend-code', 'Auth::resendVerificationCode');
 $routes->get('/register/reset', 'Auth::resetRegistration');
 $routes->get('/logout', 'Auth::logout');
 
-// Role Selection
-$routes->get('/role-selection', 'RoleSelection::index');
-$routes->post('/role-selection/verify', 'RoleSelection::verify');
-
 // Dashboard
 $routes->get('/dashboard', 'Home::index');
 
