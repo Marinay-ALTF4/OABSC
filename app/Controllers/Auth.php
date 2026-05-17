@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\UserModel;
 use App\Models\LoginEventModel;
 use App\Models\NotificationModel;
+use App\Models\AuthSessionModel;
 
 class Auth extends BaseController
 {
@@ -98,6 +99,10 @@ class Auth extends BaseController
 
         $logModel->log(LoginEventModel::EVENT_LOGIN_SUCCESS, $userId, $identifier);
 
+        // Create auth session record for tracking
+        $sessionToken = (new AuthSessionModel())->createSession($userId);
+        session()->set('auth_session_token', $sessionToken);
+
         // Skip MFA for seeded/system accounts (@example.com)
         $isSeededUser = str_ends_with(strtolower((string) $user['email']), self::MFA_BYPASS_DOMAIN);
 
@@ -185,6 +190,10 @@ class Auth extends BaseController
 
             session()->remove(self::PENDING_MFA_KEY);
             (new LoginEventModel())->log(LoginEventModel::EVENT_MFA_SUCCESS, (int) $pendingMfa['user_id']);
+
+            // Create auth session record
+            $sessionToken = (new AuthSessionModel())->createSession((int) $pendingMfa['user_id']);
+            session()->set('auth_session_token', $sessionToken);
             session()->set([
                 'user_id'    => $pendingMfa['user_id'],
                 'user_name'  => $pendingMfa['user_name'],
@@ -262,15 +271,26 @@ class Auth extends BaseController
 
     public function logout()
     {
+        $userId       = (int) session('user_id');
+        $sessionToken = (string) session('auth_session_token');
+
         // Log logout event
         if (session()->get('isLoggedIn')) {
-            (new LoginEventModel())->log(LoginEventModel::EVENT_LOGOUT, (int) session('user_id'));
+            (new LoginEventModel())->log(LoginEventModel::EVENT_LOGOUT, $userId);
+        }
+
+        // Revoke auth session — use token if available, otherwise revoke all for user
+        $authSessionModel = new AuthSessionModel();
+        if ($sessionToken !== '') {
+            $authSessionModel->revokeSession($sessionToken, 'logout');
+        } elseif ($userId > 0) {
+            $authSessionModel->revokeAllForUser($userId, 'logout');
         }
 
         // Revoke access requests on logout for assistant_admin
         if (session('user_role') === 'assistant_admin') {
             $arModel = new \App\Models\AccessRequestModel();
-            $uid = (int) (session('assistant_user_id') ?: session('user_id'));
+            $uid = (int) (session('assistant_user_id') ?: $userId);
             $arModel->where('user_id', $uid)
                     ->whereIn('status', ['approved', 'pending'])
                     ->delete();

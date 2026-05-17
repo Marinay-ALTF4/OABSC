@@ -122,12 +122,10 @@ class AuditReport extends BaseController
             $chartFailed[]  = $f;
         }
 
-        // Active sessions (logged in last 8 hours)
-        $activeSessions = (int) $db->query(
-            "SELECT COUNT(*) as c FROM users
-             WHERE last_login_at >= ? AND deleted_at IS NULL",
-            [date('Y-m-d H:i:s', strtotime('-8 hours'))]
-        )->getRowArray()['c'];
+        // Active sessions from auth_sessions table
+        $authSessionModel = new \App\Models\AuthSessionModel();
+        $activeSessions   = count($authSessionModel->getActiveSessions());
+        $sessionStats     = $authSessionModel->getSessionStats($since);
 
         // Recent events list
         $events = $db->query(
@@ -155,6 +153,8 @@ class AuditReport extends BaseController
             'total_mfa_failed' => $counts['mfa_failed']     ?? 0,
             'total_logout'     => $counts['logout']         ?? 0,
             'active_sessions'  => $activeSessions,
+            'sessions_total'   => $sessionStats['total']    ?? 0,
+            'sessions_revoked' => $sessionStats['revoked']  ?? 0,
             'alert_count'      => $alertCount,
             'events'           => $events,
             'chart_labels'     => $chartLabels,

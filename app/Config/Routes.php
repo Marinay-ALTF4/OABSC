@@ -73,28 +73,39 @@ $routes->post('/profile/save', 'Profile::save');
 
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
-$routes->get('/admin/audit-log', 'AuditLog::index');
-$routes->get('/admin/audit-reports', 'AuditReport::index');
-$routes->get('/admin/audit-reports/export', 'AuditReport::exportCsv');
-$routes->get('/admin/reports', 'AuditReport::index');
-$routes->get('/admin/access-requests', 'Admin::accessRequests');
-$routes->get('/admin/patients', 'Admin::patients');
-$routes->get('/admin/patients/list', 'Admin::patientList');
-$routes->get('/admin/patients/history/(:num)', 'Admin::patientHistory/$1');
-$routes->get('/admin/patients/history', 'Admin::patientHistory');
-$routes->get('/admin/doctors', 'Admin::doctorList');
-$routes->get('/admin/doctors/specialization', 'Admin::doctorSpecialization');
-$routes->get('/admin/doctors/schedule', 'Admin::doctorSchedule');
-$routes->get('/admin/doctor-schedules', 'Admin::doctorSchedule');
-$routes->get('/admin/patients/clients', 'Admin::clientList');
-$routes->get('/admin/patients/add', 'Admin::addUser');
-$routes->post('/admin/patients/add', 'Admin::addUser');
-$routes->get('/admin/patients/add-role', 'Admin::addRole');
-$routes->post('/admin/patients/add-role', 'Admin::addRole');
-$routes->get('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
-$routes->post('/admin/patients/edit/(:num)', 'Admin::editUser/$1');
-$routes->post('/admin/patients/delete/(:num)', 'Admin::deleteUser/$1');
-$routes->post('/admin/patients/restore/(:num)', 'Admin::restoreUser/$1');
+// Permission assign — outside filter (admin-only check is inside controller)
+$routes->post('/admin/permissions/add',    'AdminPermissions::addPermission');
+$routes->post('/admin/permissions/assign', 'AdminPermissions::assignPermission');
+$routes->group('/admin', ['filter' => 'permission'], function($routes) {
+    $routes->get('audit-log',                   'AuditLog::index');
+    $routes->get('audit-reports',               'AuditReport::index');
+    $routes->get('audit-reports/export',        'AuditReport::exportCsv');
+    $routes->get('reports',                     'AuditReport::index');
+    $routes->get('access-requests',             'Admin::accessRequests');
+    $routes->get('permissions',                 'AdminPermissions::index');
+    $routes->post('permissions/add',            'AdminPermissions::addPermission');
+    $routes->post('permissions/assign',         'AdminPermissions::assignPermission');
+    $routes->get('patients',                    'Admin::patients');
+    $routes->get('patients/list',               'Admin::patientList');
+    $routes->get('patients/history/(:num)',     'Admin::patientHistory/$1');
+    $routes->get('patients/history',            'Admin::patientHistory');
+    $routes->get('doctors',                     'Admin::doctorList');
+    $routes->get('doctors/specialization',      'Admin::doctorSpecialization');
+    $routes->get('doctors/schedule',            'Admin::doctorSchedule');
+    $routes->get('doctor-schedules',            'Admin::doctorSchedule');
+    $routes->get('patients/clients',            'Admin::clientList');
+    $routes->get('patients/add',                'Admin::addUser');
+    $routes->post('patients/add',               'Admin::addUser');
+    $routes->get('patients/add-role',           'Admin::addRole');
+    $routes->post('patients/add-role',          'Admin::addRole');
+    $routes->get('patients/edit/(:num)',        'Admin::editUser/$1');
+    $routes->post('patients/edit/(:num)',       'Admin::editUser/$1');
+    $routes->post('patients/delete/(:num)',     'Admin::deleteUser/$1');
+    $routes->post('patients/restore/(:num)',    'Admin::restoreUser/$1');
+    $routes->get('settings',                    'Settings::index');
+    $routes->post('settings',                   'Settings::update');
+    $routes->get('announcements',               'Home::index');
+});
 
 // API (Flutter Mobile App)
 $routes->get('/api/health', 'Api::health');
