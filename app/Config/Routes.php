@@ -79,6 +79,7 @@ $routes->post('/admin/permissions/assign', 'AdminPermissions::assignPermission')
 $routes->group('admin', ['filter' => 'permission'], function($routes) {
     $routes->get('appointments',                'Admin::appointments');
     $routes->post('appointments/update-status', 'Admin::updateAppointmentStatus');
+    $routes->get('audit-log',                   'AuditLog::index');
     $routes->get('audit-reports',               'AuditReport::index');
     $routes->get('audit-reports/export',        'AuditReport::exportCsv');
     $routes->get('reports',                     'AuditReport::index');
