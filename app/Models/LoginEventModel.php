@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Libraries\LoginEventCrypt;
 use CodeIgniter\Model;
 
 class LoginEventModel extends Model
@@ -14,6 +15,53 @@ class LoginEventModel extends Model
         'reason_code', 'ip_hash', 'user_agent', 'created_at',
     ];
     protected $useTimestamps  = false;
+    
+    protected $beforeInsert = ['encryptLogFields'];
+    protected $afterFind    = ['decryptLogFields'];
+
+    private array $encryptedFields = [
+        'email_attempted',
+        'user_agent',
+    ];
+
+    protected function encryptLogFields(array $data): array
+    {
+        if (! isset($data['data']) || ! is_array($data['data'])) {
+            return $data;
+        }
+
+        $crypt = new LoginEventCrypt();
+        $data['data'] = $crypt->encryptFields($data['data'], $this->encryptedFields);
+
+        return $data;
+    }
+
+    protected function decryptLogFields(array $data): array
+    {
+        if (! isset($data['data'])) {
+            return $data;
+        }
+
+        $crypt = new LoginEventCrypt();
+
+        if ($data['data'] === null) {
+            return $data;
+        }
+
+        if (isset($data['data'][0]) && is_array($data['data'][0])) {
+            foreach ($data['data'] as $index => $row) {
+                $data['data'][$index] = $crypt->decryptFields($row, $this->encryptedFields);
+            }
+
+            return $data;
+        }
+
+        if (is_array($data['data'])) {
+            $data['data'] = $crypt->decryptFields($data['data'], $this->encryptedFields);
+        }
+
+        return $data;
+    }
 
     // Event types
     public const EVENT_LOGIN_SUCCESS   = 'login_success';

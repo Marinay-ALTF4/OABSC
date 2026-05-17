@@ -308,6 +308,14 @@ class Admin extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Unable to update user.');
             }
 
+            // Log account modification
+            (new LoginEventModel())->log(
+                LoginEventModel::EVENT_ACCOUNT_MODIFIED,
+                (int) $id,
+                $updateData['email'] ?? null,
+                'user_id:' . $id
+            );
+
             if ((int) session()->get('user_id') === $id) {
                 session()->set('user_name', trim((string) $this->request->getPost('name')));
                 session()->set('user_role', (string) $this->request->getPost('role'));
