@@ -38,17 +38,16 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/patients') ?>" class="adm-nav-item">
                 <i class="bi bi-folder2-open"></i> Patient Records
             </a>
+            <?php if ($role === 'admin') : ?>
             <a href="<?= site_url('/admin/permissions') ?>" class="adm-nav-item">
                 <i class="bi bi-shield-lock"></i> Manage Permissions
             </a>
+            <?php endif; ?>
             <a href="<?= site_url('/admin/appointments') ?>" class="adm-nav-item">
                 <i class="bi bi-calendar-event"></i> Appointments
             </a>
             <a href="<?= site_url('/admin/doctor-schedules') ?>" class="adm-nav-item">
                 <i class="bi bi-calendar2-check"></i> Doctor Schedules
-            </a>
-            <a href="<?= site_url('/admin/reports') ?>" class="adm-nav-item">
-                <i class="bi bi-bar-chart"></i> Reports
             </a>
             <a href="<?= site_url('/admin/access-requests') ?>" class="adm-nav-item">
                 <i class="bi bi-check-circle"></i> Access Requests
