@@ -59,6 +59,9 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/admin/audit-log') ?>" class="adm-nav-item">
                 <i class="bi bi-clock-history"></i> System Audit Log
             </a>
+            <a href="<?= site_url('/admin/audit-reports') ?>" class="adm-nav-item">
+                <i class="bi bi-file-earmark-bar-graph"></i> Audit Reports
+            </a>
         </div>
 
         <!-- Main Content -->

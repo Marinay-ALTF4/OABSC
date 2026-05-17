@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\LoginEventModel;
+use App\Models\NotificationModel;
 
 class Auth extends BaseController
 {
@@ -37,18 +39,64 @@ class Auth extends BaseController
         }
 
         $identifier = trim((string) $this->request->getPost('email'));
-        $password = $this->request->getPost('password');
+        $password   = (string) $this->request->getPost('password');
 
-        $userModel = new UserModel();
-        $user      = $userModel->groupStart()->where('email', $identifier)->orWhere('phone', $identifier)->groupEnd()->first();
+        $logModel = new LoginEventModel();
+        $db       = \Config\Database::connect();
 
+        // Use prepared statement to fetch user securely
+        $user = $db->query(
+            'SELECT id, name, email, phone, role, password_hash,
+                    failed_login_count, lock_until, last_login_at, deleted_at
+             FROM users
+             WHERE (email = ? OR phone = ?)
+               AND deleted_at IS NULL
+             LIMIT 1',
+            [$identifier, $identifier]
+        )->getRowArray();
+
+        // User not found
         if (! $user) {
+            $logModel->log(LoginEventModel::EVENT_LOGIN_FAILED, null, $identifier, 'user_not_found');
             return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
         }
 
-        if (! password_verify($password, $user['password_hash'] ?? '')) {
+        $userId = (int) $user['id'];
+
+        // Check if account is locked
+        if (! empty($user['lock_until']) && strtotime((string) $user['lock_until']) > time()) {
+            $logModel->log(LoginEventModel::EVENT_LOGIN_LOCKED, $userId, $identifier, 'account_locked');
+            return redirect()->back()->withInput()->with('error', 'Account locked. Try again later.');
+        }
+
+        // Wrong password — increment failed count
+        if (! password_verify($password, (string) ($user['password_hash'] ?? ''))) {
+            $failCount = ((int) ($user['failed_login_count'] ?? 0)) + 1;
+            $lockUntil = null;
+
+            if ($failCount >= 5) {
+                $lockUntil = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+                $logModel->log(LoginEventModel::EVENT_SUSPICIOUS, $userId, $identifier, 'too_many_failures');
+                $this->alertAdminsOfSuspiciousActivity($user);
+            }
+
+            // Prepared statement update
+            $db->query(
+                'UPDATE users SET failed_login_count = ?, lock_until = ? WHERE id = ?',
+                [$failCount, $lockUntil, $userId]
+            );
+
+            $logModel->log(LoginEventModel::EVENT_LOGIN_FAILED, $userId, $identifier, 'wrong_password');
             return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
         }
+
+        // Successful login — reset lockout fields + update last_login_at
+        $db->query(
+            'UPDATE users SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE id = ?',
+            [date('Y-m-d H:i:s'), $userId]
+        );
+
+        $logModel->log(LoginEventModel::EVENT_LOGIN_SUCCESS, $userId, $identifier);
 
         // Skip MFA for seeded/system accounts (@example.com)
         $isSeededUser = str_ends_with(strtolower((string) $user['email']), self::MFA_BYPASS_DOMAIN);
@@ -62,6 +110,16 @@ class Auth extends BaseController
                 'user_role'  => $user['role'] ?? 'client',
                 'isLoggedIn' => true,
             ]);
+
+            if (in_array($user['role'], ['admin', 'assistant_admin'], true)) {
+                session()->set([
+                    'isLoggedIn'             => false,
+                    'pending_role_selection' => true,
+                    'pending_user_id'        => $user['id'],
+                    'pending_user_role'      => $user['role'],
+                ]);
+                return redirect()->to('/role-selection');
+            }
 
             return redirect()->to('/dashboard');
         }
@@ -125,16 +183,18 @@ class Auth extends BaseController
 
                 if ($attempts >= self::MFA_MAX_ATTEMPTS) {
                     session()->remove(self::PENDING_MFA_KEY);
+                    (new LoginEventModel())->log(LoginEventModel::EVENT_MFA_FAILED, (int) $pendingMfa['user_id'], null, 'max_attempts');
                     return redirect()->to('/login')->with('error', 'Too many incorrect attempts. Please log in again.');
                 }
 
                 $pendingMfa['mfa_attempts'] = $attempts;
                 session()->set(self::PENDING_MFA_KEY, $pendingMfa);
-
+                (new LoginEventModel())->log(LoginEventModel::EVENT_MFA_FAILED, (int) $pendingMfa['user_id'], null, 'wrong_code');
                 return redirect()->back()->withInput()->with('errors', ['mfa_code' => 'Invalid verification code.']);
             }
 
             session()->remove(self::PENDING_MFA_KEY);
+            (new LoginEventModel())->log(LoginEventModel::EVENT_MFA_SUCCESS, (int) $pendingMfa['user_id']);
             session()->set([
                 'user_id'    => $pendingMfa['user_id'],
                 'user_name'  => $pendingMfa['user_name'],
@@ -212,6 +272,11 @@ class Auth extends BaseController
 
     public function logout()
     {
+        // Log logout event
+        if (session()->get('isLoggedIn')) {
+            (new LoginEventModel())->log(LoginEventModel::EVENT_LOGOUT, (int) session('user_id'));
+        }
+
         // Revoke access requests on logout for assistant_admin
         if (session('user_role') === 'assistant_admin') {
             $arModel = new \App\Models\AccessRequestModel();
@@ -473,6 +538,22 @@ class Auth extends BaseController
         );
 
         return (bool) $emailService->send(false);
+    }
+
+    private function alertAdminsOfSuspiciousActivity(array $user): void
+    {
+        $notifModel = new NotificationModel();
+        $userModel  = new UserModel();
+        $admins     = $userModel->whereIn('role', ['admin'])->where('deleted_at IS NULL')->findAll();
+
+        foreach ($admins as $admin) {
+            $notifModel->send(
+                (int) $admin['id'],
+                'Suspicious Login Activity',
+                'Multiple failed login attempts detected for account: ' . ($user['email'] ?? 'unknown') . '. Account has been temporarily locked.',
+                'warning'
+            );
+        }
     }
 
     private function sendMfaCode(string $email, string $name, string $mfaCode): bool

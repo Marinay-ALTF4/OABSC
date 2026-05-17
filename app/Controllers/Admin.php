@@ -3,10 +3,35 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\LoginEventModel;
 
 class Admin extends BaseController
 {
-    private function ensureAdminAccess()
+    public function accessRequests()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $arModel    = new \App\Models\AccessRequestModel();
+        $userModel2 = new UserModel();
+
+        $pending  = $arModel->where('status', 'pending')->orderBy('id', 'DESC')->findAll();
+        $all      = $arModel->orderBy('id', 'DESC')->limit(50)->findAll();
+
+        // Attach user info
+        foreach ($all as &$req) {
+            $u = $userModel2->find($req['user_id']);
+            $req['user_name']  = $u['name']  ?? '—';
+            $req['user_email'] = $u['email'] ?? '—';
+        }
+
+        return view('admin/access_requests', [
+            'pending' => $pending,
+            'all'     => $all,
+        ]);
+    }
+
+    public function ensureAdminAccess()
     {
         $role = (string) session()->get('user_role');
         if ($role !== 'admin' && $role !== 'assistant_admin') {
@@ -91,8 +116,8 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $doctorModel = new \App\Models\DoctorModel();
-        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
+        $userModel = new UserModel();
+        $doctors   = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
 
         return view('admin/doctor_schedule', ['doctors' => $doctors]);
     }
@@ -102,10 +127,9 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $doctorModel = new \App\Models\DoctorModel();
-        $doctors = $doctorModel->orderBy('specialization', 'ASC')->findAll();
+        $userModel = new UserModel();
+        $doctors   = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->orderBy('specialization', 'ASC')->findAll();
 
-        // Group by specialization
         $grouped = [];
         foreach ($doctors as $doc) {
             $spec = $doc['specialization'] ?? 'General';
@@ -120,8 +144,8 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $doctorModel = new \App\Models\DoctorModel();
-        $doctors = $doctorModel->orderBy('name', 'ASC')->findAll();
+        $userModel = new UserModel();
+        $doctors   = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->orderBy('name', 'ASC')->findAll();
 
         return view('admin/doctor_list', ['doctors' => $doctors]);
     }
@@ -322,6 +346,7 @@ class Admin extends BaseController
             return redirect()->to('/admin/patients/list')->with('error', 'Unable to delete user.');
         }
 
+        (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_DELETED, (int) session('user_id'), null, 'user_id:' . $id);
         return redirect()->to('/admin/patients/list')->with('success', 'User deleted successfully. You can restore this user anytime.');
     }
 
@@ -345,6 +370,7 @@ class Admin extends BaseController
             return redirect()->to('/admin/patients/list')->with('error', 'Unable to restore user.');
         }
 
+        (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_RESTORED, (int) session('user_id'), null, 'user_id:' . $id);
         return redirect()->to('/admin/patients/list')->with('success', 'User restored successfully.');
     }
 }

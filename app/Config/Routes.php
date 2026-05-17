@@ -20,6 +20,10 @@ $routes->post('/register/resend-code', 'Auth::resendVerificationCode');
 $routes->get('/register/reset', 'Auth::resetRegistration');
 $routes->get('/logout', 'Auth::logout');
 
+// Role Selection
+$routes->get('/role-selection', 'RoleSelection::index');
+$routes->post('/role-selection/verify', 'RoleSelection::verify');
+
 // Dashboard
 $routes->get('/dashboard', 'Home::index');
 
@@ -73,6 +77,11 @@ $routes->post('/profile/save', 'Profile::save');
 
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');
+$routes->get('/admin/audit-log', 'AuditLog::index');
+$routes->get('/admin/audit-reports', 'AuditReport::index');
+$routes->get('/admin/audit-reports/export', 'AuditReport::exportCsv');
+$routes->get('/admin/reports', 'AuditReport::index');
+$routes->get('/admin/access-requests', 'Admin::accessRequests');
 $routes->get('/admin/patients', 'Admin::patients');
 $routes->get('/admin/patients/list', 'Admin::patientList');
 $routes->get('/admin/patients/history/(:num)', 'Admin::patientHistory/$1');
@@ -80,6 +89,7 @@ $routes->get('/admin/patients/history', 'Admin::patientHistory');
 $routes->get('/admin/doctors', 'Admin::doctorList');
 $routes->get('/admin/doctors/specialization', 'Admin::doctorSpecialization');
 $routes->get('/admin/doctors/schedule', 'Admin::doctorSchedule');
+$routes->get('/admin/doctor-schedules', 'Admin::doctorSchedule');
 $routes->get('/admin/patients/clients', 'Admin::clientList');
 $routes->get('/admin/patients/add', 'Admin::addUser');
 $routes->post('/admin/patients/add', 'Admin::addUser');
