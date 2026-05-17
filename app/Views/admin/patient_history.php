@@ -10,132 +10,132 @@
 <body>
 <?= view('header') ?>
 
-<div class="pl-page">
-<div class="container py-4">
+<div class="dashboard-wrapper">
+    <div class="adm-page">
+        <?= view('admin/_sidebar', ['sidebarActive' => 'patients']) ?>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="pl-title mb-1">
-                <?= $patient ? 'History: ' . esc($patient['name']) : 'Patient History' ?>
-            </h4>
-            <p class="pl-sub mb-0">
-                <?= $patient ? esc($patient['email']) : 'Select a patient to view their appointment history.' ?>
-            </p>
-        </div>
-        <div class="d-flex gap-2">
-            <?php if ($patient): ?>
-                <a href="<?= site_url('/admin/patients/history') ?>" class="pl-btn pl-btn-ghost">
-                    <i class="bi bi-people me-1"></i>All Patients
-                </a>
-            <?php endif; ?>
-            <a href="<?= site_url('/dashboard') ?>" class="pl-btn pl-btn-ghost">
-                <i class="bi bi-arrow-left me-1"></i>Dashboard
-            </a>
-        </div>
-    </div>
+        <div class="adm-main-content">
+            <div class="adm-wrapper">
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
-    <?php endif; ?>
-
-    <?php if (! $patient): ?>
-    <!-- Patient picker -->
-    <div class="d-flex justify-content-center">
-        <div class="pl-card mb-4" style="max-width:480px;width:100%;padding:1.5rem;">
-            <p class="au-label mb-3">Select a patient to view their history:</p>
-            <div class="au-field mb-0">
-                <div class="au-input-wrap">
-                    <i class="bi bi-search au-icon"></i>
-                    <select name="_redirect" class="au-input" onchange="redirectToPatient(this)">
-                        <option value="">— Choose a patient —</option>
-                        <?php foreach (($patients ?? []) as $p): ?>
-                            <option value="<?= site_url('/admin/patients/history/' . (int)$p['id']) ?>">
-                                <?= esc($p['name']) ?> — <?= esc($p['email']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                    <div>
+                        <h4 class="pl-title mb-1">
+                            <?= $patient ? 'History: ' . esc($patient['name']) : 'Patient History' ?>
+                        </h4>
+                        <p class="pl-sub mb-0">
+                            <?= $patient ? esc($patient['email']) : 'Select a patient to view their appointment history.' ?>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <?php if ($patient): ?>
+                            <a href="<?= site_url('/admin/patients/history') ?>" class="pl-btn pl-btn-ghost">
+                                <i class="bi bi-people me-1"></i>All Patients
+                            </a>
+                        <?php endif; ?>
+                        <a href="<?= site_url('/admin/patients') ?>" class="pl-btn pl-btn-ghost">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <?php else: ?>
-    <!-- Patient info card -->
-    <div style="max-width:760px;margin:0 auto;">
-    <div class="ph-info-card mb-4">
-        <div class="ph-info-avatar"><?= strtoupper(substr($patient['name'], 0, 2)) ?></div>
-        <div>
-            <div class="ph-info-name"><?= esc($patient['name']) ?></div>
-            <div class="ph-info-meta"><i class="bi bi-envelope me-1"></i><?= esc($patient['email']) ?></div>
-            <?php if (!empty($patient['phone'])): ?>
-                <div class="ph-info-meta"><i class="bi bi-telephone me-1"></i><?= esc($patient['phone']) ?></div>
-            <?php endif; ?>
-        </div>
-        <div class="ms-auto">
-            <a href="<?= site_url('/admin/patients/edit/' . (int)$patient['id']) ?>" class="pl-btn pl-btn-ghost" style="font-size:0.75rem;">
-                <i class="bi bi-pencil me-1"></i>Edit Patient
-            </a>
-        </div>
-    </div>
+                <?php if (session()->getFlashdata('error')): ?>
+                    <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
+                <?php endif; ?>
 
-    <!-- Appointment history table -->
-    <div class="pl-card">
-        <div class="ph-table-header">
-            <span><i class="bi bi-calendar2-check me-2"></i>Appointment History</span>
-            <span class="ph-count"><?= count($appointments) ?> record<?= count($appointments) !== 1 ? 's' : '' ?></span>
-        </div>
-        <?php if (empty($appointments)): ?>
-            <div class="text-center text-muted py-5">
-                <i class="bi bi-calendar-x" style="font-size:2rem;opacity:0.3;"></i>
-                <p class="mt-2 mb-0" style="font-size:0.875rem;">No appointment records found for this patient.</p>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table pl-table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Doctor</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($appointments as $appt): ?>
-                            <?php
-                                $status = strtolower($appt['status'] ?? 'pending');
-                                $statusStyle = match($status) {
-                                    'confirmed' => 'background:#d1fae5;color:#065f46;',
-                                    'completed' => 'background:#dbeafe;color:#1e40af;',
-                                    'cancelled' => 'background:#fee2e2;color:#991b1b;',
-                                    default     => 'background:#fef9c3;color:#854d0e;',
-                                };
-                            ?>
-                            <tr>
-                                <td class="pl-id"><?= esc((string)($appt['id'] ?? '')) ?></td>
-                                <td class="pl-name"><?= esc($appt['doctor_name'] ?? '—') ?></td>
-                                <td class="pl-date"><?= esc($appt['appointment_date'] ?? '—') ?></td>
-                                <td class="pl-date"><?= esc($appt['appointment_time'] ?? '—') ?></td>
-                                <td class="pl-email"><?= esc($appt['reason'] ?? '—') ?></td>
-                                <td>
-                                    <span class="pl-status-badge" style="<?= $statusStyle ?>">
-                                        <?= esc(ucfirst($status)) ?>
-                                    </span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
-    </div><!-- end center wrapper -->
-    <?php endif; ?>
+                <?php if (! $patient): ?>
+                <!-- Patient picker -->
+                <div class="pl-card mb-4" style="max-width:480px;padding:1.5rem;">
+                    <p class="au-label mb-3">Select a patient to view their history:</p>
+                    <div class="au-input-wrap">
+                        <i class="bi bi-search au-icon"></i>
+                        <select name="_redirect" class="au-input" onchange="redirectToPatient(this)">
+                            <option value="">— Choose a patient —</option>
+                            <?php foreach (($patients ?? []) as $p): ?>
+                                <option value="<?= site_url('/admin/patients/history/' . (int)$p['id']) ?>">
+                                    <?= esc($p['name']) ?> — <?= esc($p['email']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
 
-</div>
-</div>
+                <?php else: ?>
+                <!-- Patient info card -->
+                <div class="ph-info-card mb-4">
+                    <div class="ph-info-avatar"><?= strtoupper(substr($patient['name'], 0, 2)) ?></div>
+                    <div>
+                        <div class="ph-info-name"><?= esc($patient['name']) ?></div>
+                        <div class="ph-info-meta"><i class="bi bi-envelope me-1"></i><?= esc($patient['email']) ?></div>
+                        <?php if (!empty($patient['phone'])): ?>
+                            <div class="ph-info-meta"><i class="bi bi-telephone me-1"></i><?= esc($patient['phone']) ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="ms-auto">
+                        <a href="<?= site_url('/admin/patients/edit/' . (int)$patient['id']) ?>" class="pl-btn pl-btn-ghost" style="font-size:0.75rem;">
+                            <i class="bi bi-pencil me-1"></i>Edit Patient
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Appointment history table -->
+                <div class="pl-card">
+                    <div class="ph-table-header">
+                        <span><i class="bi bi-calendar2-check me-2"></i>Appointment History</span>
+                        <span class="ph-count"><?= count($appointments) ?> record<?= count($appointments) !== 1 ? 's' : '' ?></span>
+                    </div>
+                    <?php if (empty($appointments)): ?>
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-calendar-x" style="font-size:2rem;opacity:0.3;"></i>
+                            <p class="mt-2 mb-0" style="font-size:0.875rem;">No appointment records found for this patient.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table pl-table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($appointments as $appt): ?>
+                                        <?php
+                                            $status = strtolower($appt['status'] ?? 'pending');
+                                            $statusStyle = match($status) {
+                                                'confirmed' => 'background:#d1fae5;color:#065f46;',
+                                                'completed' => 'background:#dbeafe;color:#1e40af;',
+                                                'cancelled' => 'background:#fee2e2;color:#991b1b;',
+                                                default     => 'background:#fef9c3;color:#854d0e;',
+                                            };
+                                        ?>
+                                        <tr>
+                                            <td class="pl-id"><?= esc((string)($appt['id'] ?? '')) ?></td>
+                                            <td class="pl-name"><?= esc($appt['doctor_name'] ?? '—') ?></td>
+                                            <td class="pl-date"><?= esc($appt['appointment_date'] ?? '—') ?></td>
+                                            <td class="pl-date"><?= esc($appt['appointment_time'] ?? '—') ?></td>
+                                            <td class="pl-email"><?= esc($appt['reason'] ?? '—') ?></td>
+                                            <td>
+                                                <span class="pl-status-badge" style="<?= $statusStyle ?>">
+                                                    <?= esc(ucfirst($status)) ?>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+
+            </div><!-- end adm-wrapper -->
+        </div><!-- end adm-main-content -->
+    </div><!-- end adm-page -->
+</div><!-- end dashboard-wrapper -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -144,8 +144,48 @@ function redirectToPatient(sel) {
 }
 </script>
 <style>
-    body { background: #edf2f7; }
-    .pl-page { min-height: calc(100vh - 60px); }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { background: #edf2f7; font-family: 'Inter', sans-serif; }
+    .dashboard-wrapper { width: 100%; }
+    .adm-page {
+        display: flex; width: 100vw; position: relative;
+        left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        margin-top: 0; min-height: calc(100vh - 60px);
+        background: #edf2f7; overflow-x: hidden;
+    }
+    .adm-sidebar {
+        width: 260px; flex-shrink: 0;
+        background: rgba(255,255,255,0.55); backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
+    .adm-sidebar-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
+        border: 2px solid rgba(42,106,126,0.08);
+    }
+    .adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
+    .adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
+    .adm-nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 12px;
+        font-size: 0.92rem; font-weight: 500;
+        color: #2a6a7e; text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .adm-nav-item i { font-size: 1.15rem; }
+    .adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
+    .adm-nav-item.active {
+        background: #2a6a7e; color: #ffffff;
+        font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-wrapper { width: 100%; }
     .pl-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
     .pl-sub   { font-size: 0.85rem; color: #64748b; }
     .pl-btn {
@@ -159,8 +199,6 @@ function redirectToPatient(sel) {
         background: white; border-radius: 18px; border: 1px solid #e2e8f0;
         box-shadow: 0 2px 8px rgba(15,23,42,0.06); overflow: hidden;
     }
-    .pl-card.mb-4 { padding: 1.5rem; }
-    .au-field { margin-bottom: 0; }
     .au-label { font-size: 0.8rem; font-weight: 600; color: #334155; display: block; }
     .au-input-wrap { position: relative; display: flex; align-items: center; }
     .au-icon { position: absolute; left: 12px; color: #94a3b8; font-size: 0.95rem; pointer-events: none; }
@@ -171,7 +209,6 @@ function redirectToPatient(sel) {
         transition: border-color 0.15s; appearance: auto;
     }
     .au-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); background: white; }
-
     .ph-info-card {
         background: white; border-radius: 18px; border: 1px solid #e2e8f0;
         box-shadow: 0 2px 8px rgba(15,23,42,0.06);
@@ -185,23 +222,22 @@ function redirectToPatient(sel) {
     }
     .ph-info-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
     .ph-info-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-
     .ph-table-header {
         display: flex; justify-content: space-between; align-items: center;
         padding: 0.85rem 1.25rem; border-bottom: 1px solid #f1f5f9;
-        font-size: 0.85rem; font-weight: 700; color: #0f172a;
-        background: #f8fafc;
+        font-size: 0.85rem; font-weight: 700; color: #0f172a; background: #f8fafc;
     }
     .ph-count { font-size: 0.75rem; font-weight: 600; color: #64748b; }
-
     .pl-table { font-size: 0.85rem; }
+    .pl-table thead tr { background: #f8fafc; }
     .pl-table thead th {
         font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
         letter-spacing: 0.6px; color: #5a7288; padding: 0.85rem 1rem;
-        border-bottom: 1px solid #e2e8f0; white-space: nowrap; background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0; white-space: nowrap;
     }
+    .pl-table tbody tr { transition: background 0.12s; }
     .pl-table tbody tr:hover { background: #f8fafc; }
-    .pl-table tbody td { padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; }
+    .pl-table tbody td { padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     .pl-table tbody tr:last-child td { border-bottom: none; }
     .pl-id    { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
     .pl-name  { font-weight: 600; color: #0f172a; }

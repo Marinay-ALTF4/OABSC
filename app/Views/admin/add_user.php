@@ -15,123 +15,135 @@ $errors = session()->getFlashdata('errors') ?? [];
 if (! is_array($errors)) { $errors = []; }
 ?>
 
-<div class="pl-page">
-<div class="container py-4">
+<div class="dashboard-wrapper">
+    <div class="adm-page">
+        <?= view('admin/_sidebar', ['sidebarActive' => 'users']) ?>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <h4 class="pl-title mb-1">Add User</h4>
-            <p class="pl-sub mb-0">Register a new user account and assign their role.</p>
-        </div>
-        <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">
-            <i class="bi bi-arrow-left me-1"></i>Back to List
-        </a>
-    </div>
+        <div class="adm-main-content">
+            <div class="adm-wrapper">
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
-    <?php endif; ?>
-
-    <div class="pl-card" style="max-width:560px;margin:0 auto;">
-        <form action="<?= site_url('/admin/patients/add') ?>" method="post" id="addUserForm" novalidate>
-            <?= csrf_field() ?>
-
-            <div class="au-field">
-                <label class="au-label">Full Name</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-person au-icon"></i>
-                    <input type="text" id="name" name="name" class="au-input <?= isset($errors['name']) ? 'au-input-error' : '' ?>"
-                        placeholder="Enter full name" value="<?= old('name') ?>"
-                        pattern="[A-Za-zÑñ\s]+" title="Letters, spaces, and ñ only" required>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                    <div>
+                        <h4 class="pl-title mb-1">Add User</h4>
+                        <p class="pl-sub mb-0">Register a new user account and assign their role.</p>
+                    </div>
+                    <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">
+                        <i class="bi bi-arrow-left me-1"></i>Back to List
+                    </a>
                 </div>
-                <?php if (isset($errors['name'])): ?>
-                    <div class="au-error"><?= esc($errors['name']) ?></div>
-                <?php endif; ?>
-                <div id="nameLiveError" class="au-error" style="display:none;"></div>
-            </div>
 
-            <div class="au-field">
-                <label class="au-label">Email Address</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-envelope au-icon"></i>
-                    <input type="email" id="email" name="email" class="au-input <?= isset($errors['email']) ? 'au-input-error' : '' ?>"
-                        placeholder="Enter email address" value="<?= old('email') ?>" required>
+                <?php if (session()->getFlashdata('error')): ?>
+                    <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
+                <?php endif; ?>
+
+                <div class="pl-card" style="max-width:560px;">
+                    <form action="<?= site_url('/admin/patients/add') ?>" method="post" id="addUserForm" novalidate>
+                        <?= csrf_field() ?>
+
+                        <div class="au-field">
+                            <label class="au-label">Full Name</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-person au-icon"></i>
+                                <input type="text" id="name" name="name"
+                                    class="au-input <?= isset($errors['name']) ? 'au-input-error' : '' ?>"
+                                    placeholder="Enter full name" value="<?= old('name') ?>"
+                                    pattern="[A-Za-zÑñ\s]+" title="Letters, spaces, and ñ only" required>
+                            </div>
+                            <?php if (isset($errors['name'])): ?>
+                                <div class="au-error"><?= esc($errors['name']) ?></div>
+                            <?php endif; ?>
+                            <div id="nameLiveError" class="au-error" style="display:none;"></div>
+                        </div>
+
+                        <div class="au-field">
+                            <label class="au-label">Email Address</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-envelope au-icon"></i>
+                                <input type="email" id="email" name="email"
+                                    class="au-input <?= isset($errors['email']) ? 'au-input-error' : '' ?>"
+                                    placeholder="Enter email address" value="<?= old('email') ?>" required>
+                            </div>
+                            <?php if (isset($errors['email'])): ?>
+                                <div class="au-error"><?= esc($errors['email']) ?></div>
+                            <?php endif; ?>
+                            <div id="emailLiveError" class="au-error" style="display:none;"></div>
+                        </div>
+
+                        <div class="au-field" id="phoneField" style="display:none;">
+                            <label class="au-label">Phone Number</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-telephone au-icon"></i>
+                                <input type="tel" id="phone" name="phone"
+                                    class="au-input <?= isset($errors['phone']) ? 'au-input-error' : '' ?>"
+                                    placeholder="Enter phone number" value="<?= old('phone') ?>">
+                            </div>
+                            <?php if (isset($errors['phone'])): ?>
+                                <div class="au-error"><?= esc($errors['phone']) ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="au-field">
+                            <label class="au-label">Role</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-shield au-icon"></i>
+                                <select id="role" name="role"
+                                    class="au-input <?= isset($errors['role']) ? 'au-input-error' : '' ?>" required>
+                                    <option value="">— Select Role —</option>
+                                    <option value="client"          <?= old('role') === 'client'          ? 'selected' : '' ?>>Client</option>
+                                    <option value="secretary"       <?= old('role') === 'secretary'       ? 'selected' : '' ?>>Secretary</option>
+                                    <option value="doctor"          <?= old('role') === 'doctor'          ? 'selected' : '' ?>>Doctor</option>
+                                    <option value="assistant_admin" <?= old('role') === 'assistant_admin' ? 'selected' : '' ?>>Assistant Admin</option>
+                                    <option value="admin"           <?= old('role') === 'admin'           ? 'selected' : '' ?>>Admin</option>
+                                </select>
+                            </div>
+                            <?php if (isset($errors['role'])): ?>
+                                <div class="au-error"><?= esc($errors['role']) ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="au-field">
+                            <label class="au-label">Password</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-lock au-icon"></i>
+                                <input type="password" id="password" name="password"
+                                    class="au-input <?= isset($errors['password']) ? 'au-input-error' : '' ?>"
+                                    placeholder="At least 8 characters" minlength="8" required>
+                                <button type="button" class="au-pw-toggle" onclick="togglePw('password', this)"><i class="bi bi-eye"></i></button>
+                            </div>
+                            <?php if (isset($errors['password'])): ?>
+                                <div class="au-error"><?= esc($errors['password']) ?></div>
+                            <?php endif; ?>
+                            <div id="passwordLiveError" class="au-error" style="display:none;"></div>
+                        </div>
+
+                        <div class="au-field">
+                            <label class="au-label">Confirm Password</label>
+                            <div class="au-input-wrap">
+                                <i class="bi bi-lock-fill au-icon"></i>
+                                <input type="password" id="password_confirm" name="password_confirm"
+                                    class="au-input <?= isset($errors['password_confirm']) ? 'au-input-error' : '' ?>"
+                                    placeholder="Re-enter password" minlength="8" required>
+                                <button type="button" class="au-pw-toggle" onclick="togglePw('password_confirm', this)"><i class="bi bi-eye"></i></button>
+                            </div>
+                            <?php if (isset($errors['password_confirm'])): ?>
+                                <div class="au-error"><?= esc($errors['password_confirm']) ?></div>
+                            <?php endif; ?>
+                            <div id="passwordConfirmLiveError" class="au-error" style="display:none;"></div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="pl-btn pl-btn-filled">
+                                <i class="bi bi-check-lg me-1"></i>Add User
+                            </button>
+                            <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">Cancel</a>
+                        </div>
+                    </form>
                 </div>
-                <?php if (isset($errors['email'])): ?>
-                    <div class="au-error"><?= esc($errors['email']) ?></div>
-                <?php endif; ?>
-                <div id="emailLiveError" class="au-error" style="display:none;"></div>
-            </div>
 
-            <div class="au-field" id="phoneField" style="display:none;">
-                <label class="au-label">Phone Number</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-telephone au-icon"></i>
-                    <input type="tel" id="phone" name="phone" class="au-input <?= isset($errors['phone']) ? 'au-input-error' : '' ?>"
-                        placeholder="Enter phone number" value="<?= old('phone') ?>">
-                </div>
-                <?php if (isset($errors['phone'])): ?>
-                    <div class="au-error"><?= esc($errors['phone']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="au-field">
-                <label class="au-label">Role</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-shield au-icon"></i>
-                    <select id="role" name="role" class="au-input <?= isset($errors['role']) ? 'au-input-error' : '' ?>" required>
-                        <option value="">— Select Role —</option>
-                        <option value="client"           <?= old('role') === 'client'           ? 'selected' : '' ?>>Client</option>
-                        <option value="secretary"        <?= old('role') === 'secretary'        ? 'selected' : '' ?>>Secretary</option>
-                        <option value="doctor"           <?= old('role') === 'doctor'           ? 'selected' : '' ?>>Doctor</option>
-                        <option value="assistant_admin" <?= old('role') === 'assistant_admin' ? 'selected' : '' ?>>Assistant Admin</option>
-                        <option value="admin"            <?= old('role') === 'admin'            ? 'selected' : '' ?>>Admin</option>
-                    </select>
-                </div>
-                <?php if (isset($errors['role'])): ?>
-                    <div class="au-error"><?= esc($errors['role']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="au-field">
-                <label class="au-label">Password</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-lock au-icon"></i>
-                    <input type="password" id="password" name="password"
-                        class="au-input <?= isset($errors['password']) ? 'au-input-error' : '' ?>"
-                        placeholder="At least 8 characters" minlength="8" required>
-                    <button type="button" class="au-pw-toggle" onclick="togglePw('password', this)"><i class="bi bi-eye"></i></button>
-                </div>
-                <?php if (isset($errors['password'])): ?>
-                    <div class="au-error"><?= esc($errors['password']) ?></div>
-                <?php endif; ?>
-                <div id="passwordLiveError" class="au-error" style="display:none;"></div>
-            </div>
-
-            <div class="au-field">
-                <label class="au-label">Confirm Password</label>
-                <div class="au-input-wrap">
-                    <i class="bi bi-lock-fill au-icon"></i>
-                    <input type="password" id="password_confirm" name="password_confirm"
-                        class="au-input <?= isset($errors['password_confirm']) ? 'au-input-error' : '' ?>"
-                        placeholder="Re-enter password" minlength="8" required>
-                    <button type="button" class="au-pw-toggle" onclick="togglePw('password_confirm', this)"><i class="bi bi-eye"></i></button>
-                </div>
-                <?php if (isset($errors['password_confirm'])): ?>
-                    <div class="au-error"><?= esc($errors['password_confirm']) ?></div>
-                <?php endif; ?>
-                <div id="passwordConfirmLiveError" class="au-error" style="display:none;"></div>
-            </div>
-
-            <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="pl-btn pl-btn-filled"><i class="bi bi-check-lg me-1"></i>Add User</button>
-                <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">Cancel</a>
-            </div>
-        </form>
-    </div>
-
-</div>
-</div>
+            </div><!-- end adm-wrapper -->
+        </div><!-- end adm-main-content -->
+    </div><!-- end adm-page -->
+</div><!-- end dashboard-wrapper -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -211,7 +223,6 @@ function togglePw(id, btn) {
         if (!ok || !form.checkValidity()) { e.preventDefault(); e.stopPropagation(); }
     });
 
-    // Toggle phone field based on role selection
     const roleSelect = document.getElementById('role');
     const phoneField = document.getElementById('phoneField');
     const phoneInput = document.getElementById('phone');
@@ -226,14 +237,52 @@ function togglePw(id, btn) {
     }
 
     roleSelect?.addEventListener('change', togglePhoneField);
-    // Initialize on page load
     togglePhoneField();
 })();
 </script>
-
 <style>
-    body { background: #edf2f7; }
-    .pl-page { min-height: calc(100vh - 60px); }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { background: #edf2f7; font-family: 'Inter', sans-serif; }
+    .dashboard-wrapper { width: 100%; }
+    .adm-page {
+        display: flex; width: 100vw; position: relative;
+        left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        margin-top: 0; min-height: calc(100vh - 60px);
+        background: #edf2f7; overflow-x: hidden;
+    }
+    .adm-sidebar {
+        width: 260px; flex-shrink: 0;
+        background: rgba(255,255,255,0.55); backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
+    .adm-sidebar-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
+        border: 2px solid rgba(42,106,126,0.08);
+    }
+    .adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
+    .adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
+    .adm-nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 12px;
+        font-size: 0.92rem; font-weight: 500;
+        color: #2a6a7e; text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .adm-nav-item i { font-size: 1.15rem; }
+    .adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
+    .adm-nav-item.active {
+        background: #2a6a7e; color: #ffffff;
+        font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-wrapper { width: 100%; }
     .pl-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
     .pl-sub   { font-size: 0.85rem; color: #64748b; }
     .pl-btn {
@@ -258,8 +307,7 @@ function togglePw(id, btn) {
         width: 100%; padding: 0.6rem 0.9rem 0.6rem 2.2rem;
         border: 1.5px solid #e2e8f0; border-radius: 10px;
         font-size: 0.875rem; color: #0f172a; background: #fafafa; outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        appearance: auto;
+        transition: border-color 0.15s, box-shadow 0.15s; appearance: auto;
     }
     .au-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); background: white; }
     .au-input-error { border-color: #ef4444 !important; }
@@ -269,4 +317,3 @@ function togglePw(id, btn) {
 </style>
 </body>
 </html>
-
