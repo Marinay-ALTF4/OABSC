@@ -7,6 +7,63 @@ use App\Models\LoginEventModel;
 
 class Admin extends BaseController
 {
+    public function appointments()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $model        = new \App\Models\AppointmentModel();
+        $appointments = $model->orderBy('appointment_date', 'DESC')->findAll();
+
+        // Attach patient names
+        $userModel = new UserModel();
+        foreach ($appointments as &$appt) {
+            $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
+            if ($clientId) {
+                $client = $userModel->find((int) $clientId);
+                $appt['patient_name'] = $client['name'] ?? '—';
+            } else {
+                $appt['patient_name'] = '—';
+            }
+        }
+
+        return view('admin/appointments', ['appointments' => $appointments]);
+    }
+
+    public function updateAppointmentStatus()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $id     = (int) $this->request->getPost('id');
+        $status = (string) $this->request->getPost('status');
+
+        if (! in_array($status, ['pending', 'confirmed', 'cancelled'], true)) {
+            return redirect()->back()->with('error', 'Invalid appointment status.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $model = new \App\Models\AppointmentModel();
+            $model->update($id, ['status' => $status]);
+
+            if (! $db->transStatus()) {
+                $db->transRollback();
+                return redirect()->back()->with('error', 'Unable to update status. Transaction rolled back.');
+            }
+
+            $db->transComplete();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Admin updateAppointmentStatus transaction failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred. Changes rolled back.');
+        }
+
+        return redirect()->back()->with('success', 'Appointment status updated.');
+    }
+
     public function accessRequests()
     {
         $access = $this->ensureAdminAccess();
@@ -238,12 +295,29 @@ class Admin extends BaseController
             }
 
             $userModel = new UserModel();
-            $created = $userModel->insert([
-                'name' => $name,
-                'email' => $email,
-                'role' => $role,
-                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-            ]);
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            try {
+                $created = $userModel->insert([
+                    'name'          => $name,
+                    'email'         => $email,
+                    'role'          => $role,
+                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                ]);
+
+                (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_MODIFIED, (int) session('user_id'), null, 'user_added:' . $email);
+
+                if (! $db->transStatus()) {
+                    $db->transRollback();
+                    return redirect()->back()->withInput()->with('error', 'Unable to add user. Transaction rolled back.');
+                }
+                $db->transComplete();
+            } catch (\Throwable $e) {
+                $db->transRollback();
+                log_message('error', 'addUser transaction failed: ' . $e->getMessage());
+                return redirect()->back()->withInput()->with('error', 'An unexpected error occurred. Changes rolled back.');
+            }
 
             if (! $created) {
                 return redirect()->back()->withInput()->with('error', 'Unable to add user.');
@@ -287,9 +361,9 @@ class Admin extends BaseController
             }
 
             $updateData = [
-                'name' => trim((string) $this->request->getPost('name')),
+                'name'  => trim((string) $this->request->getPost('name')),
                 'email' => strtolower(trim((string) $this->request->getPost('email'))),
-                'role' => (string) $this->request->getPost('role'),
+                'role'  => (string) $this->request->getPost('role'),
             ];
 
             $newPassword = (string) $this->request->getPost('password');
@@ -302,19 +376,33 @@ class Admin extends BaseController
                 $updateData['role_password'] = password_hash($newRolePassword, PASSWORD_DEFAULT);
             }
 
-            $updated = $userModel->update($id, $updateData);
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            try {
+                $updated = $userModel->update($id, $updateData);
+
+                (new LoginEventModel())->log(
+                    LoginEventModel::EVENT_ACCOUNT_MODIFIED,
+                    (int) $id,
+                    $updateData['email'] ?? null,
+                    'user_edited:' . $id
+                );
+
+                if (! $db->transStatus()) {
+                    $db->transRollback();
+                    return redirect()->back()->withInput()->with('error', 'Unable to update user. Transaction rolled back.');
+                }
+                $db->transComplete();
+            } catch (\Throwable $e) {
+                $db->transRollback();
+                log_message('error', 'editUser transaction failed: ' . $e->getMessage());
+                return redirect()->back()->withInput()->with('error', 'An unexpected error occurred. Changes rolled back.');
+            }
 
             if (! $updated) {
                 return redirect()->back()->withInput()->with('error', 'Unable to update user.');
             }
-
-            // Log account modification
-            (new LoginEventModel())->log(
-                LoginEventModel::EVENT_ACCOUNT_MODIFIED,
-                (int) $id,
-                $updateData['email'] ?? null,
-                'user_id:' . $id
-            );
 
             if ((int) session()->get('user_id') === $id) {
                 session()->set('user_name', trim((string) $this->request->getPost('name')));
@@ -340,7 +428,7 @@ class Admin extends BaseController
         }
 
         $userModel = new UserModel();
-        $user = $userModel->withDeleted()->find($id);
+        $user      = $userModel->withDeleted()->find($id);
 
         if (! $user) {
             return redirect()->to('/admin/patients/list')->with('error', 'User not found.');
@@ -350,11 +438,24 @@ class Admin extends BaseController
             return redirect()->to('/admin/patients/list')->with('error', 'User is already deleted.');
         }
 
-        if (! $userModel->delete($id)) {
-            return redirect()->to('/admin/patients/list')->with('error', 'Unable to delete user.');
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $userModel->delete($id);
+            (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_DELETED, (int) session('user_id'), null, 'user_id:' . $id);
+
+            if (! $db->transStatus()) {
+                $db->transRollback();
+                return redirect()->to('/admin/patients/list')->with('error', 'Unable to delete user. Transaction rolled back.');
+            }
+            $db->transComplete();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'deleteUser transaction failed: ' . $e->getMessage());
+            return redirect()->to('/admin/patients/list')->with('error', 'An unexpected error occurred. Changes rolled back.');
         }
 
-        (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_DELETED, (int) session('user_id'), null, 'user_id:' . $id);
         return redirect()->to('/admin/patients/list')->with('success', 'User deleted successfully. You can restore this user anytime.');
     }
 
@@ -364,7 +465,7 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $userModel = new UserModel();
-        $user = $userModel->withDeleted()->find($id);
+        $user      = $userModel->withDeleted()->find($id);
 
         if (! $user) {
             return redirect()->to('/admin/patients/list')->with('error', 'User not found.');
@@ -374,11 +475,24 @@ class Admin extends BaseController
             return redirect()->to('/admin/patients/list')->with('error', 'User is not deleted.');
         }
 
-        if (! $userModel->withDeleted()->update($id, ['deleted_at' => null])) {
-            return redirect()->to('/admin/patients/list')->with('error', 'Unable to restore user.');
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $userModel->withDeleted()->update($id, ['deleted_at' => null]);
+            (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_RESTORED, (int) session('user_id'), null, 'user_id:' . $id);
+
+            if (! $db->transStatus()) {
+                $db->transRollback();
+                return redirect()->to('/admin/patients/list')->with('error', 'Unable to restore user. Transaction rolled back.');
+            }
+            $db->transComplete();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'restoreUser transaction failed: ' . $e->getMessage());
+            return redirect()->to('/admin/patients/list')->with('error', 'An unexpected error occurred. Changes rolled back.');
         }
 
-        (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_RESTORED, (int) session('user_id'), null, 'user_id:' . $id);
         return redirect()->to('/admin/patients/list')->with('success', 'User restored successfully.');
     }
 }

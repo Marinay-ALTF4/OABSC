@@ -1,5 +1,6 @@
 <?php $pageTitle = 'Manage Permissions'; ?>
-<?= view('layouts/admin', ['pageTitle' => $pageTitle, 'active' => 'permissions']) ?>
+<?= $this->extend('layouts/admin') ?>
+<?= $this->section('content') ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -217,3 +218,4 @@ document.querySelectorAll('.perm-toggle-input').forEach(input => {
     });
 });
 </script>
+<?= $this->endSection() ?>

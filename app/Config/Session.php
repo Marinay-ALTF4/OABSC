@@ -59,6 +59,24 @@ class Session extends BaseConfig
      */
     public string $savePath = WRITEPATH . 'session';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $sessionPath = ROOTPATH . 'writable' . DIRECTORY_SEPARATOR . 'session';
+
+        if (! is_dir($sessionPath)) {
+            mkdir($sessionPath, 0777, true);
+        }
+
+        $realPath = realpath($sessionPath);
+        if ($realPath !== false) {
+            $this->savePath = $realPath . DIRECTORY_SEPARATOR;
+        } elseif (WRITEPATH !== '') {
+            $this->savePath = WRITEPATH . 'session' . DIRECTORY_SEPARATOR;
+        }
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Session Match IP

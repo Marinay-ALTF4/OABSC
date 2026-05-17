@@ -71,14 +71,29 @@ class Secretary extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
-            $model = new UserModel();
-            $model->insert([
-                'name'          => trim($this->request->getPost('name')),
-                'email'         => strtolower(trim($this->request->getPost('email'))),
-                'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-                'role'          => 'client',
-                'phone'         => trim($this->request->getPost('phone') ?? ''),
-            ]);
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            try {
+                $model   = new UserModel();
+                $created = $model->insert([
+                    'name'          => trim($this->request->getPost('name')),
+                    'email'         => strtolower(trim($this->request->getPost('email'))),
+                    'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                    'role'          => 'client',
+                    'phone'         => trim($this->request->getPost('phone') ?? ''),
+                ]);
+
+                if (! $created || ! $db->transStatus()) {
+                    $db->transRollback();
+                    return redirect()->back()->withInput()->with('errors', ['_form' => 'Unable to register patient. Transaction rolled back.']);
+                }
+                $db->transComplete();
+            } catch (\Throwable $e) {
+                $db->transRollback();
+                log_message('error', 'Secretary register transaction failed: ' . $e->getMessage());
+                return redirect()->back()->withInput()->with('errors', ['_form' => 'An unexpected error occurred. Changes rolled back.']);
+            }
 
             return redirect()->to('/secretary/register')->with('success', 'Patient registered successfully.');
         }
@@ -110,12 +125,29 @@ class Secretary extends BaseController
     {
         if ($r = $this->checkAccess()) return $r;
 
-        $id     = $this->request->getPost('id');
-        $status = $this->request->getPost('status');
+        $id     = (int) $this->request->getPost('id');
+        $status = (string) $this->request->getPost('status');
 
-        if (in_array($status, ['confirmed', 'cancelled'])) {
+        if (! in_array($status, ['confirmed', 'cancelled'], true)) {
+            return redirect()->back()->with('error', 'Invalid status.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
             $model = new AppointmentModel();
             $model->update($id, ['status' => $status]);
+
+            if (! $db->transStatus()) {
+                $db->transRollback();
+                return redirect()->back()->with('error', 'Unable to update status. Transaction rolled back.');
+            }
+            $db->transComplete();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'updateStatus transaction failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred. Changes rolled back.');
         }
 
         return redirect()->back()->with('success', 'Appointment status updated.');

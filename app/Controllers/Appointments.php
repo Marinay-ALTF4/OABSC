@@ -149,24 +149,37 @@ class Appointments extends BaseController
         }
 
         $model = new AppointmentModel();
-        $saved = $model->insert($insertData);
+        $db    = \Config\Database::connect();
+        $db->transStart();
 
-        if (! $saved) {
+        try {
+            $saved = $model->insert($insertData);
+
+            // Send notification to doctor inside transaction
+            if (! empty($insertData['doctor_id'])) {
+                $notifModel  = new \App\Models\NotificationModel();
+                $patientName = session('user_name') ?? 'A patient';
+                $notifModel->send(
+                    (int) $insertData['doctor_id'],
+                    'New Appointment Booked',
+                    "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $insertData['appointment_time'], 0, 5) . '.',
+                    'appointment'
+                );
+            }
+
+            if (! $saved || ! $db->transStatus()) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('errors', [
+                    '_form' => 'Unable to create appointment. Transaction rolled back.',
+                ]);
+            }
+            $db->transComplete();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Appointment create transaction failed: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('errors', [
-                '_form' => 'Unable to create appointment right now. Please try again.',
+                '_form' => 'An unexpected error occurred. Changes rolled back.',
             ]);
-        }
-
-        // Send notification to doctor
-        if (! empty($insertData['doctor_id'])) {
-            $notifModel  = new \App\Models\NotificationModel();
-            $patientName = session('user_name') ?? 'A patient';
-            $notifModel->send(
-                (int) $insertData['doctor_id'],
-                'New Appointment Booked',
-                "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $insertData['appointment_time'], 0, 5) . '.',
-                'appointment'
-            );
         }
 
         return redirect()->to('/appointments/my')->with('success', 'Appointment request submitted successfully.');
