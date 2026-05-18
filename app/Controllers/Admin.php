@@ -12,23 +12,24 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $model     = new \App\Models\AppointmentModel();
-        $userModel = new UserModel();
+        $db = \Config\Database::connect();
 
-        $attachNames = function (array $list) use ($userModel): array {
-            foreach ($list as &$appt) {
-                $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
-                $appt['patient_name'] = $clientId
-                    ? ($userModel->find((int) $clientId)['name'] ?? '—')
-                    : '—';
-            }
-            return $list;
-        };
+        $all = $db->query(
+            'SELECT a.*, COALESCE(u.name, "—") as patient_name
+             FROM appointments a
+             LEFT JOIN users u ON u.id = a.user_id
+             ORDER BY a.appointment_date DESC'
+        )->getResultArray();
+
+        $pending   = array_filter($all, fn($a) => ($a['status'] ?? '') === 'pending');
+        $confirmed = array_filter($all, fn($a) => ($a['status'] ?? '') === 'confirmed');
+        $archived  = array_filter($all, fn($a) => in_array($a['status'] ?? '', ['cancelled', 'completed'], true));
 
         return view('admin/appointments', [
-            'pending'      => $attachNames($model->getPending()),
-            'confirmed'    => $attachNames($model->getConfirmed()),
-            'archived'     => $attachNames($model->getArchived()),
+            'appointments' => array_values($all),
+            'pending'      => array_values($pending),
+            'confirmed'    => array_values($confirmed),
+            'archived'     => array_values($archived),
         ]);
     }
 
