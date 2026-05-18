@@ -485,6 +485,7 @@ $name = session('user_name') ?? 'User';
 
     <?php else : ?>
     <!-- ==================== CLIENT ==================== -->
+    <div class="client-container">
     <div class="welcome-banner banner-client mb-4">
         <!-- Illustration -->
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
@@ -629,6 +630,7 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
+    </div> <!-- end client-container -->
     <?php endif; ?>
 
 </div><!-- end dashboard-wrapper -->
@@ -996,6 +998,16 @@ $name = session('user_name') ?? 'User';
     .dashboard-wrapper {
         min-height: calc(100vh - 60px);
         overflow-x: hidden;
+    }
+
+    /* Client container centers content and adds breathing room */
+    .client-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+    @media (max-width: 768px) {
+        .client-container { padding: 16px; }
     }
 
     /* ── Welcome Banner ── */
