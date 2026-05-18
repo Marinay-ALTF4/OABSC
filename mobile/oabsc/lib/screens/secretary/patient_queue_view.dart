@@ -123,7 +123,6 @@ class _PatientQueueViewState extends State<PatientQueueView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Container(
-                        width: 600,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                         ),
@@ -158,9 +157,27 @@ class _PatientQueueViewState extends State<PatientQueueView> {
 
                                 return DataRow(cells: [
                                   DataCell(Text('${idx + 1}', style: const TextStyle(fontWeight: FontWeight.w700))),
-                                  DataCell(Text((row['patient_name'] ?? '—').toString())),
-                                  DataCell(Text((row['doctor_name'] ?? '—').toString())),
-                                  DataCell(Text((row['notes'] ?? row['reason'] ?? '—').toString())),
+                                  DataCell(SizedBox(
+                                    width: 110,
+                                    child: Text(
+                                      (row['patient_name'] ?? '—').toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  )),
+                                  DataCell(SizedBox(
+                                    width: 90,
+                                    child: Text(
+                                      (row['doctor_name'] ?? '—').toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  )),
+                                  DataCell(SizedBox(
+                                    width: 120,
+                                    child: Text(
+                                      (row['notes'] ?? row['reason'] ?? '—').toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  )),
                                   DataCell(Text(_fmtTime(row['appointment_time']?.toString()))),
                                   DataCell(
                                     Container(
@@ -182,7 +199,7 @@ class _PatientQueueViewState extends State<PatientQueueView> {
                             // Empty state indicator
                             if (_queue.isEmpty)
                               Container(
-                                width: 600,
+                                width: MediaQuery.of(context).size.width - 64,
                                 padding: const EdgeInsets.symmetric(vertical: 40),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,

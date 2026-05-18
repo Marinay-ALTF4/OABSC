@@ -173,7 +173,6 @@ class _PatientRecordsViewState extends State<PatientRecordsView> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Container(
-                      width: 600,
                       decoration: const BoxDecoration(
                         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                       ),
@@ -211,7 +210,7 @@ class _PatientRecordsViewState extends State<PatientRecordsView> {
                           
                           if (_filteredPatients.isEmpty)
                             Container(
-                              width: 600,
+                              width: MediaQuery.of(context).size.width - 64,
                               padding: const EdgeInsets.symmetric(vertical: 40),
                               child: const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

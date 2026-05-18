@@ -123,7 +123,6 @@ class _PendingApprovalsViewState extends State<PendingApprovalsView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Container(
-                        width: 630,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                         ),
@@ -181,7 +180,7 @@ class _PendingApprovalsViewState extends State<PendingApprovalsView> {
                             // Empty state indicator
                             if (_pending.isEmpty)
                               Container(
-                                width: 630,
+                                width: MediaQuery.of(context).size.width - 64,
                                 padding: const EdgeInsets.symmetric(vertical: 40),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,

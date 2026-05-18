@@ -180,7 +180,6 @@ class _ManageAppointmentsViewState extends State<ManageAppointmentsView>
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
-              width: 630,
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(10),
@@ -200,7 +199,7 @@ class _ManageAppointmentsViewState extends State<ManageAppointmentsView>
                         SizedBox(width: 90, child: Text('DATE', style: _thStyle)),
                         SizedBox(width: 70, child: Text('TIME', style: _thStyle)),
                         SizedBox(width: 90, child: Text('STATUS', style: _thStyle)),
-                        SizedBox(width: 100, child: Text('ACTION', style: _thStyle)),
+                        SizedBox(width: 110, child: Text('ACTION', style: _thStyle)),
                       ],
                     ),
                   ),
@@ -270,18 +269,25 @@ class _ManageAppointmentsViewState extends State<ManageAppointmentsView>
                                 ),
                               ),
                               SizedBox(
-                                width: 100,
+                                width: 110,
                                 child: tab == 'archived'
                                     ? const SizedBox.shrink()
                                     : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          if (status == 'pending')
+                                          if (status == 'pending') ...[
                                             IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
                                               icon: const Icon(Icons.check_circle_outline, color: Color(0xFF059669), size: 20),
                                               onPressed: () => _updateStatus(int.tryParse(row['id']?.toString() ?? '') ?? 0, 'confirmed'),
                                               tooltip: 'Approve',
                                             ),
+                                            const SizedBox(width: 12),
+                                          ],
                                           IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
                                             icon: const Icon(Icons.cancel_outlined, color: AppColors.error, size: 20),
                                             onPressed: () => _updateStatus(int.tryParse(row['id']?.toString() ?? '') ?? 0, 'cancelled'),
                                             tooltip: 'Cancel',
