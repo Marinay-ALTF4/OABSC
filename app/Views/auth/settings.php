@@ -21,7 +21,7 @@ $roleLabel = match($role) {
 <?= view('header') ?>
 
 <div class="profile-page">
-<div class="container py-4">
+<div style="max-width:1200px; margin:0 auto; padding: 0 2rem;">
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
@@ -33,11 +33,17 @@ $roleLabel = match($role) {
         </a>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 mt-1" style="align-items: stretch;">
 
         <!-- Left: Avatar + quick info -->
-        <div class="col-lg-3">
-            <div class="profile-card text-center">
+        <div class="col-lg-3 col-md-4" style="display:flex; flex-direction:column;">
+            <div class="profile-card text-center" style="flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <!-- Header with dots -->
+                <div class="profile-card-header">
+                    <div class="profile-card-header-dots">
+                        <?php for($i=0;$i<12;$i++): ?><span></span><?php endfor; ?>
+                    </div>
+                </div>
                 <?php if (!empty($user['profile_photo'])): ?>
                     <img src="<?= base_url($user['profile_photo']) ?>" alt="Profile Photo" class="avatar-circle mx-auto mb-3" style="object-fit:cover;">
                 <?php else: ?>
@@ -49,19 +55,45 @@ $roleLabel = match($role) {
                 <div class="profile-card-role"><?= esc($roleLabel) ?></div>
                 <hr class="my-3">
                 <div class="profile-card-meta">
-                    <i class="bi bi-envelope me-2 text-primary"></i><?= esc($user['email'] ?? '—') ?>
+                    <i class="bi bi-envelope"></i><?= esc($user['email'] ?? '—') ?>
                 </div>
-                <div class="profile-card-meta mt-2">
-                    <i class="bi bi-telephone me-2 text-primary"></i><span id="sidebarPhoneVal"><?= esc($user['phone'] ?? '—') ?></span>
+                <div class="profile-card-meta">
+                    <i class="bi bi-telephone"></i><span id="sidebarPhoneVal"><?= esc($user['phone'] ?? '—') ?></span>
                 </div>
-                <div class="profile-card-meta mt-2">
-                    <i class="bi bi-geo-alt me-2 text-primary"></i><span id="sidebarAddressVal"><?= esc($user['address'] ?? '—') ?></span>
+                <div class="profile-card-meta">
+                    <i class="bi bi-geo-alt"></i><span id="sidebarAddressVal"><?= esc($user['address'] ?? '—') ?></span>
+                </div>
+
+                <!-- Profile Completion -->
+                <?php
+                $filled = 0;
+                $fields = ['name','email','phone','city','address'];
+                foreach ($fields as $f) if (!empty($user[$f])) $filled++;
+                $pct = (int) round(($filled / count($fields)) * 100);
+                $circumference = 2 * M_PI * 20;
+                $offset = $circumference - ($pct / 100) * $circumference;
+                $msg = $pct === 100 ? 'Great! Your profile is complete.' : 'Complete your profile for better experience.';
+                ?>
+                <div class="profile-completion">
+                    <div class="completion-ring">
+                        <svg width="52" height="52" viewBox="0 0 52 52">
+                            <circle class="completion-ring-bg" cx="26" cy="26" r="20"/>
+                            <circle class="completion-ring-fill" cx="26" cy="26" r="20"
+                                stroke-dasharray="<?= $circumference ?>"
+                                stroke-dashoffset="<?= $offset ?>"/>
+                        </svg>
+                        <div class="completion-pct"><?= $pct ?>%</div>
+                    </div>
+                    <div>
+                        <div class="completion-label">Profile Completion</div>
+                        <div class="completion-sub"><?= $msg ?></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Right: Forms -->
-        <div class="col-lg-9">
+        <div class="col-lg-9 col-md-8">
 
             <!-- Tabs -->
             <ul class="nav profile-tabs mb-4">
@@ -188,7 +220,11 @@ $roleLabel = match($role) {
                             </div>
                             <?php endif; ?>
                         </div>
-                        <div class="mt-4 d-flex gap-2">
+                        <div class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="text-muted" style="font-size:0.78rem;">
+                                <i class="bi bi-clock me-1"></i>
+                                Last updated: <?= esc(isset($user['updated_at']) ? date('M j, Y g:i A', strtotime($user['updated_at'])) : 'Never') ?>
+                            </div>
                             <button type="submit" class="btn-save">
                                 <i class="bi bi-check-lg me-1"></i> Save Changes
                             </button>
@@ -296,7 +332,8 @@ $roleLabel = match($role) {
                         </button>
                     </div>
                     <div id="historyList" class="history-list"></div>
-                    <div id="historyEmpty" class="history-empty text-center text-muted py-4">
+                    <div id="historyEmpty" class="history-empty py-4">
+                        <i class="bi bi-clock-history"></i>
                         No history yet. Use the dashboard to perform actions.
                     </div>
                 </div>
@@ -402,111 +439,441 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    body { background: #edf2f7; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-    .profile-page { min-height: calc(100vh - 60px); padding-top: 1.5rem; }
-    .page-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
-    .page-sub   { font-size: 0.875rem; color: #64748b; }
-    .btn-back-link {
-        font-size: 0.85rem; font-weight: 600; color: #475569;
-        background: white; border: 1px solid #dbe4ef;
-        padding: 0.45rem 1rem; border-radius: 10px;
-        text-decoration: none; transition: background 0.15s;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    body {
+        background: #eef0f8;
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
     }
-    .btn-back-link:hover { background: #f1f5f9; color: #1e40af; }
+
+    .profile-page { min-height: calc(100vh - 60px); padding: 2.5rem 0 4rem; }
+
+    .page-title { font-size: 2rem; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
+    .page-sub   { font-size: 0.95rem; color: #64748b; margin-top: 4px; }
+
+    .btn-back-link {
+        font-size: 0.85rem; font-weight: 600; color: #6366f1;
+        background: white; border: 1.5px solid #e0e7ff;
+        padding: 0.6rem 1.3rem; border-radius: 12px;
+        text-decoration: none; transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 10px rgba(99,102,241,0.12);
+    }
+    .btn-back-link:hover { background: #eef2ff; color: #4f46e5; }
+
+    /* Profile Card */
     .profile-card {
-        background: white; border-radius: 18px; padding: 1.75rem 1.25rem;
-        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        background: white; border-radius: 22px;
+        padding: 0 1.75rem 1.75rem;
+        border: 1px solid #e8eaf6;
+        box-shadow: 0 6px 24px rgba(99,102,241,0.09);
+        position: sticky; top: 80px; overflow: hidden;
+    }
+    .profile-card-header {
+        background: linear-gradient(135deg, #5c6bc0 0%, #7c3aed 100%);
+        margin: 0 -1.75rem; height: 140px;
+        position: relative; overflow: hidden;
+    }
+    .profile-card-header::after {
+        content: ''; position: absolute;
+        bottom: -40px; right: -25px;
+        width: 140px; height: 140px; border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+    }
+    .profile-card-header::before {
+        content: ''; position: absolute;
+        bottom: -60px; right: 50px;
+        width: 100px; height: 100px; border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+    }
+    .profile-card-header-dots {
+        position: absolute; top: 16px; right: 20px;
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    }
+    .profile-card-header-dots span {
+        width: 5px; height: 5px; border-radius: 50%;
+        background: rgba(255,255,255,0.45); display: block;
     }
     .avatar-circle {
-        width: 80px; height: 80px; border-radius: 50%;
-        background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+        width: 110px; height: 110px; border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; font-weight: 700; color: white;
-        box-shadow: 0 4px 14px rgba(30,64,175,0.3);
+        font-size: 2.2rem; font-weight: 800; color: white;
+        box-shadow: 0 8px 28px rgba(99,102,241,0.4);
+        border: 5px solid white; margin-top: -55px;
+        position: relative; z-index: 1;
     }
-    .profile-card-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .profile-card-name { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-top: 0.75rem; }
     .profile-card-role {
-        display: inline-block; margin-top: 4px;
-        background: #dbeafe; color: #1e40af;
-        font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
-        letter-spacing: 0.6px; padding: 2px 10px; border-radius: 999px;
+        display: inline-block; margin-top: 6px;
+        background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; padding: 3px 14px; border-radius: 999px;
     }
-    .profile-card-meta { font-size: 0.8rem; color: #475569; word-break: break-all; }
-    .profile-tabs { border-bottom: 2px solid #e2e8f0; gap: 0; list-style: none; padding: 0; margin: 0; }
+    .profile-card-meta {
+        font-size: 0.83rem; color: #64748b; word-break: break-all;
+        display: flex; align-items: center; gap: 10px;
+        padding: 9px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .profile-card-meta:last-child { border-bottom: none; }
+    .profile-card-meta i { color: #6366f1; font-size: 0.9rem; flex-shrink: 0; }
+
+    /* Profile Completion */
+    .profile-completion {
+        background: #f5f3ff; border-radius: 16px;
+        padding: 1rem 1.1rem;
+        display: flex; align-items: center; gap: 1rem; margin-top: 1.1rem;
+    }
+    .completion-ring { width: 56px; height: 56px; flex-shrink: 0; position: relative; }
+    .completion-ring svg { transform: rotate(-90deg); }
+    .completion-ring-bg   { fill: none; stroke: #e0e7ff; stroke-width: 5; }
+    .completion-ring-fill { fill: none; stroke: #6366f1; stroke-width: 5; stroke-linecap: round; }
+    .completion-pct {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem; font-weight: 800; color: #6366f1;
+    }
+    .completion-label { font-size: 0.82rem; font-weight: 700; color: #4f46e5; }
+    .completion-sub   { font-size: 0.73rem; color: #64748b; margin-top: 2px; line-height: 1.4; }
+
+    /* Tabs */
+    .profile-tabs {
+        border-bottom: none; gap: 4px; list-style: none;
+        padding: 6px; margin: 0 0 1.5rem 0;
+        background: white; border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        display: flex; flex-wrap: wrap;
+    }
     .profile-tab {
-        background: none; border: none; padding: 0.6rem 1.25rem;
+        background: none; border: none; padding: 0.65rem 1.3rem;
         font-size: 0.875rem; font-weight: 600; color: #64748b;
-        border-bottom: 3px solid transparent; margin-bottom: -2px;
-        cursor: pointer; transition: all 0.15s;
+        border-radius: 12px; cursor: pointer; transition: all 0.2s;
+        white-space: nowrap; display: flex; align-items: center; gap: 6px;
     }
-    .profile-tab:hover { color: #1e40af; }
-    .profile-tab.active { color: #1e40af; border-bottom-color: #1e40af; }
-    .profile-alert {
-        padding: 0.75rem 1rem; border-radius: 10px;
-        font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem;
+    .profile-tab:hover { background: #f1f5f9; color: #4f46e5; }
+    .profile-tab.active {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white; box-shadow: 0 4px 14px rgba(99,102,241,0.35);
     }
+
+    /* Alerts */
+    .profile-alert { padding: 0.85rem 1.1rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
     .profile-alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     .profile-alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .profile-alert-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* Section Card */
     .section-card {
-        background: white; border-radius: 18px; padding: 1.75rem;
-        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        background: white; border-radius: 22px; padding: 2.25rem 2.5rem;
+        border: 1px solid #e8eaf6;
+        box-shadow: 0 6px 24px rgba(99,102,241,0.07);
     }
-    .section-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .section-card-sub   { font-size: 0.83rem; color: #64748b; margin-top: 3px; }
-    .field-label { font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 6px; display: block; }
+    .section-card-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+    .section-card-sub   { font-size: 0.875rem; color: #64748b; margin-top: 4px; }
+
+    /* Fields */
+    .field-label { font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 7px; display: block; }
     .input-group-custom { position: relative; display: flex; align-items: center; }
-    .input-icon { position: absolute; left: 12px; color: #94a3b8; font-size: 0.95rem; pointer-events: none; }
+    .input-icon { position: absolute; left: 14px; color: #a5b4fc; font-size: 1rem; pointer-events: none; z-index: 1; }
     .field-input {
-        width: 100%; padding: 0.6rem 0.9rem 0.6rem 2.2rem;
-        border: 1.5px solid #e2e8f0; border-radius: 10px;
-        font-size: 0.875rem; color: #0f172a; background: #fafafa; outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
+        width: 100%; padding: 0.75rem 1rem 0.75rem 2.6rem;
+        border: 1.5px solid #e2e8f0; border-radius: 12px;
+        font-size: 0.9rem; color: #0f172a; background: #fafbff; outline: none;
+        transition: all 0.2s;
     }
-    .field-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); background: white; }
-    .field-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-    .pw-toggle { position: absolute; right: 10px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; padding: 0; }
-    .pw-toggle:hover { color: #475569; }
-    .strength-bar { height: 5px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .field-input:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); background: white; }
+    .field-input:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+    .pw-toggle { position: absolute; right: 12px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; padding: 0; z-index: 1; }
+    .pw-toggle:hover { color: #6366f1; }
+
+    /* Password strength */
+    .strength-bar { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 8px; }
     .strength-fill { height: 100%; width: 0; border-radius: 999px; transition: width 0.3s, background 0.3s; }
     .strength-label { font-size: 0.75rem; font-weight: 600; margin-top: 4px; }
-    .pw-tips { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
-    .pw-tip  { font-size: 0.78rem; color: #94a3b8; transition: color 0.2s; }
+    .pw-tips { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 0.75rem; }
+    .pw-tip  { font-size: 0.78rem; color: #94a3b8; transition: color 0.2s; display: flex; align-items: center; gap: 4px; }
     .pw-tip.tip-pass { color: #10b981; }
+
+    /* Save button */
     .btn-save {
-        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
-        color: white; border: none; font-weight: 600;
-        font-size: 0.875rem; padding: 0.6rem 1.5rem;
-        border-radius: 10px; cursor: pointer;
-        box-shadow: 0 2px 8px rgba(30,64,175,0.25); transition: opacity 0.15s;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white; border: none; font-weight: 700;
+        font-size: 0.9rem; padding: 0.75rem 2.25rem;
+        border-radius: 12px; cursor: pointer;
+        box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+        transition: all 0.2s; letter-spacing: 0.2px;
+        display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-save:hover { opacity: 0.9; }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.5); }
+
+    /* Language */
     .lang-options { display: flex; flex-direction: column; gap: 0.75rem; }
     .lang-option { cursor: pointer; }
     .lang-option input { display: none; }
     .lang-option-inner {
         display: flex; align-items: center; gap: 1rem;
-        padding: 1rem 1.25rem; border-radius: 14px;
-        border: 2px solid #e2e8f0; background: #f8fafc; transition: all 0.15s;
+        padding: 1.1rem 1.25rem; border-radius: 16px;
+        border: 2px solid #e2e8f0; background: #fafbff; transition: all 0.2s;
     }
-    .lang-option input:checked + .lang-option-inner { border-color: #3b82f6; background: #eff6ff; }
-    .lang-flag { font-size: 1.6rem; }
+    .lang-option input:checked + .lang-option-inner { border-color: #6366f1; background: #eef2ff; box-shadow: 0 4px 12px rgba(99,102,241,0.12); }
+    .lang-flag { font-size: 1.8rem; }
     .lang-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
     .lang-desc { font-size: 0.78rem; color: #64748b; }
-    .lang-check { color: #e2e8f0; font-size: 1.1rem; transition: color 0.15s; }
-    .lang-option input:checked + .lang-option-inner .lang-check { color: #3b82f6; }
+    .lang-check { color: #e2e8f0; font-size: 1.2rem; transition: color 0.2s; }
+    .lang-option input:checked + .lang-option-inner .lang-check { color: #6366f1; }
     .lang-note { font-size: 0.78rem; color: #94a3b8; }
-    .history-summary { font-size: 0.9rem; color: #475569; }
-    .btn-clear-history { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; padding: 0.5rem 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
-    .history-list { display: grid; gap: 0.9rem; }
-    .history-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.95rem 1rem; }
-    .history-item-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.92rem; color: #0f172a; }
+
+    /* History */
+    .btn-clear-history { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 0.45rem 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+    .history-list { display: grid; gap: 0.75rem; }
+    .history-item { background: #fafbff; border: 1px solid #e0e7ff; border-radius: 14px; padding: 1rem; }
+    .history-item-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.88rem; color: #0f172a; }
     .history-item-meta strong { font-weight: 700; }
-    .history-item-meta span { color: #64748b; font-size: 0.82rem; }
-    .history-item-details { margin-top: 0.5rem; color: #475569; font-size: 0.875rem; }
-    .history-empty { background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 14px; }
+    .history-item-meta span { color: #94a3b8; font-size: 0.78rem; }
+    .history-item-details { margin-top: 0.4rem; color: #64748b; font-size: 0.82rem; }
+    .history-empty { background: white; border: 2px dashed #e0e7ff; border-radius: 16px; padding: 3rem; text-align: center; color: #94a3b8; }
+    .history-empty i { font-size: 2.5rem; color: #c7d2fe; display: block; margin-bottom: 0.75rem; }
+
     .tab-section { display: block; }
     .tab-section.d-none { display: none !important; }
+
+    @media (max-width: 768px) {
+        .profile-card { position: static; margin-bottom: 1.5rem; }
+        .section-card { padding: 1.5rem; }
+    }
+    .btn-back-link {
+        font-size: 0.82rem; font-weight: 600; color: #6366f1;
+        background: white; border: 1.5px solid #e0e7ff;
+        padding: 0.5rem 1.1rem; border-radius: 12px;
+        text-decoration: none; transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 5px;
+        box-shadow: 0 2px 8px rgba(99,102,241,0.1);
+    }
+    .btn-back-link:hover { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 0 1.5rem 1.5rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(99,102,241,0.08);
+        position: sticky; top: 80px;
+        overflow: hidden;
+    }
+    .profile-card-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        margin: 0 -1.5rem;
+        height: 140px;
+        position: relative;
+        overflow: hidden;
+    }
+    .profile-card-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30px; right: -20px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+    }
+    .profile-card-header::before {
+        content: '';
+        position: absolute;
+        bottom: -50px; right: 40px;
+        width: 90px; height: 90px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+    }
+    .profile-card-header-dots {
+        position: absolute;
+        top: 14px; right: 18px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+    }
+    .profile-card-header-dots span {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+        display: block;
+    }
+    .avatar-circle {
+        width: 110px; height: 110px; border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.2rem; font-weight: 800; color: white;
+        box-shadow: 0 8px 28px rgba(99,102,241,0.4);
+        border: 5px solid white;
+        margin-top: -55px;
+        position: relative; z-index: 1;
+    }
+    .profile-card-name { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 0.7rem; }
+    .profile-card-role {
+        display: inline-block; margin-top: 5px;
+        background: #eef2ff; color: #6366f1;
+        border: 1px solid #c7d2fe;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; padding: 3px 14px; border-radius: 999px;
+    }
+    .profile-card-meta {
+        font-size: 0.82rem; color: #64748b;
+        word-break: break-all; text-align: left;
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .profile-card-meta:last-child { border-bottom: none; }
+    .profile-card-meta i { color: #6366f1; font-size: 0.9rem; flex-shrink: 0; }
+
+    /* Profile Completion */
+    .profile-completion {
+        background: #f5f3ff; border-radius: 16px;
+        padding: 0.85rem 1rem;
+        display: flex; align-items: center; gap: 0.85rem;
+        margin-top: 1rem;
+    }
+    .completion-ring {
+        width: 52px; height: 52px; flex-shrink: 0;
+        position: relative;
+    }
+    .completion-ring svg { transform: rotate(-90deg); }
+    .completion-ring-bg { fill: none; stroke: #e0e7ff; stroke-width: 5; }
+    .completion-ring-fill { fill: none; stroke: #6366f1; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+    .completion-pct {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem; font-weight: 800; color: #6366f1;
+    }
+    .completion-label { font-size: 0.78rem; font-weight: 700; color: #4f46e5; }
+    .completion-sub   { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+
+    /* Tabs */
+    .profile-tabs {
+        border-bottom: none; gap: 4px; list-style: none;
+        padding: 5px; margin: 0 0 1.5rem 0;
+        background: white; border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        display: flex; flex-wrap: wrap;
+    }
+    .profile-tab {
+        background: none; border: none; padding: 0.6rem 1.2rem;
+        font-size: 0.85rem; font-weight: 600; color: #64748b;
+        border-radius: 10px; cursor: pointer; transition: all 0.2s;
+        white-space: nowrap; display: flex; align-items: center; gap: 5px;
+    }
+    .profile-tab:hover { background: #f1f5f9; color: #4f46e5; }
+    .profile-tab.active {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+
+    /* Alerts */
+    .profile-alert { padding: 0.85rem 1.1rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
+    .profile-alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .profile-alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* Section Card */
+    .section-card {
+        background: white; border-radius: 20px; padding: 2rem 2.5rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(99,102,241,0.06);
+    }
+    .section-card-title { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+    .section-card-sub   { font-size: 0.85rem; color: #64748b; margin-top: 3px; }
+
+    /* Fields */
+    .field-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; display: block; letter-spacing: 0.2px; }
+    .input-group-custom { position: relative; display: flex; align-items: center; }
+    .input-icon { position: absolute; left: 14px; color: #a5b4fc; font-size: 0.95rem; pointer-events: none; z-index: 1; }
+    .field-input {
+        width: 100%; padding: 0.7rem 1rem 0.7rem 2.5rem;
+        border: 1.5px solid #e2e8f0; border-radius: 12px;
+        font-size: 0.875rem; color: #0f172a; background: #fafbff; outline: none;
+        transition: all 0.2s;
+    }
+    .field-input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        background: white;
+    }
+    .field-input:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+    .pw-toggle { position: absolute; right: 12px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; padding: 0; z-index: 1; }
+    .pw-toggle:hover { color: #6366f1; }
+
+    /* Password strength */
+    .strength-bar { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .strength-fill { height: 100%; width: 0; border-radius: 999px; transition: width 0.3s, background 0.3s; }
+    .strength-label { font-size: 0.75rem; font-weight: 600; margin-top: 4px; }
+    .pw-tips { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 0.75rem; }
+    .pw-tip  { font-size: 0.78rem; color: #94a3b8; transition: color 0.2s; display: flex; align-items: center; gap: 4px; }
+    .pw-tip.tip-pass { color: #10b981; }
+
+    /* Save button */
+    .btn-save {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white; border: none; font-weight: 700;
+        font-size: 0.875rem; padding: 0.7rem 2rem;
+        border-radius: 12px; cursor: pointer;
+        box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+        transition: all 0.2s; letter-spacing: 0.2px;
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+    .btn-save:active { transform: translateY(0); }
+
+    /* Language */
+    .lang-options { display: flex; flex-direction: column; gap: 0.75rem; }
+    .lang-option { cursor: pointer; }
+    .lang-option input { display: none; }
+    .lang-option-inner {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 1rem 1.25rem; border-radius: 16px;
+        border: 2px solid #e2e8f0; background: #fafbff; transition: all 0.2s;
+    }
+    .lang-option input:checked + .lang-option-inner {
+        border-color: #6366f1; background: #eef2ff;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.12);
+    }
+    .lang-flag { font-size: 1.8rem; }
+    .lang-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
+    .lang-desc { font-size: 0.78rem; color: #64748b; }
+    .lang-check { color: #e2e8f0; font-size: 1.2rem; transition: color 0.2s; }
+    .lang-option input:checked + .lang-option-inner .lang-check { color: #6366f1; }
+    .lang-note { font-size: 0.78rem; color: #94a3b8; }
+
+    /* History */
+    .btn-clear-history {
+        background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;
+        padding: 0.45rem 0.85rem; border-radius: 10px; font-weight: 600;
+        cursor: pointer; font-size: 0.8rem; transition: all 0.2s;
+    }
+    .btn-clear-history:hover { background: #fee2e2; }
+    .history-list { display: grid; gap: 0.75rem; }
+    .history-item {
+        background: #fafbff; border: 1px solid #e0e7ff;
+        border-radius: 14px; padding: 1rem;
+        transition: box-shadow 0.2s;
+    }
+    .history-item:hover { box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
+    .history-item-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.88rem; color: #0f172a; }
+    .history-item-meta strong { font-weight: 700; }
+    .history-item-meta span { color: #94a3b8; font-size: 0.78rem; }
+    .history-item-details { margin-top: 0.4rem; color: #64748b; font-size: 0.82rem; }
+    .history-empty {
+        background: white; border: 2px dashed #e0e7ff;
+        border-radius: 16px; padding: 2.5rem;
+        text-align: center; color: #94a3b8;
+    }
+    .history-empty i { font-size: 2.5rem; color: #c7d2fe; display: block; margin-bottom: 0.75rem; }
+
+    .tab-section { display: block; }
+    .tab-section.d-none { display: none !important; }
+
+    @media (max-width: 768px) {
+        .profile-card { position: static; margin-bottom: 1.5rem; }
+        .section-card { padding: 1.25rem; }
+        .profile-tabs { gap: 4px; }
+        .profile-tab { padding: 0.45rem 0.8rem; font-size: 0.78rem; }
+    }
 </style>
 </body>
 </html>
