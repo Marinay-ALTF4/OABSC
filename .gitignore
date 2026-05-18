@@ -10,6 +10,9 @@ composer.phar
 !/writable/index.html
 !/writable/.htaccess
 
+# User uploads (profile photos, etc.)
+/uploads/profiles/
+
 # Logs
 .env
 *.log
