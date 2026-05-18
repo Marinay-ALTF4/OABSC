@@ -46,9 +46,9 @@ class ApiService {
 
   /// POST request
   Future<Map<String, dynamic>> post(
-    String endpoint, {
+    String endpoint, [
     Map<String, dynamic>? body,
-  }) async {
+  ]) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/$endpoint'),
@@ -63,9 +63,9 @@ class ApiService {
 
   /// PUT request
   Future<Map<String, dynamic>> put(
-    String endpoint, {
+    String endpoint, [
     Map<String, dynamic>? body,
-  }) async {
+  ]) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/$endpoint'),

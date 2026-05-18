@@ -30,7 +30,9 @@ class _DoctorSchedulesViewState extends State<DoctorSchedulesView> {
 
   Map<String, Map<String, dynamic>> _schedMap(List s) {
     final m = <String, Map<String, dynamic>>{};
-    for (final e in s) m[(e['day'] ?? '').toString()] = {'available': e['is_available'].toString() == '1', 'start': e['start_time'] ?? '', 'end': e['end_time'] ?? ''};
+    for (final e in s) {
+      m[(e['day'] ?? '').toString()] = {'available': e['is_available'].toString() == '1', 'start': e['start_time'] ?? '', 'end': e['end_time'] ?? ''};
+    }
     return m;
   }
 
@@ -105,64 +107,76 @@ class _DoctorSchedulesViewState extends State<DoctorSchedulesView> {
             const Text('DOCTOR SCHEDULE DETAILS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             // Detail cards
-            Wrap(spacing: 12, runSpacing: 12,
-              children: _doctors.map((doc) {
-                final d = doc as Map;
-                final sm = _schedMap(List.from(d['schedules'] ?? []));
-                final name = (d['name'] ?? '—').toString();
-                final spec = (d['specialization'] ?? 'Doctor').toString();
-                final phone = (d['phone'] ?? '').toString();
-                final init = name.isNotEmpty ? name[0].toUpperCase() : '?';
-                final abbr = ['Mon','Tue','Wed','Thu','Fri','Sat'];
-                final workDays = _daysFull.where((dy) => sm[dy]?['available'] == true).length;
-                final todayIdx = DateTime.now().weekday - 1;
+            // Detail cards
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate width to maximize space (2 columns on small screens, 3+ on larger)
+                final crossAxisCount = constraints.maxWidth > 800 ? 4 : (constraints.maxWidth > 500 ? 3 : 2);
+                final spacing = 12.0;
+                final width = (constraints.maxWidth - ((crossAxisCount - 1) * spacing)) / crossAxisCount;
 
-                return Container(
-                  width: 200,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border),
-                    boxShadow: const [BoxShadow(color: AppColors.cardShadow, blurRadius: 6, offset: Offset(0,2))]),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      CircleAvatar(radius: 18, backgroundColor: AppColors.iconBlueBg, child: Text(init, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.accent))),
-                      const SizedBox(width: 8),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis),
-                        Text(spec, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis),
-                      ])),
-                    ]),
-                    const SizedBox(height: 12),
-                    ..._daysFull.asMap().entries.map((e) {
-                      final day = e.value;
-                      final a = abbr[e.key];
-                      final s = sm[day];
-                      final avail = s?['available'] == true;
-                      final isToday = e.key == todayIdx;
-                      return Padding(padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Row(children: [
-                          SizedBox(width: 30, child: Text(a, style: TextStyle(fontSize: 12, fontWeight: isToday ? FontWeight.w700 : FontWeight.w400, color: isToday ? AppColors.accent : AppColors.textSecondary))),
-                          Expanded(child: Text(avail ? (s?['start'] != '' ? '${s!['start']} – ${s['end']}' : 'Available') : 'Day Off',
-                            style: TextStyle(fontSize: 12, color: avail ? const Color(0xFF059669) : AppColors.textHint), textAlign: TextAlign.right)),
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: _doctors.map((doc) {
+                    final d = doc as Map;
+                    final sm = _schedMap(List.from(d['schedules'] ?? []));
+                    final name = (d['name'] ?? '—').toString();
+                    final spec = (d['specialization'] ?? 'Doctor').toString();
+                    final phone = (d['phone'] ?? '').toString();
+                    final init = name.isNotEmpty ? name[0].toUpperCase() : '?';
+                    final abbr = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+                    final workDays = _daysFull.where((dy) => sm[dy]?['available'] == true).length;
+                    final todayIdx = DateTime.now().weekday - 1;
+
+                    return Container(
+                      width: width,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border),
+                        boxShadow: const [BoxShadow(color: AppColors.cardShadow, blurRadius: 6, offset: Offset(0,2))]),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(children: [
+                          CircleAvatar(radius: 18, backgroundColor: AppColors.iconBlueBg, child: Text(init, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.accent))),
+                          const SizedBox(width: 8),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis),
+                            Text(spec, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis),
+                          ])),
                         ]),
-                      );
-                    }),
-                    const SizedBox(height: 8),
-                    const Divider(height: 1),
-                    const SizedBox(height: 6),
-                    Row(children: [
-                      const Icon(Icons.calendar_today_outlined, size: 11, color: AppColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Text('$workDays days/week', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                      if (phone.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        const Icon(Icons.phone_outlined, size: 11, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Expanded(child: Text(phone, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis)),
-                      ],
-                    ]),
-                  ]),
+                        const SizedBox(height: 12),
+                        ..._daysFull.asMap().entries.map((e) {
+                          final day = e.value;
+                          final a = abbr[e.key];
+                          final s = sm[day];
+                          final avail = s?['available'] == true;
+                          final isToday = e.key == todayIdx;
+                          return Padding(padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(children: [
+                              SizedBox(width: 30, child: Text(a, style: TextStyle(fontSize: 12, fontWeight: isToday ? FontWeight.w700 : FontWeight.w400, color: isToday ? AppColors.accent : AppColors.textSecondary))),
+                              Expanded(child: Text(avail ? (s?['start'] != '' ? '${s!['start']} – ${s['end']}' : 'Available') : 'Day Off',
+                                style: TextStyle(fontSize: 12, color: avail ? const Color(0xFF059669) : AppColors.textHint), textAlign: TextAlign.right)),
+                            ]),
+                          );
+                        }),
+                        const SizedBox(height: 8),
+                        const Divider(height: 1),
+                        const SizedBox(height: 6),
+                        Row(children: [
+                          const Icon(Icons.calendar_today_outlined, size: 11, color: AppColors.textSecondary),
+                          const SizedBox(width: 4),
+                          Text('$workDays days/week', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          if (phone.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            const Icon(Icons.phone_outlined, size: 11, color: AppColors.textSecondary),
+                            const SizedBox(width: 4),
+                            Expanded(child: Text(phone, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis)),
+                          ],
+                        ]),
+                      ]),
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              }
             ),
           ],
         ]),

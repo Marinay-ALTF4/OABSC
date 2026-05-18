@@ -48,7 +48,7 @@ class _AppointmentsViewState extends State<AppointmentsView>
   Future<void> _updateStatus(int id, String status) async {
     try {
       await _api.post('admin/appointments/update-status',
-          body: {'id': id, 'status': status});
+          {'id': id, 'status': status});
       _fetch();
     } catch (_) {}
   }

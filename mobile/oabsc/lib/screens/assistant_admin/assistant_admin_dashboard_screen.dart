@@ -20,14 +20,13 @@ class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardS
   final _apiService = ApiService();
   int _activeNavIndex = 0;
   String _adminName = 'Assistant Admin';
-  Map<String, dynamic> _stats = {
+  final Map<String, dynamic> _stats = {
     'total_appointments': '0',
     'today_appointments': '0',
     'total_patients': '0',
     'total_doctors': '0',
     'pending': '0',
   };
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -36,7 +35,6 @@ class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardS
   }
 
   Future<void> _loadDashboardData() async {
-    setState(() => _isLoading = true);
     final name = await _authService.getSavedName();
     final userId = await _authService.getSavedUserId();
     
@@ -56,7 +54,6 @@ class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardS
         });
       }
     }
-    setState(() => _isLoading = false);
   }
 
   List<DrawerNavItem> get _menuItems => [

@@ -1105,6 +1105,26 @@ class Api extends BaseController
         return $this->respond(['success' => true, 'message' => 'Announcement deleted.']);
     }
 
+    private function sanitizeUtf8($data)
+    {
+        if (is_string($data)) {
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        } elseif (is_array($data)) {
+            $ret = [];
+            foreach ($data as $k => $v) {
+                $ret[$k] = $this->sanitizeUtf8($v);
+            }
+            return $ret;
+        } elseif (is_object($data)) {
+            $ret = new \stdClass();
+            foreach (get_object_vars($data) as $k => $v) {
+                $ret->$k = $this->sanitizeUtf8($v);
+            }
+            return $ret;
+        }
+        return $data;
+    }
+
     // ──────────────────── Admin: Audit Reports ────────────────
 
     /**
@@ -1113,21 +1133,98 @@ class Api extends BaseController
      */
     public function adminAuditReports()
     {
-        $eventModel = new \App\Models\LoginEventModel();
-        $db         = \Config\Database::connect();
+        $request = $this->httpRequest();
+        $filter  = $request->getGet('filter') ?? 'weekly';
 
-        // Count by event type (last 7 days)
-        $since  = date('Y-m-d H:i:s', strtotime('-7 days'));
-        $counts = [];
-        $rows   = $db->query(
-            "SELECT event_type, COUNT(*) as cnt FROM login_events WHERE created_at >= ? GROUP BY event_type",
+        $data = $this->buildAuditReport($filter);
+
+        return $this->respond($this->sanitizeUtf8(array_merge(['success' => true, 'filter' => $filter], $data)));
+    }
+
+    /**
+     * GET /api/admin/audit-reports/export?filter=weekly
+     * Returns CSV content as a downloadable file.
+     */
+    public function adminAuditExportCsv()
+    {
+        $request = $this->httpRequest();
+        $filter  = $request->getGet('filter') ?? 'weekly';
+        $data    = $this->buildAuditReport($filter);
+
+        $filename = 'audit_report_' . $filter . '_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['AUDIT REPORT - ' . strtoupper($filter)]);
+        fputcsv($out, ['Generated', date('Y-m-d H:i:s')]);
+        fputcsv($out, []);
+        fputcsv($out, ['SUMMARY']);
+        fputcsv($out, ['Metric', 'Count']);
+        fputcsv($out, ['Successful Logins',   $data['total_success']]);
+        fputcsv($out, ['Failed Logins',        $data['total_failed']]);
+        fputcsv($out, ['Locked Accounts',      $data['total_locked']]);
+        fputcsv($out, ['Suspicious Activity',  $data['total_suspicious']]);
+        fputcsv($out, ['MFA Successes',        $data['total_mfa_success']]);
+        fputcsv($out, ['MFA Failures',         $data['total_mfa_failed']]);
+        fputcsv($out, ['Logouts',              $data['total_logout']]);
+        fputcsv($out, ['Active Sessions',      $data['active_sessions']]);
+        fputcsv($out, ['Security Alerts Sent', $data['alert_count']]);
+        fputcsv($out, []);
+        fputcsv($out, ['EVENT LOG']);
+        fputcsv($out, ['#', 'Timestamp', 'Event Type', 'User ID', 'Email Attempted', 'Reason']);
+        foreach ($data['events'] as $i => $e) {
+            fputcsv($out, [
+                $i + 1,
+                $e['created_at']     ?? '',
+                $e['event_type']     ?? '',
+                $e['user_id']        ?? '',
+                $e['email_attempted']?? '',
+                $e['reason_code']    ?? '',
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    private function buildAuditReport(string $filter): array
+    {
+        $db = \Config\Database::connect();
+
+        $since = match($filter) {
+            'daily'   => date('Y-m-d H:i:s', strtotime('-1 day')),
+            'monthly' => date('Y-m-d H:i:s', strtotime('-30 days')),
+            default   => date('Y-m-d H:i:s', strtotime('-7 days')),
+        };
+
+        // Aggregate counts
+        $rows = $db->query(
+            'SELECT event_type, COUNT(*) as cnt FROM login_events WHERE created_at >= ? GROUP BY event_type',
             [$since]
         )->getResultArray();
+        $counts = [];
         foreach ($rows as $r) {
             $counts[$r['event_type']] = (int) $r['cnt'];
         }
 
-        // Active sessions count
+        // Chart breakdown
+        $days         = $filter === 'monthly' ? 30 : ($filter === 'daily' ? 1 : 7);
+        $chartLabels  = [];
+        $chartSuccess = [];
+        $chartFailed  = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $day           = date('Y-m-d', strtotime("-{$i} days"));
+            $chartLabels[] = date('M j', strtotime($day));
+            $chartSuccess[] = (int) ($db->query(
+                "SELECT COUNT(*) as c FROM login_events WHERE event_type='login_success' AND DATE(created_at)=?", [$day]
+            )->getRowArray()['c'] ?? 0);
+            $chartFailed[] = (int) ($db->query(
+                "SELECT COUNT(*) as c FROM login_events WHERE event_type='login_failed' AND DATE(created_at)=?", [$day]
+            )->getRowArray()['c'] ?? 0);
+        }
+
+        // Active sessions
         $activeSessions = 0;
         if ($db->tableExists('auth_sessions')) {
             $sesRow = $db->query(
@@ -1136,25 +1233,122 @@ class Api extends BaseController
             $activeSessions = (int) ($sesRow['cnt'] ?? 0);
         }
 
-        // Recent event log (last 100, decrypted by model)
-        $events = $eventModel->getRecentEvents(100);
-        // Mask encrypted/binary fields for API
+        // Alert count from notifications
+        $alertCount = (int) ($db->query(
+            "SELECT COUNT(*) as c FROM notifications WHERE type='warning' AND created_at >= ?", [$since]
+        )->getRowArray()['c'] ?? 0);
+
+        // Events list
+        $eventModel = new \App\Models\LoginEventModel();
+        $raw = $db->query(
+            'SELECT id, user_id, email_attempted, event_type, reason_code, created_at
+             FROM login_events WHERE created_at >= ? ORDER BY created_at DESC LIMIT 100',
+            [$since]
+        )->getResultArray();
+
+        // Decrypt email via model's afterFind hook
+        $events = $eventModel->find(array_column($raw, 'id')) ?: $raw;
+        // Flatten & sanitize
         foreach ($events as &$e) {
-            $e['email_attempted'] = is_string($e['email_attempted'] ?? null)
-                ? $e['email_attempted']
-                : '—';
+            $e['email_attempted'] = is_string($e['email_attempted'] ?? null) ? $e['email_attempted'] : '—';
             unset($e['ip_hash'], $e['user_agent']);
         }
 
+        return [
+            'total_success'     => $counts['login_success']       ?? 0,
+            'total_failed'      => $counts['login_failed']        ?? 0,
+            'total_locked'      => $counts['login_locked']        ?? 0,
+            'total_suspicious'  => $counts['suspicious_activity'] ?? 0,
+            'total_mfa_success' => $counts['mfa_success']         ?? 0,
+            'total_mfa_failed'  => $counts['mfa_failed']          ?? 0,
+            'total_logout'      => $counts['logout']              ?? 0,
+            'active_sessions'   => $activeSessions,
+            'alert_count'       => $alertCount,
+            'events'            => array_values($raw),   // use raw (not decrypted) for display
+            'chart_labels'      => $chartLabels,
+            'chart_success'     => $chartSuccess,
+            'chart_failed'      => $chartFailed,
+            'since'             => $since,
+        ];
+    }
+
+    // ── SYSTEM AUDIT LOG ──────────────────────────────────────────────
+    public function adminSystemAuditLog()
+    {
+        $logModel = new \App\Models\LoginEventModel();
+        
+        $events   = $logModel->getRecentEvents(200);
+        $summary  = $logModel->getAuditSummary();
+        $sessions = $logModel->getActiveSessions();
+        $failed24 = $logModel->getFailedLoginsLast24h();
+        $suspicious = $logModel->getSuspiciousCount();
+        
+        return $this->respond($this->sanitizeUtf8([
+            'success' => true,
+            'events' => array_values($events),
+            'summary' => $summary,
+            'sessions' => $sessions,
+            'failed24' => $failed24,
+            'suspicious' => $suspicious,
+        ]));
+    }
+
+    // ── MANAGE PERMISSIONS ────────────────────────────────────────────
+    public function adminPermissions()
+    {
+        $db = \Config\Database::connect();
+
+        $roles = $db->query('SELECT * FROM roles ORDER BY id ASC')->getResultArray();
+        $permissions = $db->query('SELECT * FROM permissions ORDER BY code ASC')->getResultArray();
+        
+        $rolePerms = $db->query('SELECT role_id, permission_id FROM role_permissions')->getResultArray();
+        $mapping = [];
+        foreach ($rolePerms as $rp) {
+            $mapping[$rp['role_id']][] = $rp['permission_id'];
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $roleCounts = [];
+        foreach ($roles as $role) {
+            $roleCounts[$role['name']] = $userModel->where('role', $role['name'])->where('deleted_at IS NULL')->countAllResults();
+        }
+
         return $this->respond([
-            'success'            => true,
-            'successful_logins'  => $counts['login_success']      ?? 0,
-            'failed_logins'      => $counts['login_failed']       ?? 0,
-            'locked_accounts'    => $counts['login_locked']       ?? 0,
-            'suspicious_activity'=> $counts['suspicious_activity']?? 0,
-            'mfa_successes'      => $counts['mfa_success']        ?? 0,
-            'active_sessions'    => $activeSessions,
-            'events'             => array_values($events),
+            'success' => true,
+            'roles' => $roles,
+            'permissions' => $permissions,
+            'mapping' => $mapping,
+            'roleCounts' => $roleCounts,
         ]);
     }
+
+    public function adminTogglePermission()
+    {
+        $json = $this->request->getJSON();
+        if (!$json) {
+            return $this->fail('Invalid JSON');
+        }
+
+        $roleId = (int) ($json->role_id ?? 0);
+        $permissionId = (int) ($json->permission_id ?? 0);
+        $action = (string) ($json->action ?? '');
+
+        if (!$roleId || !$permissionId || !in_array($action, ['assign', 'revoke'])) {
+            return $this->fail('Invalid parameters');
+        }
+
+        $db = \Config\Database::connect();
+
+        if ($action === 'assign') {
+            $exists = $db->query('SELECT 1 FROM role_permissions WHERE role_id = ? AND permission_id = ?', [$roleId, $permissionId])->getRowArray();
+            if (!$exists) {
+                $db->query('INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)', [$roleId, $permissionId]);
+            }
+        } else {
+            $db->query('DELETE FROM role_permissions WHERE role_id = ? AND permission_id = ?', [$roleId, $permissionId]);
+        }
+
+        return $this->respond(['success' => true, 'action' => $action]);
+    }
 }
+

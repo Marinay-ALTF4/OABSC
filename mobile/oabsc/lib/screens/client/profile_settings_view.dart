@@ -82,7 +82,7 @@ class _ProfileSettingsViewState extends State<ProfileSettingsView> with SingleTi
 
     setState(() => _isLoading = true);
     try {
-      final response = await _apiService.post('profile/update', body: {
+      final response = await _apiService.post('profile/update', {
         'user_id': userId,
         'name': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),

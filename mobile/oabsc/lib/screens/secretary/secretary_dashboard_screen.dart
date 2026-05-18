@@ -27,13 +27,12 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   final _apiService = ApiService();
   int _activeNavIndex = 0;
   String _secretaryName = 'Secretary';
-  Map<String, dynamic> _stats = {
+  final Map<String, dynamic> _stats = {
     'today_appointments': '0',
     'pending': '0',
     'total_patients': '0',
     'total_doctors': '0',
   };
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
-    setState(() => _isLoading = true);
     final name = await _authService.getSavedName();
     final userId = await _authService.getSavedUserId();
     
@@ -61,7 +59,6 @@ class _SecretaryDashboardScreenState extends State<SecretaryDashboardScreen> {
         });
       }
     }
-    setState(() => _isLoading = false);
   }
 
   List<DrawerNavItem> get _menuItems => [

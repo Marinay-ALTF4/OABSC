@@ -55,7 +55,7 @@ class _AddRoleViewState extends State<AddRoleView> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await _apiService.post('admin/roles/add', body: {
+      final response = await _apiService.post('admin/roles/add', {
         'name': name,
         'email': email,
         'role': _selectedRole,

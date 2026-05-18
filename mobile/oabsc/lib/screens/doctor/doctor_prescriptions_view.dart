@@ -65,7 +65,7 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
     setState(() => _isSaving = true);
     try {
       final userId = await _authService.getSavedUserId();
-      final response = await _apiService.post('prescriptions', body: {
+      final response = await _apiService.post('prescriptions', {
         'doctor_id': userId,
         'patient_name': _selectedPatient,
         'medication': _medicineController.text.trim(),

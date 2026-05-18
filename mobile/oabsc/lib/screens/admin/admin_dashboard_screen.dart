@@ -16,6 +16,8 @@ import 'doctor_schedules_view.dart';
 import 'access_requests_view.dart';
 import 'announcements_view.dart';
 import 'audit_reports_view.dart';
+import 'audit_log_view.dart';
+import 'manage_permissions_view.dart';
 
 /// Admin Dashboard screen — matching the web admin panel design
 class AdminDashboardScreen extends StatefulWidget {
@@ -103,7 +105,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final roleLabel = isAssistant ? 'Assistant Admin' : 'Admin';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFEDF2F7), // Match web background
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
@@ -233,7 +235,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.accent,
+                            color: Color(0xFF2A6A7E),
                             letterSpacing: 1.1,
                           ),
                         ),
@@ -271,7 +273,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: isActive
-                                ? AppColors.accent
+                                ? const Color(0xFF2A6A7E) // Active Bg
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -282,7 +284,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 size: 20,
                                 color: isActive
                                     ? Colors.white
-                                    : AppColors.drawerInactiveText,
+                                    : const Color(0xFF2A6A7E), // Inactive Icon
                               ),
                               const SizedBox(width: AppSpacing.md),
                               Expanded(
@@ -295,7 +297,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                         : FontWeight.w500,
                                     color: isActive
                                         ? Colors.white
-                                        : AppColors.drawerInactiveText,
+                                        : const Color(0xFF2A6A7E), // Inactive Text
                                   ),
                                 ),
                               ),
@@ -391,6 +393,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 'add_patient':
         return AddPatientView(
             onBack: () => setState(() => _currentView = 'patient_records'));
+      case 'manage_permissions':
+        return const ManagePermissionsView();
       case 'appointments':
         return const AppointmentsView();
       case 'doctor_schedules':
@@ -399,8 +403,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return const AccessRequestsView();
       case 'announcements':
         return const AnnouncementsView();
-      case 'audit_reports':
       case 'audit_log':
+        return const AuditLogView();
+      case 'audit_reports':
         return const AuditReportsView();
       default:
         return _buildPlaceholder(_currentView);

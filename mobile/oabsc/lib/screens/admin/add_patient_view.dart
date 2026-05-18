@@ -78,7 +78,7 @@ class _AddPatientViewState extends State<AddPatientView> {
       // Reusing addUser API but with role fixed to client
       final response = await _apiService.post(
         'admin/users/add',
-        body: {
+        {
           'name': name,
           'email': email,
           'phone': phone,

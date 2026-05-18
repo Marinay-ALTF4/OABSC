@@ -41,7 +41,7 @@ class _AnnouncementsViewState extends State<AnnouncementsView> {
     setState(() => _posting = true);
     try {
       final uid = await _auth.getSavedUserId();
-      await _api.post('admin/announcements', body: {'title': title, 'content': content, 'user_id': uid ?? 0});
+      await _api.post('admin/announcements', {'title': title, 'content': content, 'user_id': uid ?? 0});
       _titleCtrl.clear();
       _contentCtrl.clear();
       if (mounted) Navigator.pop(context);
@@ -143,7 +143,7 @@ class _AnnouncementsViewState extends State<AnnouncementsView> {
                       padding: const EdgeInsets.all(16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: _announcements.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (context, index) => const SizedBox(height: 10),
                       itemBuilder: (_, i) {
                         final a = _announcements[i] as Map;
                         final id = int.tryParse(a['id']?.toString() ?? '0') ?? 0;

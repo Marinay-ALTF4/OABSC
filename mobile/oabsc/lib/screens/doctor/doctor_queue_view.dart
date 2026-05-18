@@ -70,7 +70,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
 
   Future<void> _updateStatus(dynamic id, String status) async {
     try {
-      final response = await _apiService.post('appointments/update-status', body: {
+      final response = await _apiService.post('appointments/update-status', {
         'id': id,
         'status': status,
       });
@@ -177,7 +177,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.doctorAccent.withOpacity(0.2),
+            color: AppColors.doctorAccent.withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -231,7 +231,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
               OutlinedButton(
                 onPressed: widget.onBack,
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.1),
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.white),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -279,7 +279,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +313,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-                    color: AppColors.background.withOpacity(0.5),
+                    color: AppColors.background.withValues(alpha: 0.5),
                     child: Row(
                       children: columns.map((col) => SizedBox(
                         width: (800 - 32) / columns.length,
@@ -327,7 +327,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                       child: Center(
                         child: Column(
                           children: [
-                            Icon(emptyIcon, size: 32, color: Colors.grey.withOpacity(0.3)),
+                            Icon(emptyIcon, size: 32, color: Colors.grey.withValues(alpha: 0.3)),
                             const SizedBox(height: 12),
                             Text(emptyMessage, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                           ],
@@ -335,7 +335,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                       ),
                     )
                   else
-                    ...items.map((item) => _buildScheduleRow(item, columns)).toList(),
+                    ...items.map((item) => _buildScheduleRow(item, columns)),
                 ],
               ),
             ),
@@ -377,7 +377,7 @@ class _DoctorQueueViewState extends State<DoctorQueueView> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                     child: Text(status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w800)),
                   ),
                   if (status != 'cancelled' && status != 'completed') ...[

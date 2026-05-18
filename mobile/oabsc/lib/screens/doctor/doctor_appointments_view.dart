@@ -44,7 +44,7 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
 
   Future<void> _updateStatus(dynamic id, String status) async {
     try {
-      final response = await _apiService.post('appointments/update-status', body: {
+      final response = await _apiService.post('appointments/update-status', {
         'id': id,
         'status': status,
       });
@@ -181,7 +181,7 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
               border: Border.all(color: AppColors.border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -216,14 +216,14 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.05),
+              color: Colors.grey.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border),
             ),
             child: Icon(
               Icons.calendar_today_outlined,
               size: 24,
-              color: Colors.grey.withOpacity(0.6),
+              color: Colors.grey.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 16),
@@ -293,7 +293,7 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

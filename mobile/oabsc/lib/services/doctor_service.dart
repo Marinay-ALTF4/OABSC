@@ -16,7 +16,7 @@ class DoctorService {
   }
 
   Future<Map<String, dynamic>> updateAppointmentStatus(int appointmentId, String status) async {
-    return await _apiService.post('doctor/appointments/$appointmentId/status', body: {'status': status});
+    return await _apiService.post('doctor/appointments/$appointmentId/status', {'status': status});
   }
 
   // 3. Queue
@@ -39,7 +39,7 @@ class DoctorService {
   }
 
   Future<Map<String, dynamic>> saveNote(int doctorId, Map<String, dynamic> noteData) async {
-    return await _apiService.post('doctor/$doctorId/notes', body: noteData);
+    return await _apiService.post('doctor/$doctorId/notes', noteData);
   }
 
   Future<Map<String, dynamic>> deleteNote(int doctorId, String noteId) async {
@@ -52,7 +52,7 @@ class DoctorService {
   }
 
   Future<Map<String, dynamic>> savePrescription(int doctorId, Map<String, dynamic> prescriptionData) async {
-    return await _apiService.post('doctor/$doctorId/prescriptions', body: prescriptionData);
+    return await _apiService.post('doctor/$doctorId/prescriptions', prescriptionData);
   }
 
   Future<Map<String, dynamic>> deletePrescription(int doctorId, String prescriptionId) async {
@@ -65,6 +65,6 @@ class DoctorService {
   }
 
   Future<Map<String, dynamic>> saveSchedule(int doctorId, List<dynamic> schedule) async {
-    return await _apiService.post('doctor/$doctorId/schedule/save', body: {'schedule': schedule});
+    return await _apiService.post('doctor/$doctorId/schedule/save', {'schedule': schedule});
   }
 }

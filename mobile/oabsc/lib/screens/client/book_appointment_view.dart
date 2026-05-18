@@ -93,7 +93,7 @@ class _BookAppointmentViewState extends State<BookAppointmentView> {
       final dateParts = _selectedDate!.split('/');
       final formattedDate = '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
 
-      final response = await _apiService.post('appointments', body: {
+      final response = await _apiService.post('appointments', {
         'user_id': userId,
         'doctor_id': _selectedDoctorId,
         'doctor_name': _selectedDoctor,

@@ -61,7 +61,7 @@ class _DoctorNotesViewState extends State<DoctorNotesView> {
     setState(() => _isSaving = true);
     try {
       final userId = await _authService.getSavedUserId();
-      final response = await _apiService.post('notes', body: {
+      final response = await _apiService.post('notes', {
         'doctor_id': userId,
         'patient_name': _selectedPatient,
         'title': _titleController.text.trim(),

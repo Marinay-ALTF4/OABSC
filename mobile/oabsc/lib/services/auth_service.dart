@@ -13,7 +13,7 @@ class AuthService {
 
   /// Login with email and password
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await _api.post('login', body: {
+    final response = await _api.post('login', {
       'email': email,
       'password': password,
     });
@@ -52,7 +52,7 @@ class AuthService {
   ) async {
     final userId = await getSavedUserId();
 
-    final response = await _api.post('role-selection', body: {
+    final response = await _api.post('role-selection', {
       'user_id': userId ?? '',
       'clinic_access_code': clinicAccessCode,
       'role': role,

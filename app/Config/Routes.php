@@ -151,3 +151,7 @@ $routes->get('/api/admin/announcements',                   'Api::adminAnnounceme
 $routes->post('/api/admin/announcements',                  'Api::adminCreateAnnouncement');
 $routes->delete('/api/admin/announcements/(:num)',          'Api::adminDeleteAnnouncement/$1');
 $routes->get('/api/admin/audit-reports',                   'Api::adminAuditReports');
+$routes->get('/api/admin/audit-reports/export',            'Api::adminAuditExportCsv');
+$routes->get('/api/admin/audit-log',                       'Api::adminSystemAuditLog');
+$routes->get('/api/admin/permissions',                     'Api::adminPermissions');
+$routes->post('/api/admin/permissions/toggle',             'Api::adminTogglePermission');

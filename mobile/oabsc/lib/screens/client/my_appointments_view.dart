@@ -58,7 +58,7 @@ class _MyAppointmentsViewState extends State<MyAppointmentsView> {
             onPressed: () async {
               Navigator.pop(ctx);
               try {
-                final response = await _apiService.post('appointments/cancel', body: {'id': id});
+                final response = await _apiService.post('appointments/cancel', {'id': id});
                 if (response['success'] == true) {
                   _loadAppointments(); // Refresh list
                   if (mounted) {
