@@ -113,11 +113,9 @@ class Admin extends BaseController
 
         if ($this->request->is('post')) {
             $rules = [
-                'name'          => 'required|min_length[3]',
-                'email'         => 'required|valid_email|is_unique[users.email]',
-                'role'          => 'required|in_list[assistant_admin,assistant_secretary]',
-                'role_password' => 'required|min_length[8]',
-                'role_password_confirm' => 'required|matches[role_password]',
+                'name'  => 'required|min_length[3]',
+                'email' => 'required|valid_email|is_unique[users.email]',
+                'role'  => 'required|in_list[assistant_admin,assistant_secretary]',
             ];
 
             if (! $this->validate($rules)) {
@@ -130,7 +128,6 @@ class Admin extends BaseController
                 'email'         => strtolower(trim((string) $this->request->getPost('email'))),
                 'role'          => (string) $this->request->getPost('role'),
                 'password_hash' => password_hash('unused_' . bin2hex(random_bytes(8)), PASSWORD_DEFAULT),
-                'role_password' => password_hash((string) $this->request->getPost('role_password'), PASSWORD_DEFAULT),
             ]);
 
             if (! $created) {
@@ -371,10 +368,7 @@ class Admin extends BaseController
                 $updateData['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
             }
 
-            $newRolePassword = (string) $this->request->getPost('role_password');
-            if ($newRolePassword !== '') {
-                $updateData['role_password'] = password_hash($newRolePassword, PASSWORD_DEFAULT);
-            }
+            // Role-selection password handling removed for web
 
             $db = \Config\Database::connect();
             $db->transStart();

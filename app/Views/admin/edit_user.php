@@ -132,18 +132,7 @@ $user += [
                         </div>
                         <?php endif; ?>
 
-                        <?php if (in_array($user['role'] ?? '', ['admin', 'assistant_admin', 'assistant_secretary'])): ?>
-                        <hr style="border-color:#f1f5f9;margin:1.25rem 0;">
-                        <div class="au-field">
-                            <label class="au-label">Role Selection Password <span style="font-weight:400;color:#94a3b8;">(Optional)</span></label>
-                            <div class="au-input-wrap">
-                                <i class="bi bi-key au-icon"></i>
-                                <input type="password" name="role_password" class="au-input"
-                                    placeholder="Set or update role selection password" minlength="8">
-                            </div>
-                            <div class="au-hint">Used during the role selection screen after login.</div>
-                        </div>
-                        <?php endif; ?>
+                        <!-- Role-selection inputs removed for web (feature disabled) -->
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="pl-btn pl-btn-filled">

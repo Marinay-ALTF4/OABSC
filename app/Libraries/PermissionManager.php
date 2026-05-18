@@ -21,7 +21,6 @@ class PermissionManager
         'view_audit_log'     => ['label' => 'View Audit Log',      'routes' => ['/admin/audit-log']],
         'manage_permissions' => ['label' => 'Manage Permissions',  'routes' => ['/admin/permissions']],
         'access_requests'    => ['label' => 'Access Requests',     'routes' => ['/admin/access-requests']],
-        'clinic_settings'    => ['label' => 'Clinic Settings',     'routes' => ['/admin/settings']],
         'announcements'      => ['label' => 'Announcements',       'routes' => ['/admin/announcements']],
     ];
 
