@@ -7,6 +7,62 @@ use App\Models\LoginEventModel;
 
 class Admin extends BaseController
 {
+    public function announcements()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $db            = \Config\Database::connect();
+        $announcements = $db->query(
+            'SELECT * FROM notifications WHERE user_id IS NULL OR user_id = 0 ORDER BY created_at DESC LIMIT 50'
+        )->getResultArray();
+
+        // Fallback: get all notifications sent to admins as announcements
+        if (empty($announcements)) {
+            $announcements = $db->query(
+                'SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50'
+            )->getResultArray();
+        }
+
+        return view('admin/announcements', ['announcements' => $announcements]);
+    }
+
+    public function addAnnouncement()
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $title = trim((string) $this->request->getPost('title'));
+        $body  = trim((string) $this->request->getPost('body'));
+        $type  = (string) $this->request->getPost('type') ?: 'info';
+
+        if (! $title || ! $body) {
+            return redirect()->back()->with('error', 'Title and message are required.');
+        }
+
+        // Send to all users as a notification
+        $notifModel = new \App\Models\NotificationModel();
+        $userModel  = new UserModel();
+        $users      = $userModel->where('deleted_at IS NULL')->findAll();
+
+        foreach ($users as $user) {
+            $notifModel->send((int) $user['id'], $title, $body, $type);
+        }
+
+        return redirect()->to('/admin/announcements')->with('success', 'Announcement posted to all users.');
+    }
+
+    public function deleteAnnouncement(int $id)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $db = \Config\Database::connect();
+        $db->query('DELETE FROM notifications WHERE id = ?', [$id]);
+
+        return redirect()->to('/admin/announcements')->with('success', 'Announcement deleted.');
+    }
+
     public function appointments()
     {
         $access = $this->ensureAdminAccess();

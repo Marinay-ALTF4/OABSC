@@ -110,7 +110,9 @@ $routes->group('admin', ['filter' => 'permission'], function($routes) {
     $routes->post('patients/restore/(:num)',    'Admin::restoreUser/$1');
     $routes->get('settings',                    'Settings::index');
     $routes->post('settings',                   'Settings::update');
-    $routes->get('announcements',               'Home::index');
+    $routes->get('announcements',               'Admin::announcements');
+    $routes->post('announcements/add',          'Admin::addAnnouncement');
+    $routes->post('announcements/delete/(:num)','Admin::deleteAnnouncement/$1');
 });
 
 // API (Flutter Mobile App)
