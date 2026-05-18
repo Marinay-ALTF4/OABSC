@@ -167,6 +167,23 @@ class Appointments extends BaseController
                 );
             }
 
+            // Notify admins and secretaries about the new booking
+            try {
+                $userModel = new \App\Models\UserModel();
+                $adminRecipients = $userModel->whereIn('role', ['admin', 'secretary', 'assistant_admin'])->where('deleted_at IS NULL')->findAll();
+                if (! empty($adminRecipients)) {
+                    $notifModel = $notifModel ?? new \App\Models\NotificationModel();
+                    $patientName = session('user_name') ?? 'A patient';
+                    $msgBody = "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $insertData['appointment_time'], 0, 5) . '.';
+                    foreach ($adminRecipients as $recip) {
+                        $notifModel->send((int) $recip['id'], 'New Appointment Booked', $msgBody, 'appointment');
+                    }
+                }
+            } catch (\Throwable $e) {
+                // don't break the appointment creation if notification fails
+                log_message('error', 'Failed to notify admins on appointment create: ' . $e->getMessage());
+            }
+
             if (! $saved || ! $db->transStatus()) {
                 $db->transRollback();
                 return redirect()->back()->withInput()->with('errors', [
@@ -249,11 +266,12 @@ class Appointments extends BaseController
             return redirect()->back()->with('error', 'Unable to cancel appointment. Please try again.');
         }
 
+        $clientName = session('user_name') ?? 'A patient';
+        $appointmentDate = $appointment['appointment_date'] ?? 'scheduled date';
+        $appointmentTime = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
+
         if (! empty($appointment['doctor_id'])) {
             $notifModel = new \App\Models\NotificationModel();
-            $clientName = session('user_name') ?? 'A patient';
-            $appointmentDate = $appointment['appointment_date'] ?? 'scheduled date';
-            $appointmentTime = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
 
             $notifModel->send(
                 (int) $appointment['doctor_id'],
@@ -261,6 +279,21 @@ class Appointments extends BaseController
                 "{$clientName} has cancelled their appointment scheduled for {$appointmentDate} at {$appointmentTime}.",
                 'appointment'
             );
+        }
+
+        // Notify admins and secretaries about the cancellation
+        try {
+            $userModel = new \App\Models\UserModel();
+            $adminRecipients = $userModel->whereIn('role', ['admin', 'secretary', 'assistant_admin'])->where('deleted_at IS NULL')->findAll();
+            if (! empty($adminRecipients)) {
+                $notifModel = $notifModel ?? new \App\Models\NotificationModel();
+                $msgBody = "{$clientName} cancelled their appointment scheduled for {$appointmentDate} at {$appointmentTime}.";
+                foreach ($adminRecipients as $recip) {
+                    $notifModel->send((int) $recip['id'], 'Appointment Cancelled', $msgBody, 'appointment');
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Failed to notify admins on appointment cancel: ' . $e->getMessage());
         }
 
         return redirect()->to('/appointments/my')->with('success', 'Appointment cancelled successfully.');
