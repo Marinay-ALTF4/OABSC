@@ -264,6 +264,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Navigator.pop(context);
                           item.onTap();
                         },
+                        hoverColor: const Color(0xFF2A6A7E).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),

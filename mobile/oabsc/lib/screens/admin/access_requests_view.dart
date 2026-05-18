@@ -126,85 +126,86 @@ class _AccessRequestsViewState extends State<AccessRequestsView> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  children: [
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  width: 550,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
                         ),
-                      ),
-                      child: Row(
-                        children: const [
-                          SizedBox(width: 36, child: Text('#', style: _hStyle)),
-                          SizedBox(
-                            width: 120,
-                            child: Text('USER', style: _hStyle),
-                          ),
-                          SizedBox(
-                            width: 160,
-                            child: Text('EMAIL', style: _hStyle),
-                          ),
-                          SizedBox(
-                            width: 120,
-                            child: Text('RESOURCE', style: _hStyle),
-                          ),
-                          SizedBox(
-                            width: 90,
-                            child: Text('STATUS', style: _hStyle),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    if (_all.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'No requests found.',
-                          style: TextStyle(
-                            color: AppColors.textHint,
-                            fontSize: 14,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(10),
                           ),
                         ),
-                      )
-                    else
-                      ..._all.asMap().entries.map((e) {
-                        final i = e.key;
-                        final req = e.value as Map;
-                        final status = (req['status'] ?? '').toString();
-                        Color sc;
-                        switch (status) {
-                          case 'approved':
-                            sc = const Color(0xFF059669);
-                            break;
-                          case 'rejected':
-                            sc = AppColors.error;
-                            break;
-                          default:
-                            sc = const Color(0xFFF59E0B);
-                        }
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 12,
-                              ),
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: const [
+                            SizedBox(width: 36, child: Text('#', style: _hStyle)),
+                            SizedBox(
+                              width: 120,
+                              child: Text('USER', style: _hStyle),
+                            ),
+                            SizedBox(
+                              width: 160,
+                              child: Text('EMAIL', style: _hStyle),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              child: Text('RESOURCE', style: _hStyle),
+                            ),
+                            SizedBox(
+                              width: 90,
+                              child: Text('STATUS', style: _hStyle),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      if (_all.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            'No requests found.',
+                            style: TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      else
+                        ..._all.asMap().entries.map((e) {
+                          final i = e.key;
+                          final req = e.value as Map;
+                          final status = (req['status'] ?? '').toString();
+                          Color sc;
+                          switch (status) {
+                            case 'approved':
+                              sc = const Color(0xFF059669);
+                              break;
+                            case 'rejected':
+                              sc = AppColors.error;
+                              break;
+                            default:
+                              sc = const Color(0xFFF59E0B);
+                          }
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 12,
+                                ),
                                 child: Row(
                                   children: [
                                     SizedBox(
@@ -277,17 +278,17 @@ class _AccessRequestsViewState extends State<AccessRequestsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                            if (i < _all.length - 1)
-                              const Divider(
-                                height: 1,
-                                indent: 12,
-                                endIndent: 12,
-                              ),
-                          ],
-                        );
-                      }),
-                  ],
+                              if (i < _all.length - 1)
+                                const Divider(
+                                  height: 1,
+                                  indent: 12,
+                                  endIndent: 12,
+                                ),
+                            ],
+                          );
+                        }),
+                    ],
+                  ),
                 ),
               ),
             ],

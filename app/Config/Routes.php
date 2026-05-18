@@ -119,6 +119,8 @@ $routes->group('admin', ['filter' => 'permission'], function($routes) {
 $routes->get('/api/health', 'Api::health');
 $routes->post('/api/login', 'Api::login');
 $routes->post('/api/register', 'Api::register');
+$routes->post('/api/register/send-code', 'Api::registerSendCode');
+$routes->post('/api/register/verify-code', 'Api::registerVerifyCode');
 $routes->get('/api/users', 'Api::users');
 $routes->get('/api/patients', 'Api::patients');
 $routes->get('/api/appointments', 'Api::appointments');
@@ -155,3 +157,5 @@ $routes->get('/api/admin/audit-reports/export',            'Api::adminAuditExpor
 $routes->get('/api/admin/audit-log',                       'Api::adminSystemAuditLog');
 $routes->get('/api/admin/permissions',                     'Api::adminPermissions');
 $routes->post('/api/admin/permissions/toggle',             'Api::adminTogglePermission');
+$routes->post('/api/admin/permissions/add',                'Api::adminAddPermission');
+

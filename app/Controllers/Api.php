@@ -136,6 +136,200 @@ class Api extends BaseController
         ]);
     }
 
+    /**
+     * POST /api/register/send-code
+     */
+    public function registerSendCode()
+    {
+        if (! $this->request instanceof IncomingRequest) {
+            return $this->failServerError('Invalid request object.');
+        }
+
+        $request = $this->request;
+        $json = $request->getJSON(true);
+        $name             = $json['name']             ?? $request->getPost('name');
+        $email            = $json['email']            ?? $request->getPost('email');
+        $password         = $json['password']         ?? $request->getPost('password');
+        $passwordConfirm  = $json['password_confirm'] ?? $request->getPost('password_confirm');
+
+        $this->request->setGlobal('post', [
+            'name'             => $name,
+            'email'            => $email,
+            'password'         => $password,
+            'password_confirm' => $passwordConfirm,
+        ]);
+
+        $rules = [
+            'name'             => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
+            'email'            => 'required|valid_email|is_unique[users.email]',
+            'password'         => 'required|min_length[8]',
+            'password_confirm' => 'required|matches[password]',
+        ];
+
+        $messages = [
+            'email' => [
+                'is_unique'   => 'This email is already taken.',
+                'valid_email' => 'Please enter a valid email address.',
+            ]
+        ];
+
+        if (! $this->validate($rules, $messages)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $db = \Config\Database::connect();
+        if (! $db->tableExists('pending_registrations')) {
+            $db->query("CREATE TABLE pending_registrations (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(191) NOT NULL UNIQUE,
+                phone VARCHAR(50) NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                verification_code VARCHAR(255) NOT NULL,
+                expires_at INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )");
+        }
+
+        $code = (string) random_int(100000, 999999);
+        $expiresAt = time() + 600; // 10 minutes
+
+        // Send OTP code via email
+        if (! $this->sendRegisterCodeEmail($email, $name, $code)) {
+            if (defined('ENVIRONMENT') && ENVIRONMENT === 'development') {
+                // SMTP Bypass for development mode - log code and allow test
+                log_message('error', "DEVELOPMENT SMTP BYPASS: Verification code for $email is $code");
+                
+                // Still register the pending code in the DB so they can type it!
+                $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
+                $db->query(
+                    'INSERT INTO pending_registrations (name, email, phone, password_hash, verification_code, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
+                    [trim((string) $name), strtolower(trim((string) $email)), '', password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
+                );
+
+                return $this->respond([
+                    'success' => true,
+                    'message' => "SMTP is not configured. (Dev Bypass Code: $code)",
+                ]);
+            }
+
+            return $this->respond([
+                'success' => false,
+                'message' => 'Unable to send verification code. Please configure SMTP settings in your .env file.',
+            ], 400);
+        }
+
+        // Delete old pending registration for this email
+        $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
+
+        // Insert new pending registration
+        $db->query(
+            'INSERT INTO pending_registrations (name, email, phone, password_hash, verification_code, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
+            [trim((string) $name), strtolower(trim((string) $email)), '', password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
+        );
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Verification code sent to your email.',
+        ]);
+    }
+
+    /**
+     * POST /api/register/verify-code
+     */
+    public function registerVerifyCode()
+    {
+        if (! $this->request instanceof IncomingRequest) {
+            return $this->failServerError('Invalid request object.');
+        }
+
+        $request = $this->request;
+        $json = $request->getJSON(true);
+        $email = strtolower(trim((string) ($json['email'] ?? $request->getPost('email'))));
+        $code  = trim((string) ($json['code'] ?? $request->getPost('code')));
+
+        if (! $email || ! $code) {
+            return $this->failValidationErrors(['_form' => 'Email and verification code are required.']);
+        }
+
+        $db = \Config\Database::connect();
+        if (! $db->tableExists('pending_registrations')) {
+            return $this->failNotFound('No pending registration found for this email.');
+        }
+
+        $pending = $db->query('SELECT * FROM pending_registrations WHERE email = ? LIMIT 1', [$email])->getRowArray();
+
+        if (! $pending) {
+            return $this->failNotFound('Registration session expired or not found. Please register again.');
+        }
+
+        if ((int) $pending['expires_at'] < time()) {
+            $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
+            return $this->failValidationErrors(['_form' => 'Verification code expired. Please register again.']);
+        }
+
+        if (! password_verify($code, $pending['verification_code'])) {
+            return $this->failValidationErrors(['code' => 'Invalid verification code.']);
+        }
+
+        // Successfully verified! Create main user row
+        $userModel = new UserModel();
+        $userId = $userModel->insert([
+            'name'          => $pending['name'],
+            'email'         => $pending['email'],
+            'phone'         => $pending['phone'],
+            'password_hash' => $pending['password_hash'],
+            'role'          => 'client',
+        ]);
+
+        if (! $userId) {
+            return $this->failServerError('Unable to create account right now.');
+        }
+
+        // Clean up pending registration
+        $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
+
+        return $this->respondCreated([
+            'success' => true,
+            'message' => 'Email verified and account successfully registered! Please login.',
+            'user_id' => $userId,
+        ]);
+    }
+
+    private function sendRegisterCodeEmail(string $email, string $name, string $code): bool
+    {
+        $emailService = service('email');
+        $emailConfig = config('Email');
+        $fromEmail = $emailConfig->fromEmail ?: $emailConfig->SMTPUser;
+        $fromName = $emailConfig->fromName ?: 'Clinic Appointment Portal';
+
+        if ($fromEmail === '' || $emailConfig->SMTPHost === '' || $emailConfig->SMTPUser === '' || $emailConfig->SMTPPass === '') {
+            return false;
+        }
+
+        $emailService->initialize($emailConfig);
+        $emailService->setFrom($fromEmail, $fromName);
+        $emailService->setTo($email);
+        $emailService->setSubject('Your verification code: ' . $code);
+        $emailService->setMessage(view('emails/verification_code', [
+            'name' => $name,
+            'email' => $email,
+            'verificationCode' => $code,
+            'expiresMinutes' => 10,
+        ]));
+        $emailService->setAltMessage(
+            'Hello ' . $name . ', your verification code is ' . $code
+            . '. This code expires in 10 minutes.'
+        );
+
+        $sent = (bool) $emailService->send(false);
+        if (! $sent) {
+            $debug = $emailService->printDebugger(['headers', 'subject', 'body']);
+            log_message('error', 'SMTP SENDING FAILED DEBUGGER: ' . $debug);
+        }
+        return $sent;
+    }
+
     // ──────────────────── Appointments ───────────────────────
 
     /**
@@ -1349,6 +1543,32 @@ class Api extends BaseController
         }
 
         return $this->respond(['success' => true, 'action' => $action]);
+    }
+
+    public function adminAddPermission()
+    {
+        $json = $this->request->getJSON();
+        if (!$json) {
+            return $this->fail('Invalid JSON');
+        }
+
+        $code = trim((string) ($json->code ?? ''));
+        $desc = trim((string) ($json->description ?? ''));
+
+        if (!$code) {
+            return $this->respond(['success' => false, 'message' => 'Permission code is required.']);
+        }
+
+        $db = \Config\Database::connect();
+        $exists = $db->query('SELECT id FROM permissions WHERE code = ?', [$code])->getRowArray();
+
+        if ($exists) {
+            return $this->respond(['success' => false, 'message' => 'Permission code already exists.']);
+        }
+
+        $db->query('INSERT INTO permissions (code, description) VALUES (?, ?)', [$code, $desc]);
+
+        return $this->respond(['success' => true, 'message' => "Permission '{$code}' added."]);
     }
 }
 

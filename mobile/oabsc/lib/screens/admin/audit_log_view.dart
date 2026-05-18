@@ -45,7 +45,7 @@ class _AuditLogViewState extends State<AuditLogView> {
     final s = _data['summary'] as List?;
     if (s == null) return 0;
     for (final e in s) {
-      if (e['event_type'] == 'login_success') return (e['count'] as num).toInt();
+      if (e['event_type'] == 'login_success') return int.tryParse(e['count']?.toString() ?? '0') ?? 0;
     }
     return 0;
   }
@@ -84,10 +84,10 @@ class _AuditLogViewState extends State<AuditLogView> {
                     val: _success7d(), lbl: 'SUCCESSFUL LOGINS (7D)')),
                   SizedBox(width: cw, child: _StatCard(
                     icon: Icons.close_rounded, bg: _bDangerBg, fg: _bDangerFg,
-                    val: _data['failed24'] ?? 0, lbl: 'FAILED LOGINS (24H)')),
+                    val: int.tryParse(_data['failed24']?.toString() ?? '') ?? 0, lbl: 'FAILED LOGINS (24H)')),
                   SizedBox(width: cw, child: _StatCard(
                     icon: Icons.warning_amber_rounded, bg: _bWarnBg, fg: _bWarnFg,
-                    val: _data['suspicious'] ?? 0, lbl: 'SUSPICIOUS (24H)')),
+                    val: int.tryParse(_data['suspicious']?.toString() ?? '') ?? 0, lbl: 'SUSPICIOUS (24H)')),
                   SizedBox(width: cw, child: _StatCard(
                     icon: Icons.people_outline_rounded, bg: _bSuccessBg, fg: _bSuccessFg,
                     val: (_data['sessions'] as List?)?.length ?? 0, lbl: 'ACTIVE SESSIONS (8H)')),

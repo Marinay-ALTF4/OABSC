@@ -135,6 +135,9 @@ class AppDrawer extends StatelessWidget {
                             item.onTap!();
                           }
                         },
+                        hoverColor: (roleName.toLowerCase().contains('secretary') || roleName.toLowerCase().contains('doctor')
+                            ? const Color(0xFF166534)
+                            : AppColors.accent).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
@@ -201,6 +204,7 @@ class AppDrawer extends StatelessWidget {
                       (route) => false,
                     );
                   },
+                  hoverColor: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

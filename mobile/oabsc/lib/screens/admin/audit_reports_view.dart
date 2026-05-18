@@ -47,11 +47,11 @@ class _AuditReportsViewState extends State<AuditReportsView> {
     if (mounted) setState(() => _loading = false);
   }
 
-  int _s(String k) => (_data[k] as num?)?.toInt() ?? 0;
+  int _s(String k) => int.tryParse(_data[k]?.toString() ?? '0') ?? 0;
   List _events()   => List.from(_data['events'] ?? []);
   List<String> _chartLabels()  => List<String>.from(_data['chart_labels']  ?? []);
-  List<int>    _chartSuccess() => List<dynamic>.from(_data['chart_success'] ?? []).map((e) => (e as num).toInt()).toList();
-  List<int>    _chartFailed()  => List<dynamic>.from(_data['chart_failed']  ?? []).map((e) => (e as num).toInt()).toList();
+  List<int>    _chartSuccess() => List<dynamic>.from(_data['chart_success'] ?? []).map((e) => int.tryParse(e?.toString() ?? '0') ?? 0).toList();
+  List<int>    _chartFailed()  => List<dynamic>.from(_data['chart_failed']  ?? []).map((e) => int.tryParse(e?.toString() ?? '0') ?? 0).toList();
 
   Future<void> _exportCsv() async {
     try {
@@ -131,11 +131,9 @@ class _AuditReportsViewState extends State<AuditReportsView> {
             ]),
             const SizedBox(height: 10),
             // ── Filter buttons ────────────────────────────────
-            Row(children: [
+            Wrap(spacing: 6, runSpacing: 6, children: [
               _FilterBtn('Daily',   'daily',   _filter, () { setState(() => _filter = 'daily');   _fetch(); }),
-              const SizedBox(width: 6),
               _FilterBtn('Weekly',  'weekly',  _filter, () { setState(() => _filter = 'weekly');  _fetch(); }),
-              const SizedBox(width: 6),
               _FilterBtn('Monthly', 'monthly', _filter, () { setState(() => _filter = 'monthly'); _fetch(); }),
             ]),
             const SizedBox(height: 16),
