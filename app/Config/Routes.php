@@ -46,6 +46,7 @@ $routes->post('/appointments/cancel/(:num)', 'Appointments::cancel/$1');
 // Notifications
 $routes->post('/notifications/mark-all-read', 'Notifications::markAllRead');
 $routes->post('/notifications/delete/(:num)', 'Notifications::deleteOne/$1');
+$routes->get('/notifications/fetch', 'Notifications::fetch');
 
 // Access Requests
 $routes->post('/access-request/send', 'AccessRequest::request');
@@ -79,6 +80,9 @@ $routes->post('/admin/permissions/assign', 'AdminPermissions::assignPermission')
 $routes->group('admin', ['filter' => 'permission'], function($routes) {
     $routes->get('appointments',                'Admin::appointments');
     $routes->post('appointments/update-status', 'Admin::updateAppointmentStatus');
+    $routes->post('appointments/archive/(:num)',  'Admin::archiveAppointment/$1');
+    $routes->post('appointments/restore/(:num)',  'Admin::restoreAppointment/$1');
+    $routes->post('appointments/delete/(:num)',   'Admin::deleteArchivedAppointment/$1');
     $routes->get('audit-log',                   'AuditLog::index');
     $routes->get('audit-reports',               'AuditReport::index');
     $routes->get('audit-reports/export',        'AuditReport::exportCsv');

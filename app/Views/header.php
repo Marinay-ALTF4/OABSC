@@ -269,6 +269,80 @@ $isPatientsPage = url_is('admin/patients*');
         line-height: 1.7;
         z-index: 1;
     }
+
+    /* Notification Items */
+    .notif-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.notif-read { opacity: 0.65; }
+    .notif-item-icon {
+        width: 34px; height: 34px; min-width: 34px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.95rem; cursor: pointer;
+    }
+    .notif-item-body {
+        flex: 1; min-width: 0;
+    }
+    .notif-item-title {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .notif-unread-dot {
+        display: inline-block;
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #3b82f6;
+        flex-shrink: 0;
+    }
+    .notif-item-text {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 2px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .notif-item-time {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        margin-top: 3px;
+    }
+    .notif-item-action {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    .notif-item-btn {
+        background: #1d4ed8;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.72rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+    }
+    .notif-item-btn:hover { background: #1e40af; }
 </style>
 
 <script>
@@ -411,7 +485,33 @@ $isPatientsPage = url_is('admin/patients*');
         }
     });
 
-    document.addEventListener('DOMContentLoaded', renderAll);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Always fetch fresh notifications from server (works on all pages)
+        fetch('<?= site_url('/notifications/fetch') ?>', {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+            defaultNotifs = data;
+            renderAll();
+        })
+        .catch(() => renderAll());
+
+        // Poll every 30 seconds for new notifications
+        setInterval(function() {
+            fetch('<?= site_url('/notifications/fetch') ?>', {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data) {
+                    defaultNotifs = data;
+                    renderAll();
+                }
+            })
+            .catch(() => {});
+        }, 30000);
+    });
 })();
 </script>
 <script>

@@ -12,22 +12,68 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $model        = new \App\Models\AppointmentModel();
-        $appointments = $model->orderBy('appointment_date', 'DESC')->findAll();
-
-        // Attach patient names
+        $model     = new \App\Models\AppointmentModel();
         $userModel = new UserModel();
-        foreach ($appointments as &$appt) {
-            $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
-            if ($clientId) {
-                $client = $userModel->find((int) $clientId);
-                $appt['patient_name'] = $client['name'] ?? '—';
-            } else {
-                $appt['patient_name'] = '—';
+
+        $attachNames = function (array $list) use ($userModel): array {
+            foreach ($list as &$appt) {
+                $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
+                $appt['patient_name'] = $clientId
+                    ? ($userModel->find((int) $clientId)['name'] ?? '—')
+                    : '—';
             }
+            return $list;
+        };
+
+        return view('admin/appointments', [
+            'pending'      => $attachNames($model->getPending()),
+            'confirmed'    => $attachNames($model->getConfirmed()),
+            'archived'     => $attachNames($model->getArchived()),
+        ]);
+    }
+
+    public function archiveAppointment(int $id)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $model = new \App\Models\AppointmentModel();
+        $model->update($id, ['archived_at' => date('Y-m-d H:i:s')]);
+
+        return redirect()->back()->with('success', 'Appointment moved to archive.');
+    }
+
+    public function restoreAppointment(int $id)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $model = new \App\Models\AppointmentModel();
+        $appt  = $model->find($id);
+
+        if (! $appt) {
+            return redirect()->back()->with('error', 'Appointment not found.');
         }
 
-        return view('admin/appointments', ['appointments' => $appointments]);
+        // Auto-delete if the appointment date has already passed
+        if (! empty($appt['appointment_date']) && $appt['appointment_date'] < date('Y-m-d')) {
+            $model->delete($id);
+            return redirect()->back()->with('success', 'Appointment was past its date and has been permanently deleted.');
+        }
+
+        $model->update($id, ['archived_at' => null, 'status' => 'pending']);
+        return redirect()->back()->with('success', 'Appointment restored to Pending.');
+    }
+
+    public function deleteArchivedAppointment(int $id)
+    {
+        $access = $this->ensureAdminAccess();
+        if ($access !== null) return $access;
+
+        $model = new \App\Models\AppointmentModel();
+        $model->delete($id);
+
+        return redirect()->back()->with('success', 'Appointment permanently deleted.');
     }
 
     public function updateAppointmentStatus()
@@ -46,8 +92,15 @@ class Admin extends BaseController
         $db->transStart();
 
         try {
-            $model = new \App\Models\AppointmentModel();
-            $model->update($id, ['status' => $status]);
+            $model      = new \App\Models\AppointmentModel();
+            $updateData = ['status' => $status];
+
+            // Auto-archive when admin sets status to cancelled
+            if ($status === 'cancelled') {
+                $updateData['archived_at'] = date('Y-m-d H:i:s');
+            }
+
+            $model->update($id, $updateData);
 
             if (! $db->transStatus()) {
                 $db->transRollback();

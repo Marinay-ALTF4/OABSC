@@ -17,6 +17,7 @@ class UserModel extends Model
         'profile_photo', 'specialization', 'experience', 'degree', 'bio',
         'phone', 'city', 'address',
         'failed_login_count', 'lock_until', 'last_login_at', 'status',
+        'cancel_attempts', 'cancel_reset_at',
         'deleted_at',
     ];
     

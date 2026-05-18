@@ -22,17 +22,36 @@ class EncryptSensitiveUserData extends Migration
         $db = \Config\Database::connect();
         $crypt = new UserDataCrypt();
 
-        $this->forge->modifyColumn('users', $this->fields);
+        // Only modify columns that already exist
+        $existingFields = array_filter(
+            $this->fields,
+            fn($field) => $db->fieldExists($field, 'users'),
+            ARRAY_FILTER_USE_KEY
+        );
 
+        if (! empty($existingFields)) {
+            $this->forge->modifyColumn('users', $existingFields);
+        }
+
+        $availableFields = array_filter(
+            array_keys($this->fields),
+            fn($field) => $db->fieldExists($field, 'users')
+        );
+
+        if (empty($availableFields)) {
+            return;
+        }
+
+        $selectFields = 'id, ' . implode(', ', $availableFields);
         $users = $db->table('users')
-            ->select('id, phone, city, address, specialization, experience, degree, bio')
+            ->select($selectFields)
             ->get()
             ->getResultArray();
 
         foreach ($users as $user) {
             $updates = [];
 
-            foreach (array_keys($this->fields) as $field) {
+            foreach ($availableFields as $field) {
                 $value = $user[$field] ?? null;
                 if ($value !== null && $value !== '') {
                     $updates[$field] = $crypt->encrypt((string) $value);

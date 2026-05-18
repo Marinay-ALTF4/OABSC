@@ -12,9 +12,7 @@ class CreateSecureUserStorageSchema extends Migration
 
         $this->addUsersSecurityColumns($db);
         $this->createUserCredentialsTable($db);
-        $this->createPasswordHistoryTable($db);
         $this->createRbacTables($db);
-        $this->createMfaFactorsTable($db);
         $this->createAuthSessionsTable($db);
         $this->createLoginEventsTable($db);
 
@@ -30,12 +28,10 @@ class CreateSecureUserStorageSchema extends Migration
 
         $this->forge->dropTable('login_events', true);
         $this->forge->dropTable('auth_sessions', true);
-        $this->forge->dropTable('mfa_factors', true);
         $this->forge->dropTable('role_permissions', true);
         $this->forge->dropTable('user_roles', true);
         $this->forge->dropTable('permissions', true);
         $this->forge->dropTable('roles', true);
-        $this->forge->dropTable('password_history', true);
         $this->forge->dropTable('user_credentials', true);
 
         $columns = [];
@@ -177,40 +173,6 @@ class CreateSecureUserStorageSchema extends Migration
         $this->forge->createTable('user_credentials', true);
     }
 
-    private function createPasswordHistoryTable($db): void
-    {
-        if ($db->tableExists('password_history')) {
-            return;
-        }
-
-        $this->forge->addField([
-            'id' => [
-                'type'           => 'INT',
-                'constraint'     => 11,
-                'unsigned'       => true,
-                'auto_increment' => true,
-            ],
-            'user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-            ],
-            'password_hash' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-            ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
-        ]);
-
-        $this->forge->addKey('id', true);
-        $this->forge->addKey(['user_id', 'created_at'], false, false, 'idx_ph_user_created');
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('password_history', true);
-    }
-
     private function createRbacTables($db): void
     {
         if (! $db->tableExists('roles')) {
@@ -301,75 +263,6 @@ class CreateSecureUserStorageSchema extends Migration
             $this->forge->addForeignKey('permission_id', 'permissions', 'id', 'CASCADE', 'CASCADE');
             $this->forge->createTable('role_permissions', true);
         }
-    }
-
-    private function createMfaFactorsTable($db): void
-    {
-        if ($db->tableExists('mfa_factors')) {
-            return;
-        }
-
-        $this->forge->addField([
-            'id' => [
-                'type'           => 'INT',
-                'constraint'     => 11,
-                'unsigned'       => true,
-                'auto_increment' => true,
-            ],
-            'user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-            ],
-            'factor_type' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
-            ],
-            'label' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
-                'null'       => true,
-            ],
-            'secret_enc' => [
-                'type' => 'BLOB',
-                'null' => true,
-            ],
-            'public_key' => [
-                'type' => 'TEXT',
-                'null' => true,
-            ],
-            'counter' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
-                'null'       => true,
-            ],
-            'is_verified' => [
-                'type'       => 'TINYINT',
-                'constraint' => 1,
-                'default'    => 0,
-            ],
-            'is_primary' => [
-                'type'       => 'TINYINT',
-                'constraint' => 1,
-                'default'    => 0,
-            ],
-            'last_used_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
-        ]);
-
-        $this->forge->addKey('id', true);
-        $this->forge->addKey(['user_id', 'is_verified'], false, false, 'idx_mfa_user_verified');
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('mfa_factors', true);
-
-        $this->createIndexIfMissing($db, 'mfa_factors', 'uq_mfa_user_type_label', 'UNIQUE', '(user_id, factor_type, label)');
     }
 
     private function createAuthSessionsTable($db): void

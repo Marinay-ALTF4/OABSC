@@ -215,19 +215,50 @@ class Appointments extends BaseController
         $ownerColumn = $this->ownerColumn();
         if ($ownerColumn === null) {
             return view('client/appointment', [
-                'appointments' => [],
+                'appointments'      => [],
+                'cancel_attempts'   => 0,
+                'cancel_remaining'  => 3,
+                'cancel_reset_date' => null,
             ]);
         }
 
-        $model = new AppointmentModel();
+        $clientId  = (int) session('user_id');
+        $userModel = new UserModel();
+        $client    = $userModel->find($clientId);
+
+        // Calculate remaining attempts (auto-reset if week has passed)
+        $attempts = (int) ($client['cancel_attempts'] ?? 0);
+        $resetAt  = $client['cancel_reset_at'] ?? null;
+
+        if ($resetAt !== null) {
+            $resetDate = new \DateTime($resetAt);
+            $resetDate->modify('+7 days');
+            if (new \DateTime() >= $resetDate) {
+                $attempts = 0;
+                $userModel->update($clientId, ['cancel_attempts' => 0, 'cancel_reset_at' => null]);
+                $resetAt = null;
+            }
+        }
+
+        $resetLabel = null;
+        if ($resetAt !== null && $attempts >= 3) {
+            $rd = new \DateTime($resetAt);
+            $rd->modify('+7 days');
+            $resetLabel = $rd->format('M j, Y \a\t g:i A');
+        }
+
+        $model        = new AppointmentModel();
         $appointments = $model
-            ->where($ownerColumn, (int) session('user_id'))
+            ->where($ownerColumn, $clientId)
             ->orderBy('appointment_date', 'DESC')
             ->orderBy('appointment_time', 'DESC')
             ->findAll();
 
         return view('client/appointment', [
-            'appointments' => $appointments,
+            'appointments'      => $appointments,
+            'cancel_attempts'   => $attempts,
+            'cancel_remaining'  => max(0, 3 - $attempts),
+            'cancel_reset_date' => $resetLabel,
         ]);
     }
 
@@ -246,33 +277,78 @@ class Appointments extends BaseController
             return redirect()->back()->with('error', 'Unable to cancel appointment.');
         }
 
-        $model = new AppointmentModel();
+        $model       = new AppointmentModel();
         $appointment = $model->find($id);
 
         if (! $appointment) {
             return redirect()->to('/appointments/my')->with('error', 'Appointment not found.');
         }
 
-        $clientId = (int) session('user_id');
+        $clientId           = (int) session('user_id');
         $appointmentOwnerId = (int) ($appointment[$ownerColumn] ?? 0);
 
         if ($appointmentOwnerId !== $clientId) {
             return redirect()->to('/appointments/my')->with('error', 'You cannot cancel this appointment.');
         }
 
-        $updated = $model->update($id, ['status' => 'cancelled']);
+        // ── Cancel attempt limit: 3 per week ──
+        $userModel = new UserModel();
+        $client    = $userModel->find($clientId);
+
+        $attempts  = (int) ($client['cancel_attempts'] ?? 0);
+        $resetAt   = $client['cancel_reset_at'] ?? null;
+        $now       = new \DateTime();
+
+        // Check if a week has passed since the reset timestamp — if so, reset counter
+        if ($resetAt !== null) {
+            $resetDate = new \DateTime($resetAt);
+            $resetDate->modify('+7 days');
+            if ($now >= $resetDate) {
+                $attempts = 0;
+                $userModel->update($clientId, [
+                    'cancel_attempts' => 0,
+                    'cancel_reset_at' => null,
+                ]);
+            }
+        }
+
+        // Block if already used 3 attempts
+        if ($attempts >= 3) {
+            $resetDate  = new \DateTime($client['cancel_reset_at']);
+            $resetDate->modify('+7 days');
+            $resetLabel = $resetDate->format('M j, Y \a\t g:i A');
+            return redirect()->to('/appointments/my')->with(
+                'error',
+                "You have used all 3 cancellation attempts for this week. Your attempts will reset on {$resetLabel}."
+            );
+        }
+
+        // Proceed with cancellation
+        $updated = $model->update($id, [
+            'status'      => 'cancelled',
+            'archived_at' => date('Y-m-d H:i:s'),
+        ]);
 
         if (! $updated) {
             return redirect()->back()->with('error', 'Unable to cancel appointment. Please try again.');
         }
 
-        $clientName = session('user_name') ?? 'A patient';
+        // Increment attempt counter; set reset timestamp on first use
+        $newAttempts = $attempts + 1;
+        $updateData  = ['cancel_attempts' => $newAttempts];
+        if ($attempts === 0) {
+            $updateData['cancel_reset_at'] = date('Y-m-d H:i:s');
+        }
+        $userModel->update($clientId, $updateData);
+
+        $remaining       = 3 - $newAttempts;
+        $clientName      = session('user_name') ?? 'A patient';
         $appointmentDate = $appointment['appointment_date'] ?? 'scheduled date';
         $appointmentTime = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
 
+        // Notify doctor
         if (! empty($appointment['doctor_id'])) {
             $notifModel = new \App\Models\NotificationModel();
-
             $notifModel->send(
                 (int) $appointment['doctor_id'],
                 'Appointment Cancelled',
@@ -281,21 +357,25 @@ class Appointments extends BaseController
             );
         }
 
-        // Notify admins and secretaries about the cancellation
+        // Notify admins and secretaries
         try {
-            $userModel = new \App\Models\UserModel();
-            $adminRecipients = $userModel->whereIn('role', ['admin', 'secretary', 'assistant_admin'])->where('deleted_at IS NULL')->findAll();
-            if (! empty($adminRecipients)) {
-                $notifModel = $notifModel ?? new \App\Models\NotificationModel();
-                $msgBody = "{$clientName} cancelled their appointment scheduled for {$appointmentDate} at {$appointmentTime}.";
-                foreach ($adminRecipients as $recip) {
-                    $notifModel->send((int) $recip['id'], 'Appointment Cancelled', $msgBody, 'appointment');
-                }
+            $notifModel      = $notifModel ?? new \App\Models\NotificationModel();
+            $adminRecipients = (new UserModel())
+                ->whereIn('role', ['admin', 'secretary', 'assistant_admin'])
+                ->where('deleted_at IS NULL')
+                ->findAll();
+            $msgBody = "{$clientName} cancelled their appointment scheduled for {$appointmentDate} at {$appointmentTime}.";
+            foreach ($adminRecipients as $recip) {
+                $notifModel->send((int) $recip['id'], 'Appointment Cancelled', $msgBody, 'appointment');
             }
         } catch (\Throwable $e) {
             log_message('error', 'Failed to notify admins on appointment cancel: ' . $e->getMessage());
         }
 
-        return redirect()->to('/appointments/my')->with('success', 'Appointment cancelled successfully.');
+        $msg = $remaining > 0
+            ? "Appointment cancelled. You have {$remaining} cancellation attempt(s) remaining this week."
+            : "Appointment cancelled. You have used all 3 cancellation attempts for this week.";
+
+        return redirect()->to('/appointments/my')->with('success', $msg);
     }
 }

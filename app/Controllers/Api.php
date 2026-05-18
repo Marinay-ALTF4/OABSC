@@ -272,17 +272,32 @@ class Api extends BaseController
             return $this->failServerError('Unable to create appointment right now.');
         }
 
+        $notifModel  = new NotificationModel();
+        $patientUser = (new UserModel())->find((int) $userId);
+        $patientName = $patientUser['name'] ?? 'A patient';
+        $msgBody     = "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $appointmentTime, 0, 5) . '.';
+
         // Notify doctor
         if (! empty($insertData['doctor_id'])) {
-            $notifModel = new NotificationModel();
-            $patientUser = (new UserModel())->find((int) $userId);
-            $patientName = $patientUser['name'] ?? 'A patient';
             $notifModel->send(
                 (int) $insertData['doctor_id'],
                 'New Appointment Booked',
-                "{$patientName} booked an appointment on {$appointmentDate} at " . substr((string) $appointmentTime, 0, 5) . '.',
+                $msgBody,
                 'appointment'
             );
+        }
+
+        // Notify admins, secretaries, and assistant admins
+        try {
+            $adminRecipients = (new UserModel())
+                ->whereIn('role', ['admin', 'secretary', 'assistant_admin'])
+                ->where('deleted_at IS NULL')
+                ->findAll();
+            foreach ($adminRecipients as $recip) {
+                $notifModel->send((int) $recip['id'], 'New Appointment Booked', $msgBody, 'appointment');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Failed to notify admins on API appointment create: ' . $e->getMessage());
         }
 
         return $this->respondCreated([
@@ -485,12 +500,49 @@ class Api extends BaseController
         $json = $request->getJSON(true);
         $appointmentId = $json['id'] ?? $request->getPost('id');
 
-        if (!$appointmentId) {
+        if (! $appointmentId) {
             return $this->failValidationErrors(['id' => 'Appointment ID is required.']);
         }
 
-        $model = new AppointmentModel();
+        $model       = new AppointmentModel();
+        $appointment = $model->find((int) $appointmentId);
+
+        if (! $appointment) {
+            return $this->failNotFound('Appointment not found.');
+        }
+
         $model->update((int) $appointmentId, ['status' => 'cancelled']);
+
+        // Notify doctor
+        $patientUser = (new UserModel())->find((int) ($appointment[$this->ownerColumn()] ?? 0));
+        $patientName = $patientUser['name'] ?? 'A patient';
+        $apptDate    = $appointment['appointment_date'] ?? 'scheduled date';
+        $apptTime    = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
+        $msgBody     = "{$patientName} cancelled their appointment scheduled for {$apptDate} at {$apptTime}.";
+
+        if (! empty($appointment['doctor_id'])) {
+            $notifModel = new NotificationModel();
+            $notifModel->send(
+                (int) $appointment['doctor_id'],
+                'Appointment Cancelled',
+                $msgBody,
+                'appointment'
+            );
+        }
+
+        // Notify admins, secretaries, and assistant admins
+        try {
+            $notifModel      = $notifModel ?? new NotificationModel();
+            $adminRecipients = (new UserModel())
+                ->whereIn('role', ['admin', 'secretary', 'assistant_admin'])
+                ->where('deleted_at IS NULL')
+                ->findAll();
+            foreach ($adminRecipients as $recip) {
+                $notifModel->send((int) $recip['id'], 'Appointment Cancelled', $msgBody, 'appointment');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Failed to notify admins on API appointment cancel: ' . $e->getMessage());
+        }
 
         return $this->respond([
             'success' => true,

@@ -53,3 +53,37 @@ Events::on('pre_system', static function (): void {
         }
     }
 });
+
+/*
+ * --------------------------------------------------------------------
+ * Auto-delete expired archived appointments (runs once per day)
+ * Deletes archived appointments whose appointment_date has passed.
+ * --------------------------------------------------------------------
+ */
+Events::on('post_controller_constructor', static function (): void {
+    if (is_cli()) {
+        return;
+    }
+
+    // Only run once per day using a cache flag
+    $cacheKey  = 'archived_appt_cleanup_last_run';
+    $lastRun   = cache($cacheKey);
+    $today     = date('Y-m-d');
+
+    if ($lastRun === $today) {
+        return;
+    }
+
+    try {
+        $db = \Config\Database::connect();
+        $db->query(
+            "DELETE FROM appointments
+             WHERE archived_at IS NOT NULL
+               AND appointment_date < ?",
+            [$today]
+        );
+        cache()->save($cacheKey, $today, 86400); // cache for 24 hours
+    } catch (\Throwable $e) {
+        log_message('error', 'Archived appointment cleanup failed: ' . $e->getMessage());
+    }
+});

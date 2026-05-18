@@ -22,27 +22,11 @@ class AddRolePasswordAndClinicSettings extends Migration
             ]);
         }
 
-        // Create clinic_settings table
-        $this->forge->addField([
-            'id'         => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-            'key'        => ['type' => 'VARCHAR', 'constraint' => 100],
-            'value'      => ['type' => 'TEXT', 'null' => true],
-            'created_at' => ['type' => 'DATETIME', 'null' => true],
-            'updated_at' => ['type' => 'DATETIME', 'null' => true],
-        ]);
-        $this->forge->addKey('id', true);
-        $this->forge->createTable('clinic_settings', true);
 
-        // Insert default clinic access code
-        $db->table('clinic_settings')->insert([
-            'key'   => 'clinic_access_code',
-            'value' => password_hash('CLINIC2026', PASSWORD_DEFAULT),
-        ]);
     }
 
     public function down()
     {
         $this->forge->dropColumn('users', ['role_password']);
-        $this->forge->dropTable('clinic_settings', true);
     }
 }

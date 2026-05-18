@@ -74,6 +74,33 @@ foreach ($appointments as $appt) {
         </span>
     </div>
 
+    <!-- Cancel Attempts Indicator -->
+    <?php
+    $cancelRemaining = $cancel_remaining ?? 3;
+    $cancelResetDate = $cancel_reset_date ?? null;
+    ?>
+    <div class="cancel-attempts-bar mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="ca-label">
+                <i class="bi bi-slash-circle me-1"></i>
+                Weekly Cancellation Attempts
+            </span>
+            <span class="ca-count <?= $cancelRemaining === 0 ? 'ca-count-empty' : ($cancelRemaining === 1 ? 'ca-count-low' : '') ?>">
+                <?= $cancelRemaining ?> / 3 remaining
+            </span>
+        </div>
+        <div class="ca-dots">
+            <?php for ($i = 1; $i <= 3; $i++): ?>
+                <span class="ca-dot <?= $i <= (3 - $cancelRemaining) ? 'ca-dot-used' : 'ca-dot-free' ?>"></span>
+            <?php endfor; ?>
+        </div>
+        <?php if ($cancelRemaining === 0 && $cancelResetDate): ?>
+            <div class="ca-reset-msg">
+                <i class="bi bi-clock me-1"></i>Resets on <?= esc($cancelResetDate) ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <!-- Tabs -->
     <ul class="nav appt-tabs mb-4" role="tablist">
         <li class="nav-item">
@@ -494,6 +521,28 @@ function emptyState(string $icon, string $title, string $sub): string {
     /* Empty State */
     .empty-state { text-align: center; padding: 3.5rem 1rem; color: #94a3b8; }
     .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.4; }
+
+    /* Cancel Attempts Bar */
+    .cancel-attempts-bar {
+        background: white; border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        padding: 0.85rem 1.1rem;
+        box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+    }
+    .ca-label { font-size: 0.82rem; font-weight: 600; color: #475569; }
+    .ca-count { font-size: 0.82rem; font-weight: 700; color: #10b981; }
+    .ca-count-low   { color: #f59e0b; }
+    .ca-count-empty { color: #ef4444; }
+    .ca-dots { display: flex; gap: 8px; margin-top: 6px; }
+    .ca-dot {
+        width: 28px; height: 8px; border-radius: 999px;
+        transition: background 0.2s;
+    }
+    .ca-dot-free { background: #d1fae5; }
+    .ca-dot-used { background: #fca5a5; }
+    .ca-reset-msg {
+        font-size: 0.75rem; color: #ef4444; margin-top: 6px; font-weight: 500;
+    }
     .empty-state h6 { font-weight: 700; color: #475569; margin-bottom: 0.4rem; font-family: 'Plus Jakarta Sans', sans-serif; }
     .empty-state p  { font-size: 0.85rem; font-family: 'DM Sans', sans-serif; }
 
