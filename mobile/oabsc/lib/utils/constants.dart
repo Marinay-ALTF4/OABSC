@@ -34,7 +34,6 @@ enum UserRole {
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
-  static const String roleSelection = '/role-selection';
   static const String adminDashboard = '/admin';
   static const String assistantAdminDashboard = '/assistant-admin';
   static const String clientDashboard = '/client';
