@@ -17,20 +17,9 @@ $isPatientsPage = url_is('admin/patients*');
 
         <?php if ($role === 'admin') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= $isDashboardPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
-                        Dashboard
-                    </a>
-                </li>
             </ul>
         <?php elseif ($role === 'assistant_admin') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
-                <li class="nav-item">
-                    <a class="nav-link px-2 <?= $isDashboardPage ? 'active fw-semibold' : '' ?>" href="<?= site_url('/dashboard') ?>">
-                        Dashboard
-                    </a>
-                </li>
-                
             </ul>
         <?php elseif ($role === 'secretary') : ?>
             <ul class="navbar-nav flex-row align-items-center gap-1 mb-0 ms-4">
