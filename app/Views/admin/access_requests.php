@@ -24,7 +24,10 @@ $name = session('user_name') ?? 'User';
             <div class="adm-wrapper">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0"><i class="bi bi-check-circle me-2"></i>Access Requests</h5>
+    <div>
+        <h4 class="pl-title mb-1"><i class="bi bi-check-circle me-2"></i>Access Requests</h4>
+        <p class="pl-sub mb-0">Review and manage pending access requests from users.</p>
+    </div>
 </div>
 
 <?php if (session('success')): ?>
@@ -55,13 +58,13 @@ $name = session('user_name') ?? 'User';
                     <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= $req['id'] ?>">
                     <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                    <button type="submit" class="pl-action-btn pl-action-approve"><i class="bi bi-check-lg me-1"></i>Approve</button>
                 </form>
                 <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
                     <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= $req['id'] ?>">
                     <input type="hidden" name="action" value="deny">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Deny</button>
+                    <button type="submit" class="pl-action-btn pl-action-deny"><i class="bi bi-x-lg me-1"></i>Deny</button>
                 </form>
             </div>
         </div>
@@ -72,8 +75,8 @@ $name = session('user_name') ?? 'User';
 
 <!-- All Requests History -->
 <div class="adm-section-label mb-3">Request History</div>
-<div class="sec-table-card">
-    <table class="sec-table">
+<div class="pl-card">
+    <table class="pl-table">
         <thead>
             <tr><th>#</th><th>User</th><th>Email</th><th>Resource</th><th>Status</th></tr>
         </thead>
@@ -83,17 +86,19 @@ $name = session('user_name') ?? 'User';
             <?php else: ?>
                 <?php foreach ($all as $i => $r): ?>
                 <tr>
-                    <td><?= $i + 1 ?></td>
-                    <td><?= esc($r['user_name'] ?? '—') ?></td>
-                    <td><?= esc($r['user_email'] ?? '—') ?></td>
-                    <td><?= esc($r['resource'] === 'patient_records' ? 'Patient Records' : 'Clinic Reports') ?></td>
+                    <td class="pl-id"><?= $i + 1 ?></td>
+                    <td class="pl-name"><?= esc($r['user_name'] ?? '—') ?></td>
+                    <td class="pl-email"><?= esc($r['user_email'] ?? '—') ?></td>
+                    <td class="pl-email"><?= esc($r['resource'] === 'patient_records' ? 'Patient Records' : 'Clinic Reports') ?></td>
                     <td>
-                        <?php $cls = match($r['status']) {
-                            'approved' => 'badge bg-success',
-                            'denied'   => 'badge bg-danger',
-                            default    => 'badge bg-warning text-dark',
-                        }; ?>
-                        <span class="<?= $cls ?>"><?= ucfirst(esc($r['status'])) ?></span>
+                        <?php
+                        $statusStyle = match($r['status']) {
+                            'approved' => 'background:#d1fae5;color:#065f46;',
+                            'denied'   => 'background:#fee2e2;color:#991b1b;',
+                            default    => 'background:#fef9c3;color:#854d0e;',
+                        };
+                        ?>
+                        <span class="pl-status-badge" style="<?= $statusStyle ?>"><?= ucfirst(esc($r['status'])) ?></span>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -111,36 +116,20 @@ $name = session('user_name') ?? 'User';
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { background: #edf2f7; font-family: 'Inter', sans-serif; }
-    
-    /* Dashboard wrapper */
     .dashboard-wrapper { width: 100%; }
-    
-    /* Admin sidebar layout */
     .adm-page {
-        display: flex;
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        margin-top: 0;
-        min-height: calc(100vh - 60px);
-        background: #edf2f7;
-        overflow-x: hidden;
+        display: flex; width: 100vw; position: relative;
+        left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        margin-top: 0; min-height: calc(100vh - 60px);
+        background: #edf2f7; overflow-x: hidden;
     }
     .adm-sidebar {
-        width: 260px;
-        flex-shrink: 0;
-        background: rgba(255, 255, 255, 0.55);
-        backdrop-filter: blur(16px);
+        width: 260px; flex-shrink: 0;
+        background: rgba(255,255,255,0.55); backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-right: 1px solid rgba(255, 255, 255, 0.6);
+        border-right: 1px solid rgba(255,255,255,0.6);
         box-shadow: 4px 0 24px rgba(42,106,126,0.08);
-        padding: 28px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        padding: 28px 16px; display: flex; flex-direction: column; gap: 6px;
     }
     .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
     .adm-sidebar-avatar {
@@ -167,23 +156,40 @@ $name = session('user_name') ?? 'User';
     }
     .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
     .adm-wrapper { width: 100%; }
-    
-    /* Styles */
+    .pl-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
+    .pl-sub   { font-size: 0.85rem; color: #64748b; }
     .adm-section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #5a7288; }
     .adm-card {
-        background: rgba(255,255,255,0.96); border-radius: 18px; padding: 24px 22px;
+        background: rgba(255,255,255,0.96); border-radius: 18px; padding: 20px 18px;
         border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
         transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
-    .sec-table-card {
-        background: white; border-radius: 12px; border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px rgba(15,23,42,0.06); overflow: hidden;
+    .pl-card {
+        background: white; border-radius: 18px; border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06); overflow: hidden;
     }
-    .sec-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .sec-table thead tr { background: #f8fafc; }
-    .sec-table th { padding: 12px 16px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5a7288; border-bottom: 1px solid #e2e8f0; }
-    .sec-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
-    .sec-table tbody tr:hover { background: #f8fafc; }
+    .pl-action-btn {
+        font-size: 0.75rem; font-weight: 600; padding: 5px 14px;
+        border-radius: 8px; border: none; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center;
+        transition: all 0.15s;
+    }
+    .pl-action-approve { background: #d1fae5; color: #065f46; }
+    .pl-action-approve:hover { background: #a7f3d0; color: #064e3b; }
+    .pl-action-deny { background: #fee2e2; color: #991b1b; }
+    .pl-action-deny:hover { background: #fecaca; color: #7f1d1d; }
+    .pl-table { font-size: 0.85rem; width: 100%; border-collapse: collapse; }
+    .pl-table thead tr { background: #f8fafc; }
+    .pl-table thead th {
+        font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.6px; color: #5a7288; padding: 0.85rem 1rem;
+        border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+    }
+    .pl-table tbody tr { transition: background 0.12s; }
+    .pl-table tbody tr:hover { background: #f8fafc; }
+    .pl-table tbody td { padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .pl-table tbody tr:last-child td { border-bottom: none; }
+    .pl-status-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
 </style>
 </body>
 </html>

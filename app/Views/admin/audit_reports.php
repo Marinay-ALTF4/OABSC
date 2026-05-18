@@ -44,8 +44,8 @@ $name = session('user_name') ?? 'User';
 <!-- Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-bar-graph me-2"></i>Security Audit Reports</h5>
-        <p class="text-muted small mb-0">Generated: <?= esc(date('F j, Y g:i A')) ?> · Period: <?= esc(ucfirst($filter)) ?></p>
+        <h4 class="pl-title mb-1"><i class="bi bi-file-earmark-bar-graph me-2"></i>Security Audit Reports</h4>
+        <p class="pl-sub mb-0">Generated: <?= esc(date('F j, Y g:i A')) ?> · Period: <?= esc(ucfirst($filter)) ?></p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
         <!-- Date Filter -->

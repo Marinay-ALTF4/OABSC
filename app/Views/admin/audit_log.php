@@ -31,8 +31,10 @@ $name = session('user_name') ?? 'User';
             <div class="adm-wrapper">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2"></i>Security Audit Log</h5>
-    <span class="text-muted small">Last 7 days summary · <?= esc(date('F j, Y')) ?></span>
+    <div>
+        <h4 class="pl-title mb-1"><i class="bi bi-shield-lock me-2"></i>Security Audit Log</h4>
+        <p class="pl-sub mb-0">Last 7 days summary · <?= esc(date('F j, Y')) ?></p>
+    </div>
 </div>
 
 <!-- Summary Cards -->
@@ -127,78 +129,73 @@ $name = session('user_name') ?? 'User';
 </div>
 
 <style>
-.adm-page {
-    display: flex;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    margin-top: 0;
-    min-height: calc(100vh - 60px);
-    background: #edf2f7;
-    overflow-x: hidden;
-}
-.adm-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-right: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 4px 0 24px rgba(42,106,126,0.08);
-    padding: 28px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
-.adm-sidebar-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
-    border: 2px solid rgba(42,106,126,0.08);
-}
-.adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
-.adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
-.adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
-.adm-nav-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px; border-radius: 12px;
-    font-size: 0.92rem; font-weight: 500;
-    color: #2a6a7e; text-decoration: none;
-    transition: background 0.15s, color 0.15s;
-}
-.adm-nav-item i { font-size: 1.15rem; }
-.adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
-.adm-nav-item.active {
-    background: #2a6a7e; color: #ffffff;
-    font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
-}
-.adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
-.adm-wrapper { width: 100%; }
-.audit-stat-card {
-    background: #fff; border-radius: 14px; padding: 18px;
-    border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(15,23,42,0.05);
-    display: flex; flex-direction: column; gap: 8px;
-}
-.audit-stat-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
-.audit-stat-val  { font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
-.audit-stat-lbl  { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:600; }
-.audit-panel { background:#fff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(15,23,42,0.05); overflow:hidden; }
-.audit-panel-header { padding:14px 18px; font-size:0.85rem; font-weight:700; color:#0f172a; border-bottom:1px solid #f1f5f9; background:#f8fafc; }
-.audit-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-.audit-table th { padding:10px 14px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#64748b; border-bottom:1px solid #e2e8f0; background:#f8fafc; }
-.audit-table td { padding:10px 14px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
-.audit-table tbody tr:last-child td { border-bottom:none; }
-.audit-table tbody tr:hover { background:#f8fafc; }
-.event-badge { padding:3px 8px; border-radius:999px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
-.badge-success { background:#d1fae5; color:#065f46; }
-.badge-danger  { background:#fee2e2; color:#dc2626; }
-.badge-warning { background:#fef3c7; color:#d97706; }
-.badge-info    { background:#dbeafe; color:#1e40af; }
-.role-badge { padding:2px 8px; border-radius:999px; font-size:0.7rem; font-weight:600; background:#e0f2fe; color:#0369a1; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { background: #edf2f7; font-family: 'Inter', sans-serif; }
+    .dashboard-wrapper { width: 100%; }
+    .adm-page {
+        display: flex; width: 100vw; position: relative;
+        left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        margin-top: 0; min-height: calc(100vh - 60px);
+        background: #edf2f7; overflow-x: hidden;
+    }
+    .adm-sidebar {
+        width: 260px; flex-shrink: 0;
+        background: rgba(255,255,255,0.55); backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 4px 0 24px rgba(42,106,126,0.08);
+        padding: 28px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .adm-sidebar-user { display: flex; align-items: center; gap: 10px; padding: 0 8px 4px; }
+    .adm-sidebar-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #e0f0ff; color: #2a6a7e; font-size: 1.25rem;
+        border: 2px solid rgba(42,106,126,0.08);
+    }
+    .adm-sidebar-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .adm-sidebar-role { font-size: 0.72rem; color: #2a6a7e; text-transform: uppercase; letter-spacing: 0.8px; }
+    .adm-sidebar-divider { border-color: #cce4ed; margin: 10px 0; }
+    .adm-nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 12px;
+        font-size: 0.92rem; font-weight: 500;
+        color: #2a6a7e; text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+    }
+    .adm-nav-item i { font-size: 1.15rem; }
+    .adm-nav-item:hover { background: rgba(204,228,237,0.6); color: #164a5c; }
+    .adm-nav-item.active {
+        background: #2a6a7e; color: #ffffff;
+        font-weight: 600; box-shadow: 0 4px 14px rgba(42,106,126,0.25);
+    }
+    .adm-main-content { flex: 1; padding: 32px 28px; min-width: 0; }
+    .adm-wrapper { width: 100%; }
+    .pl-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
+    .pl-sub   { font-size: 0.85rem; color: #64748b; }
+    .audit-stat-card {
+        background: #fff; border-radius: 18px; padding: 20px 18px;
+        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+        display: flex; flex-direction: column; gap: 8px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .audit-stat-card:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(15,23,42,0.12); }
+    .audit-stat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+    .audit-stat-val  { font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+    .audit-stat-lbl  { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:600; }
+    .audit-panel { background:#fff; border-radius:18px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(15,23,42,0.06); overflow:hidden; }
+    .audit-panel-header { padding:14px 18px; font-size:0.85rem; font-weight:700; color:#0f172a; border-bottom:1px solid #f1f5f9; background:#f8fafc; }
+    .audit-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    .audit-table th { padding:10px 14px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#64748b; border-bottom:1px solid #e2e8f0; background:#f8fafc; }
+    .audit-table td { padding:10px 14px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .audit-table tbody tr:last-child td { border-bottom:none; }
+    .audit-table tbody tr:hover { background:#f8fafc; }
+    .event-badge { padding:3px 8px; border-radius:999px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+    .badge-success { background:#d1fae5; color:#065f46; }
+    .badge-danger  { background:#fee2e2; color:#dc2626; }
+    .badge-warning { background:#fef3c7; color:#d97706; }
+    .badge-info    { background:#dbeafe; color:#1e40af; }
+    .role-badge { padding:2px 8px; border-radius:999px; font-size:0.7rem; font-weight:600; background:#e0f2fe; color:#0369a1; }
 </style>
 
             </div><!-- end adm-wrapper -->
