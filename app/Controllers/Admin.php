@@ -12,16 +12,19 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $db            = \Config\Database::connect();
+        $db = \Config\Database::connect();
+
+        // Only show admin-posted announcements (stored with a special marker)
         $announcements = $db->query(
-            'SELECT * FROM notifications WHERE user_id IS NULL OR user_id = 0 ORDER BY created_at DESC LIMIT 50'
+            "SELECT * FROM notifications 
+             WHERE title LIKE '[ANN]%'
+             ORDER BY created_at DESC 
+             LIMIT 50"
         )->getResultArray();
 
-        // Fallback: get all notifications sent to admins as announcements
-        if (empty($announcements)) {
-            $announcements = $db->query(
-                'SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50'
-            )->getResultArray();
+        // Strip the [ANN] prefix for display
+        foreach ($announcements as &$a) {
+            $a['title'] = ltrim(str_replace('[ANN]', '', $a['title']));
         }
 
         return view('admin/announcements', ['announcements' => $announcements]);
@@ -40,13 +43,13 @@ class Admin extends BaseController
             return redirect()->back()->with('error', 'Title and message are required.');
         }
 
-        // Send to all users as a notification
+        // Send to all users with [ANN] prefix to distinguish from regular notifications
         $notifModel = new \App\Models\NotificationModel();
         $userModel  = new UserModel();
         $users      = $userModel->where('deleted_at IS NULL')->findAll();
 
         foreach ($users as $user) {
-            $notifModel->send((int) $user['id'], $title, $body, $type);
+            $notifModel->send((int) $user['id'], '[ANN]' . $title, $body, $type);
         }
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement posted to all users.');
