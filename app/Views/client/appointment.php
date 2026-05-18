@@ -38,7 +38,7 @@ foreach ($appointments as $appt) {
 <?= view('header') ?>
 
 <div class="appt-page">
-<div class="container py-4">
+<div style="max-width:1400px; margin:0 auto; padding: 3rem 3rem 5rem;">
 
     <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
@@ -61,44 +61,48 @@ foreach ($appointments as $appt) {
         <div class="alert alert-success py-2 mb-3"><?= esc(session()->getFlashdata('success')) ?></div>
     <?php endif; ?>
 
-    <!-- Summary Badges -->
-    <div class="d-flex gap-2 flex-wrap mb-4">
-        <span class="summary-badge badge-upcoming">
-            <i class="bi bi-calendar-event me-1"></i><?= count($upcoming) ?> Upcoming
-        </span>
-        <span class="summary-badge badge-completed">
-            <i class="bi bi-check-circle me-1"></i><?= count($completed) ?> Completed
-        </span>
-        <span class="summary-badge badge-cancelled">
-            <i class="bi bi-x-circle me-1"></i><?= count($cancelled) ?> Cancelled
-        </span>
-    </div>
-
-    <!-- Cancel Attempts Indicator -->
-    <?php
-    $cancelRemaining = $cancel_remaining ?? 3;
-    $cancelResetDate = $cancel_reset_date ?? null;
-    ?>
-    <div class="cancel-attempts-bar mb-4">
-        <div class="d-flex align-items-center justify-content-between mb-1">
-            <span class="ca-label">
-                <i class="bi bi-slash-circle me-1"></i>
-                Weekly Cancellation Attempts
-            </span>
-            <span class="ca-count <?= $cancelRemaining === 0 ? 'ca-count-empty' : ($cancelRemaining === 1 ? 'ca-count-low' : '') ?>">
-                <?= $cancelRemaining ?> / 3 remaining
-            </span>
-        </div>
-        <div class="ca-dots">
-            <?php for ($i = 1; $i <= 3; $i++): ?>
-                <span class="ca-dot <?= $i <= (3 - $cancelRemaining) ? 'ca-dot-used' : 'ca-dot-free' ?>"></span>
-            <?php endfor; ?>
-        </div>
-        <?php if ($cancelRemaining === 0 && $cancelResetDate): ?>
-            <div class="ca-reset-msg">
-                <i class="bi bi-clock me-1"></i>Resets on <?= esc($cancelResetDate) ?>
+    <!-- Summary Card -->
+    <div class="summary-card mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="summary-stat">
+                <div class="summary-stat-icon" style="background:#eef2ff;color:#6366f1;"><i class="bi bi-calendar-event"></i></div>
+                <div>
+                    <div class="summary-stat-val"><?= count($upcoming) ?></div>
+                    <div class="summary-stat-lbl">Upcoming</div>
+                </div>
             </div>
-        <?php endif; ?>
+            <div class="summary-divider"></div>
+            <div class="summary-stat">
+                <div class="summary-stat-icon" style="background:#d1fae5;color:#065f46;"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="summary-stat-val"><?= count($completed) ?></div>
+                    <div class="summary-stat-lbl">Completed</div>
+                </div>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-stat">
+                <div class="summary-stat-icon" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-x-circle"></i></div>
+                <div>
+                    <div class="summary-stat-val"><?= count($cancelled) ?></div>
+                    <div class="summary-stat-lbl">Cancelled</div>
+                </div>
+            </div>
+            <div class="summary-divider ms-auto d-none d-md-block"></div>
+            <!-- Cancel Attempts inline -->
+            <div class="ms-auto">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <span class="ca-label">Weekly Cancellation Attempts</span>
+                    <span class="ca-count <?= ($cancel_remaining ?? 3) === 0 ? 'ca-count-empty' : (($cancel_remaining ?? 3) === 1 ? 'ca-count-low' : '') ?>">
+                        <?= $cancel_remaining ?? 3 ?> / 3 remaining
+                    </span>
+                </div>
+                <div class="ca-dots mt-2">
+                    <?php for ($i = 1; $i <= 3; $i++): ?>
+                        <span class="ca-dot <?= $i <= (3 - ($cancel_remaining ?? 3)) ? 'ca-dot-used' : 'ca-dot-free' ?>"></span>
+                    <?php endfor; ?>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Tabs -->
@@ -386,8 +390,96 @@ function emptyState(string $icon, string $title, string $sub): string {
 ?>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
-    body { background: #edf2f7; min-height: 100vh; font-family: 'DM Sans', 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { background: #eef0f8; min-height: 100vh; font-family: 'Inter', sans-serif; }
+    .appt-page { min-height: calc(100vh - 60px); }
+
+    /* Header */
+    .section-label-appt { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #6366f1; margin-bottom: 4px; display: block; }
+    h4.fw-bold { font-size: 1.8rem; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; }
+
+    /* Buttons */
+    .btn-back { background: white; border: 1.5px solid #e0e7ff; color: #6366f1; font-weight: 600; border-radius: 12px; padding: 0.5rem 1.1rem; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+    .btn-back:hover { background: #eef2ff; color: #4f46e5; }
+    .btn-book { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; font-weight: 700; border-radius: 12px; padding: 0.5rem 1.25rem; font-size: 0.85rem; box-shadow: 0 4px 14px rgba(99,102,241,0.35); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+    .btn-book:hover { opacity: 0.9; color: white; transform: translateY(-1px); }
+
+    /* Summary card */
+    .summary-card { background: white; border-radius: 18px; padding: 1.25rem 1.5rem; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(99,102,241,0.07); margin-bottom: 1.5rem; }
+    .summary-stat { display: flex; align-items: center; gap: 12px; }
+    .summary-stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .summary-stat-val { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .summary-stat-lbl { font-size: 0.75rem; color: #64748b; font-weight: 500; margin-top: 2px; }
+    .summary-divider { width: 1px; background: #e8eaf6; align-self: stretch; margin: 0 8px; }
+
+    /* Cancel attempts */
+    .cancel-attempts-bar { background: white; border-radius: 14px; border: 1px solid #e8eaf6; padding: 1rem 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .ca-label { font-size: 0.82rem; font-weight: 600; color: #475569; }
+    .ca-count { font-size: 0.82rem; font-weight: 700; color: #10b981; }
+    .ca-count-low { color: #f59e0b; } .ca-count-empty { color: #ef4444; }
+    .ca-dots { display: flex; gap: 8px; margin-top: 6px; }
+    .ca-dot { width: 32px; height: 8px; border-radius: 999px; }
+    .ca-dot-free { background: #d1fae5; } .ca-dot-used { background: #fca5a5; }
+    .ca-reset-msg { font-size: 0.75rem; color: #ef4444; margin-top: 6px; font-weight: 500; }
+
+    /* Tabs */
+    .appt-tabs { border-bottom: 2px solid #e8eaf6; gap: 0; }
+    .appt-tab { background: none; border: none; padding: 0.65rem 1.3rem; font-size: 0.875rem; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; cursor: pointer; border-radius: 0; display: inline-flex; align-items: center; gap: 6px; }
+    .appt-tab:hover { color: #6366f1; }
+    .appt-tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+    .tab-count { display: inline-flex; align-items: center; justify-content: center; background: #e8eaf6; color: #475569; width: 22px; height: 22px; border-radius: 50%; font-size: 0.72rem; font-weight: 700; }
+    .appt-tab.active .tab-count { background: #eef2ff; color: #6366f1; }
+
+    /* Section header */
+    .appt-section-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: #f8faff; border: 1px solid #e0e7ff; font-size: 0.88rem; color: #0f172a; margin: 12px 0; }
+    .appt-section-count { display: inline-flex; align-items: center; justify-content: center; background: #e0e7ff; color: #6366f1; width: 24px; height: 24px; border-radius: 50%; font-size: 0.72rem; font-weight: 700; margin-left: auto; }
+
+    /* Appointment Card */
+    .appt-card { background: white; border-radius: 18px; padding: 1.25rem 1.5rem; border: 1px solid #e8eaf6; box-shadow: 0 2px 10px rgba(99,102,241,0.06); transition: box-shadow 0.2s, transform 0.2s; }
+    .appt-card:hover { box-shadow: 0 8px 24px rgba(99,102,241,0.12); transform: translateY(-2px); }
+    .appt-card-upcoming  { border-left: 4px solid #6366f1; }
+    .appt-card-completed { border-left: 4px solid #10b981; }
+    .appt-card-cancelled { border-left: 4px solid #ef4444; opacity: 0.85; }
+
+    /* Avatar */
+    .appt-avatar { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .appt-avatar-upcoming  { background: #eef2ff; color: #6366f1; }
+    .appt-avatar-completed { background: #d1fae5; color: #065f46; }
+    .appt-avatar-cancelled { background: #fee2e2; color: #991b1b; }
+
+    .appt-doctor { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px; }
+    .appt-meta   { font-size: 0.8rem; color: #64748b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .appt-reason { font-size: 0.8rem; color: #475569; max-width: 420px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .appt-booked-on { font-size: 0.72rem; color: #94a3b8; margin-top: 0.75rem; }
+
+    /* Status Pills */
+    .status-pill { padding: 0.3rem 0.85rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #eef2ff; color: #6366f1; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* Action Buttons */
+    .appt-action-btn { font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-view       { background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe; }
+    .btn-view:hover { background: #e0e7ff; }
+    .btn-reschedule       { background: #f0fdf4; color: #065f46; border: 1px solid #a7f3d0; }
+    .btn-reschedule:hover { background: #d1fae5; }
+    .btn-cancel       { background: #fff1f2; color: #991b1b; border: 1px solid #fecaca; }
+    .btn-cancel:hover { background: #fee2e2; }
+
+    /* Empty State */
+    .empty-state { text-align: center; padding: 3.5rem 1rem; color: #94a3b8; }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; color: #c7d2fe; }
+    .empty-state h6 { font-weight: 700; color: #475569; margin-bottom: 0.4rem; }
+    .empty-state p  { font-size: 0.85rem; }
+
+    /* Detail Modal */
+    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem; }
+    .detail-label { font-size: 0.82rem; color: #64748b; font-weight: 500; min-width: 90px; }
+    .detail-value { font-size: 0.85rem; color: #0f172a; font-weight: 600; text-align: right; }
+    .reschedule-info { background: #f8faff; border-radius: 10px; padding: 1rem; border: 1px solid #e0e7ff; font-size: 0.85rem; color: #334155; }
+</style>
 
     .appt-page { min-height: calc(100vh - 60px); }
 
