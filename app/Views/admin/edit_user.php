@@ -13,6 +13,15 @@
 <?php
 $errors = session()->getFlashdata('errors') ?? [];
 if (! is_array($errors)) { $errors = []; }
+
+// Ensure `$user` is defined to avoid undefined variable notices in the view
+if (! isset($user) || ! is_array($user)) { $user = []; }
+$user += [
+    'role'  => '',
+    'id'    => 0,
+    'name'  => '',
+    'email' => '',
+];
 ?>
 
 <div class="dashboard-wrapper">
