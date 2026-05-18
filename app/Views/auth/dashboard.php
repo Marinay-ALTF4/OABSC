@@ -487,83 +487,55 @@ $name = session('user_name') ?? 'User';
     <!-- ==================== CLIENT ==================== -->
     <div class="client-container">
     <div class="welcome-banner banner-client mb-4">
-        <!-- Illustration -->
         <svg class="client-banner-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
-            <!-- Building body -->
             <rect x="60" y="80" width="160" height="130" rx="6" fill="#c8daf5"/>
             <rect x="60" y="80" width="160" height="130" rx="6" fill="url(#bldg-grad)"/>
-            <!-- Building top / roof line -->
             <rect x="50" y="74" width="180" height="12" rx="4" fill="#a0bce8"/>
-            <!-- Windows row 1 -->
             <rect x="80"  y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
             <rect x="120" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
             <rect x="160" y="100" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-            <!-- Windows row 2 -->
             <rect x="80"  y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
             <rect x="120" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
             <rect x="160" y="136" width="28" height="22" rx="3" fill="#e8f2ff" stroke="#a0bce8" stroke-width="1.5"/>
-            <!-- Door -->
             <rect x="118" y="172" width="44" height="38" rx="4" fill="#7baee8"/>
-            <!-- Cross sign on building -->
             <rect x="128" y="56" width="24" height="8"  rx="2" fill="#e05c5c"/>
             <rect x="136" y="48" width="8"  height="24" rx="2" fill="#e05c5c"/>
-            <!-- Flagpole -->
             <line x1="140" y1="48" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
             <polygon points="140,30 158,37 140,44" fill="#4a90e2"/>
-
-            <!-- Doctor cartoon -->
-            <!-- Body coat -->
             <rect x="268" y="118" width="52" height="72" rx="10" fill="white" stroke="#c8daf5" stroke-width="2"/>
-            <!-- Coat lapels -->
             <polygon points="294,118 280,138 294,132" fill="#e8f2ff"/>
             <polygon points="294,118 308,138 294,132" fill="#e8f2ff"/>
-            <!-- Stethoscope -->
             <path d="M282 138 Q274 155 280 165 Q286 175 294 170 Q302 175 308 165 Q314 155 306 138" stroke="#4a90e2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
             <circle cx="294" cy="170" r="5" fill="#4a90e2"/>
-            <!-- Shirt & tie -->
             <rect x="289" y="118" width="10" height="20" rx="2" fill="#4a90e2"/>
-            <!-- Head -->
             <circle cx="294" cy="100" r="22" fill="#fde8c8"/>
-            <!-- Hair -->
             <path d="M272 96 Q272 74 294 72 Q316 74 316 96" fill="#5c3d2e"/>
-            <!-- Eyes -->
             <circle cx="286" cy="98" r="3" fill="#2d3748"/>
             <circle cx="302" cy="98" r="3" fill="#2d3748"/>
-            <!-- Smile -->
             <path d="M286 108 Q294 115 302 108" stroke="#c97b4b" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <!-- Ears -->
             <ellipse cx="272" cy="100" rx="4" ry="6" fill="#fde8c8"/>
             <ellipse cx="316" cy="100" rx="4" ry="6" fill="#fde8c8"/>
-            <!-- Clipboard -->
             <rect x="308" y="138" width="28" height="36" rx="4" fill="#f8fafc" stroke="#c8daf5" stroke-width="1.5"/>
             <rect x="316" y="133" width="12" height="8" rx="2" fill="#a0bce8"/>
             <line x1="313" y1="150" x2="331" y2="150" stroke="#c8daf5" stroke-width="1.5"/>
             <line x1="313" y1="158" x2="331" y2="158" stroke="#c8daf5" stroke-width="1.5"/>
             <line x1="313" y1="166" x2="325" y2="166" stroke="#c8daf5" stroke-width="1.5"/>
-            <!-- Legs -->
             <rect x="278" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
             <rect x="296" y="188" width="14" height="22" rx="4" fill="#4a90e2"/>
-            <!-- Shoes -->
             <ellipse cx="285" cy="210" rx="10" ry="5" fill="#2d3748"/>
             <ellipse cx="303" cy="210" rx="10" ry="5" fill="#2d3748"/>
-
-            <!-- Ground line -->
             <line x1="40" y1="210" x2="380" y2="210" stroke="#c8daf5" stroke-width="2"/>
-            <!-- Small tree left -->
             <rect x="30" y="175" width="6" height="35" rx="2" fill="#94a3b8"/>
             <ellipse cx="33" cy="165" rx="18" ry="20" fill="#86c98e"/>
             <ellipse cx="33" cy="158" rx="13" ry="15" fill="#6ab872"/>
-            <!-- Small tree right -->
             <rect x="370" y="180" width="6" height="30" rx="2" fill="#94a3b8"/>
             <ellipse cx="373" cy="170" rx="16" ry="18" fill="#86c98e"/>
             <ellipse cx="373" cy="163" rx="11" ry="13" fill="#6ab872"/>
-            <!-- Clouds -->
             <ellipse cx="350" cy="50" rx="28" ry="14" fill="white" opacity="0.7"/>
             <ellipse cx="368" cy="46" rx="18" ry="12" fill="white" opacity="0.7"/>
             <ellipse cx="332" cy="48" rx="16" ry="10" fill="white" opacity="0.7"/>
             <ellipse cx="90"  cy="40" rx="22" ry="11" fill="white" opacity="0.6"/>
             <ellipse cx="106" cy="37" rx="14" ry="9"  fill="white" opacity="0.6"/>
-
             <defs>
                 <linearGradient id="bldg-grad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#d6e8f8"/>
@@ -571,7 +543,6 @@ $name = session('user_name') ?? 'User';
                 </linearGradient>
             </defs>
         </svg>
-
         <div style="position:relative;z-index:2;">
             <div class="welcome-label">Patient Portal</div>
             <h4 class="welcome-name">Welcome, <?= esc($name) ?></h4>
@@ -630,7 +601,7 @@ $name = session('user_name') ?? 'User';
             </div>
         </div>
     </div>
-    </div> <!-- end client-container -->
+    </div><!-- end client-container -->
     <?php endif; ?>
 
 </div><!-- end dashboard-wrapper -->
@@ -1000,15 +971,74 @@ $name = session('user_name') ?? 'User';
         overflow-x: hidden;
     }
 
-    /* Client container centers content and adds breathing room */
-    .client-container {
+    /* Client Page */
+    .client-page {
         max-width: 1100px;
         margin: 0 auto;
         padding: 28px;
     }
     @media (max-width: 768px) {
-        .client-container { padding: 16px; }
+        .client-page { padding: 16px; }
+        .cl-banner { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        .cl-banner-right { align-items: flex-start; }
     }
+
+    /* Welcome Banner */
+    .cl-banner {
+        background: white; border-radius: 20px; padding: 2rem 2.5rem;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid #e8eaf6; box-shadow: 0 4px 20px rgba(99,102,241,0.07);
+        overflow: hidden; position: relative; margin-bottom: 1.5rem;
+    }
+    .cl-banner::before {
+        content: ''; position: absolute; top: -40px; right: -40px;
+        width: 200px; height: 200px; border-radius: 50%;
+        background: rgba(99,102,241,0.04);
+    }
+    .cl-banner-left { position: relative; z-index: 1; }
+    .cl-banner-greeting { font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+    .cl-banner-name { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0 0 6px; letter-spacing: -0.3px; }
+    .cl-banner-sub  { font-size: 0.9rem; color: #64748b; margin: 0; }
+    .cl-banner-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; flex-shrink: 0; }
+    .cl-banner-date {
+        font-size: 0.82rem; font-weight: 600; color: #475569;
+        background: #f8faff; border: 1px solid #e0e7ff;
+        padding: 6px 14px; border-radius: 20px;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .cl-section-label { font-size: 0.72rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.2px; }
+    .cl-card {
+        background: white; border-radius: 20px; padding: 1.75rem;
+        border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        position: relative; overflow: hidden;
+        display: flex; flex-direction: column; gap: 10px;
+        height: 100%; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cl-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
+    .cl-card-icon-wrap { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .cl-icon-blue   { background: #dbeafe; color: #2563eb; }
+    .cl-icon-green  { background: #d1fae5; color: #059669; }
+    .cl-icon-purple { background: #ede9fe; color: #7c3aed; }
+    .cl-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .cl-card-desc  { font-size: 0.82rem; color: #64748b; line-height: 1.55; flex: 1; }
+    .cl-card-btn {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 0.82rem; font-weight: 700; padding: 0.6rem 1.1rem;
+        border-radius: 12px; border: none; cursor: pointer;
+        text-decoration: none; transition: all 0.2s; width: fit-content;
+    }
+    .cl-btn-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+    .cl-btn-green  { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+    .cl-btn-purple { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+    .cl-card-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+    .cl-card-deco { position: absolute; bottom: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; opacity: 0.08; }
+    .cl-deco-blue { background: #2563eb; } .cl-deco-green { background: #059669; } .cl-deco-purple { background: #7c3aed; }
+    .cl-mark-all { font-size: 0.78rem; font-weight: 600; color: #6366f1; background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 4px; }
+    .cl-mark-all:hover { text-decoration: underline; }
+    .cl-notif-panel { background: white; border-radius: 20px; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; min-height: 100px; }
+    .cl-notif-body { padding: 0.5rem 0; }
+    .cl-notif-empty { padding: 3rem; text-align: center; color: #94a3b8; }
+    .cl-notif-empty i { font-size: 2.5rem; color: #c7d2fe; display: block; margin-bottom: 0.5rem; }
 
     /* ── Welcome Banner ── */
     .welcome-banner {
@@ -1548,7 +1578,7 @@ $name = session('user_name') ?? 'User';
         right: 50%;
         margin-left: -50vw;
         margin-right: -50vw;
-        margin-top: -3rem;
+        margin-top: 0;
         min-height: calc(100vh - 60px);
         background: #edf2f7;
     }
@@ -1599,7 +1629,7 @@ $name = session('user_name') ?? 'User';
         right: 50%;
         margin-left: -50vw;
         margin-right: -50vw;
-        margin-top: -3rem;
+        margin-top: 0;
         min-height: calc(100vh - 60px);
         background: #edf2f7;
     }
