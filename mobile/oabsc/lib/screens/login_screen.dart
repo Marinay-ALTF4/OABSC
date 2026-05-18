@@ -61,18 +61,13 @@ class _LoginScreenState extends State<LoginScreen>
       final user = response['user'] as Map<String, dynamic>? ?? {};
       final role = user['role'] as String? ?? 'client';
 
-      // Only admin and assistant_admin go to role selection
-      if (role == 'admin' || role == 'assistant_admin') {
-        Navigator.of(context).pushNamed(AppRoutes.roleSelection);
-      } else {
-        // Other roles go directly to their dashboard
-        final userRole = UserRole.values.firstWhere(
-          (r) => r.name == role,
-          orElse: () => UserRole.client,
-        );
-        final route = AppRoutes.dashboardForRole(userRole);
-        Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
-      }
+      // Redirect directly to the dashboard for the user's role
+      final userRole = UserRole.values.firstWhere(
+        (r) => r.name == role,
+        orElse: () => UserRole.client,
+      );
+      final route = AppRoutes.dashboardForRole(userRole);
+      Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

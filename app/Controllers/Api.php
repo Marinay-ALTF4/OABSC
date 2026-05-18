@@ -361,8 +361,10 @@ class Api extends BaseController
         $totalUsers  = $userModel->where('deleted_at IS NULL')->countAllResults(false);
         $totalPatients = $userModel->where('role', 'client')->where('deleted_at IS NULL')->countAllResults(false);
         $totalDoctors = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->countAllResults(false);
+        $totalSecretaries = $userModel->where('role', 'secretary')->where('deleted_at IS NULL')->countAllResults(false);
 
         return $this->respond([
+            'success'            => true,
             'total_appointments' => $total,
             'pending'            => $pending,
             'approved'           => $approved,
@@ -370,6 +372,7 @@ class Api extends BaseController
             'total_users'        => $totalUsers,
             'total_patients'     => $totalPatients,
             'total_doctors'      => $totalDoctors,
+            'secretaries'        => $totalSecretaries,
         ]);
     }
 
@@ -876,6 +879,282 @@ class Api extends BaseController
         return $this->respondUpdated([
             'success' => true,
             'message' => 'Schedule saved successfully'
+        ]);
+    }
+
+    // ──────────────────── Admin: Appointments ─────────────────
+
+    /**
+     * GET /api/admin/appointments
+     * All appointments with patient name, grouped by status.
+     */
+    public function adminAppointments()
+    {
+        $db = \Config\Database::connect();
+
+        $ownerCol = $this->ownerColumn() ?? 'user_id';
+
+        $rows = $db->query(
+            "SELECT a.*, COALESCE(u.name, '—') AS patient_name
+             FROM appointments a
+             LEFT JOIN users u ON u.id = a.{$ownerCol}
+             ORDER BY a.appointment_date DESC
+             LIMIT 200"
+        )->getResultArray();
+
+        $pending   = array_values(array_filter($rows, fn($r) => ($r['status'] ?? '') === 'pending'));
+        $confirmed = array_values(array_filter($rows, fn($r) => ($r['status'] ?? '') === 'confirmed'));
+        $archived  = array_values(array_filter($rows, fn($r) => in_array($r['status'] ?? '', ['cancelled', 'completed'], true)));
+
+        return $this->respond([
+            'success'   => true,
+            'all'       => array_values($rows),
+            'pending'   => $pending,
+            'confirmed' => $confirmed,
+            'archived'  => $archived,
+            'total'     => count($rows),
+        ]);
+    }
+
+    /**
+     * POST /api/admin/appointments/update-status
+     * Update appointment status (pending|confirmed|cancelled).
+     */
+    public function adminUpdateAppointmentStatus()
+    {
+        $request = $this->httpRequest();
+        $json    = $request->getJSON(true);
+        $id      = (int) ($json['id'] ?? 0);
+        $status  = (string) ($json['status'] ?? '');
+
+        if (! $id || ! in_array($status, ['pending', 'confirmed', 'cancelled', 'completed'], true)) {
+            return $this->failValidationErrors(['_form' => 'Invalid id or status.']);
+        }
+
+        $model      = new AppointmentModel();
+        $updateData = ['status' => $status];
+        if ($status === 'cancelled') {
+            $updateData['archived_at'] = date('Y-m-d H:i:s');
+        }
+        $model->update($id, $updateData);
+
+        return $this->respond(['success' => true, 'message' => 'Status updated.']);
+    }
+
+    // ──────────────────── Admin: Doctor Schedules ─────────────
+
+    /**
+     * GET /api/admin/doctor-schedules
+     * All doctors with their weekly schedules.
+     */
+    public function adminDoctorSchedules()
+    {
+        $userModel     = new UserModel();
+        $scheduleModel = new DoctorScheduleModel();
+
+        $doctors = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
+
+        $result = [];
+        foreach ($doctors as $doc) {
+            $schedules = $scheduleModel->getScheduleByDoctor((int) $doc['id']);
+            $result[]  = [
+                'id'             => $doc['id'],
+                'name'           => $doc['name'],
+                'specialization' => $doc['specialization'] ?? 'Doctor',
+                'phone'          => $doc['phone'] ?? '',
+                'schedules'      => $schedules,
+            ];
+        }
+
+        return $this->respond([
+            'success' => true,
+            'doctors' => $result,
+            'count'   => count($result),
+        ]);
+    }
+
+    // ──────────────────── Admin: Access Requests ──────────────
+
+    /**
+     * GET /api/admin/access-requests
+     * Pending + full history of access requests.
+     */
+    public function adminAccessRequests()
+    {
+        $arModel   = new \App\Models\AccessRequestModel();
+        $userModel = new UserModel();
+
+        $pending = $arModel->where('status', 'pending')->orderBy('id', 'DESC')->findAll();
+        $all     = $arModel->orderBy('id', 'DESC')->limit(100)->findAll();
+
+        // Attach user info
+        foreach ($all as &$req) {
+            $u = $userModel->find((int) ($req['user_id'] ?? 0));
+            $req['user_name']  = $u['name']  ?? '—';
+            $req['user_email'] = $u['email'] ?? '—';
+        }
+        foreach ($pending as &$req) {
+            $u = $userModel->find((int) ($req['user_id'] ?? 0));
+            $req['user_name']  = $u['name']  ?? '—';
+            $req['user_email'] = $u['email'] ?? '—';
+        }
+
+        return $this->respond([
+            'success' => true,
+            'pending' => array_values($pending),
+            'all'     => array_values($all),
+        ]);
+    }
+
+    /**
+     * POST /api/admin/access-requests/approve
+     * Approve or reject an access request.
+     */
+    public function adminApproveAccessRequest()
+    {
+        $request = $this->httpRequest();
+        $json    = $request->getJSON(true);
+        $id      = (int) ($json['id'] ?? 0);
+        $action  = (string) ($json['action'] ?? ''); // 'approve' | 'reject'
+
+        if (! $id || ! in_array($action, ['approve', 'reject'], true)) {
+            return $this->failValidationErrors(['_form' => 'Invalid id or action.']);
+        }
+
+        $arModel = new \App\Models\AccessRequestModel();
+        $arModel->update($id, ['status' => $action === 'approve' ? 'approved' : 'rejected']);
+
+        return $this->respond(['success' => true, 'message' => 'Request ' . $action . 'd.']);
+    }
+
+    // ──────────────────── Admin: Announcements ────────────────
+
+    /**
+     * GET /api/admin/announcements
+     * Fetch all announcements.
+     */
+    public function adminAnnouncements()
+    {
+        $db = \Config\Database::connect();
+
+        $rows = [];
+        if ($db->tableExists('announcements')) {
+            $rows = $db->query(
+                'SELECT a.*, u.name AS created_by_name
+                 FROM announcements a
+                 LEFT JOIN users u ON u.id = a.created_by
+                 ORDER BY a.created_at DESC
+                 LIMIT 50'
+            )->getResultArray();
+        }
+
+        return $this->respond([
+            'success'       => true,
+            'announcements' => $rows,
+            'count'         => count($rows),
+        ]);
+    }
+
+    /**
+     * POST /api/admin/announcements
+     * Create a new announcement.
+     */
+    public function adminCreateAnnouncement()
+    {
+        $request = $this->httpRequest();
+        $json    = $request->getJSON(true);
+        $title   = trim((string) ($json['title']   ?? ''));
+        $content = trim((string) ($json['content'] ?? ''));
+        $userId  = (int) ($json['user_id'] ?? 0);
+
+        if (! $title || ! $content) {
+            return $this->failValidationErrors(['_form' => 'Title and content are required.']);
+        }
+
+        $db = \Config\Database::connect();
+
+        if (! $db->tableExists('announcements')) {
+            $db->query('CREATE TABLE announcements (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                created_by INT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )');
+        }
+
+        $db->query(
+            'INSERT INTO announcements (title, content, created_by) VALUES (?, ?, ?)',
+            [$title, $content, $userId]
+        );
+
+        return $this->respondCreated(['success' => true, 'message' => 'Announcement posted.']);
+    }
+
+    /**
+     * DELETE /api/admin/announcements/(:num)
+     * Delete an announcement.
+     */
+    public function adminDeleteAnnouncement(int $id)
+    {
+        $db = \Config\Database::connect();
+        if ($db->tableExists('announcements')) {
+            $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
+        }
+        return $this->respond(['success' => true, 'message' => 'Announcement deleted.']);
+    }
+
+    // ──────────────────── Admin: Audit Reports ────────────────
+
+    /**
+     * GET /api/admin/audit-reports
+     * Login event stats + event log.
+     */
+    public function adminAuditReports()
+    {
+        $eventModel = new \App\Models\LoginEventModel();
+        $db         = \Config\Database::connect();
+
+        // Count by event type (last 7 days)
+        $since  = date('Y-m-d H:i:s', strtotime('-7 days'));
+        $counts = [];
+        $rows   = $db->query(
+            "SELECT event_type, COUNT(*) as cnt FROM login_events WHERE created_at >= ? GROUP BY event_type",
+            [$since]
+        )->getResultArray();
+        foreach ($rows as $r) {
+            $counts[$r['event_type']] = (int) $r['cnt'];
+        }
+
+        // Active sessions count
+        $activeSessions = 0;
+        if ($db->tableExists('auth_sessions')) {
+            $sesRow = $db->query(
+                "SELECT COUNT(*) as cnt FROM auth_sessions WHERE revoked_at IS NULL AND expires_at > NOW()"
+            )->getRowArray();
+            $activeSessions = (int) ($sesRow['cnt'] ?? 0);
+        }
+
+        // Recent event log (last 100, decrypted by model)
+        $events = $eventModel->getRecentEvents(100);
+        // Mask encrypted/binary fields for API
+        foreach ($events as &$e) {
+            $e['email_attempted'] = is_string($e['email_attempted'] ?? null)
+                ? $e['email_attempted']
+                : '—';
+            unset($e['ip_hash'], $e['user_agent']);
+        }
+
+        return $this->respond([
+            'success'            => true,
+            'successful_logins'  => $counts['login_success']      ?? 0,
+            'failed_logins'      => $counts['login_failed']       ?? 0,
+            'locked_accounts'    => $counts['login_locked']       ?? 0,
+            'suspicious_activity'=> $counts['suspicious_activity']?? 0,
+            'mfa_successes'      => $counts['mfa_success']        ?? 0,
+            'active_sessions'    => $activeSessions,
+            'events'             => array_values($events),
         ]);
     }
 }

@@ -140,3 +140,14 @@ $routes->get('/api/prescriptions', 'Api::getPrescriptions');
 $routes->post('/api/prescriptions', 'Api::savePrescription');
 $routes->delete('/api/prescriptions/(:num)', 'Api::deletePrescription/$1');
 $routes->post('/api/appointments/update-status', 'Api::updateAppointmentStatus');
+
+// Admin API (Flutter)
+$routes->get('/api/admin/appointments',                    'Api::adminAppointments');
+$routes->post('/api/admin/appointments/update-status',     'Api::adminUpdateAppointmentStatus');
+$routes->get('/api/admin/doctor-schedules',                'Api::adminDoctorSchedules');
+$routes->get('/api/admin/access-requests',                 'Api::adminAccessRequests');
+$routes->post('/api/admin/access-requests/approve',        'Api::adminApproveAccessRequest');
+$routes->get('/api/admin/announcements',                   'Api::adminAnnouncements');
+$routes->post('/api/admin/announcements',                  'Api::adminCreateAnnouncement');
+$routes->delete('/api/admin/announcements/(:num)',          'Api::adminDeleteAnnouncement/$1');
+$routes->get('/api/admin/audit-reports',                   'Api::adminAuditReports');

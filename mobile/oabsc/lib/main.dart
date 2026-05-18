@@ -4,7 +4,7 @@ import 'theme/app_theme.dart';
 import 'utils/constants.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/role_selection_screen.dart';
+
 import 'screens/admin/admin_dashboard_screen.dart';
 import 'screens/assistant_admin/assistant_admin_dashboard_screen.dart';
 import 'screens/client/client_dashboard_screen.dart';
@@ -39,7 +39,6 @@ class ClinicApp extends StatelessWidget {
       routes: {
         AppRoutes.splash: (_) => const SplashScreen(),
         AppRoutes.login: (_) => const LoginScreen(),
-        AppRoutes.roleSelection: (_) => const RoleSelectionScreen(),
         AppRoutes.adminDashboard: (_) => const AdminDashboardScreen(),
         AppRoutes.assistantAdminDashboard: (_) => const AssistantAdminDashboardScreen(),
         AppRoutes.clientDashboard: (_) => const ClientDashboardScreen(),
