@@ -49,7 +49,7 @@
 
                 <?php if (! $patient): ?>
                 <!-- ── Patient Picker ── -->
-                <div class="picker-card mb-4">
+                <div class="picker-card mb-4 mx-auto">
                     <div class="picker-header">
                         <i class="bi bi-person-lines-fill me-2"></i>Select a Patient
                     </div>
