@@ -22,9 +22,18 @@
                         <h4 class="pl-title mb-1">Patient List</h4>
                         <p class="pl-sub mb-0">All registered patients (clients) in the clinic.</p>
                     </div>
-                    <a href="<?= site_url('/admin/patients') ?>" class="pl-btn pl-btn-ghost">
-                        <i class="bi bi-arrow-left me-1"></i>Back
-                    </a>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="position-relative">
+                            <i class="bi bi-search position-absolute" style="left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.82rem;pointer-events:none;"></i>
+                            <input type="text" id="clientSearchInput" placeholder="Search name, email, phone…"
+                                style="padding:7px 12px 7px 30px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:0.82rem;width:240px;outline:none;transition:border-color 0.15s;"
+                                onfocus="this.style.borderColor='#93c5fd'" onblur="this.style.borderColor='#e2e8f0'"
+                                autocomplete="off">
+                        </div>
+                        <a href="<?= site_url('/admin/patients') ?>" class="pl-btn pl-btn-ghost">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
                 </div>
 
                 <?php if (session()->getFlashdata('success')): ?>
@@ -42,8 +51,13 @@
                             <p class="mt-2 mb-0" style="font-size:0.875rem;">No patients found.</p>
                         </div>
                     <?php else: ?>
+                        <div class="d-flex align-items-center justify-content-between px-3 pt-3 pb-1">
+                            <span id="searchCount" style="font-size:0.75rem;color:#94a3b8;">
+                                <?= count($users) ?> patient<?= count($users) !== 1 ? 's' : '' ?>
+                            </span>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table pl-table align-middle mb-0">
+                            <table class="table pl-table align-middle mb-0" id="clientTable">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -54,7 +68,7 @@
                                         <th>Registered</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="clientTableBody">
                                     <?php foreach ($users as $user): ?>
                                         <?php $isDeleted = !empty($user['deleted_at']); ?>
                                         <tr>
@@ -89,6 +103,50 @@
 </div><!-- end dashboard-wrapper -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function() {
+    const input     = document.getElementById('clientSearchInput');
+    const tbody     = document.getElementById('clientTableBody');
+    const countEl   = document.getElementById('searchCount');
+    if (!input || !tbody) return;
+
+    const totalRows = tbody.querySelectorAll('tr').length;
+
+    input.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        let visible = 0;
+
+        // Remove any existing no-results row
+        const noRes = document.getElementById('no-results-row');
+        if (noRes) noRes.remove();
+
+        tbody.querySelectorAll('tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const show = !q || text.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        // Show no-results row if nothing matches
+        if (q && visible === 0) {
+            const tr = document.createElement('tr');
+            tr.id = 'no-results-row';
+            tr.innerHTML = `<td colspan="6" class="text-center py-4" style="color:#94a3b8;font-size:0.85rem;">
+                <i class="bi bi-person-x" style="font-size:1.5rem;display:block;margin-bottom:0.4rem;"></i>
+                No patients match "<strong>${q}</strong>"
+            </td>`;
+            tbody.appendChild(tr);
+        }
+
+        // Update count label
+        if (countEl) {
+            countEl.textContent = q
+                ? `${visible} result${visible !== 1 ? 's' : ''} for "${this.value}"`
+                : `${totalRows} patient${totalRows !== 1 ? 's' : ''}`;
+        }
+    });
+})();
+</script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { background: #edf2f7; font-family: 'Inter', sans-serif; }

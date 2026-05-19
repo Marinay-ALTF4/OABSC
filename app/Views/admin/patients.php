@@ -46,8 +46,8 @@ $name = session('user_name') ?? 'User';
                 <div class="adm-card-icon" style="background:#b8d8e4;color:#1e5a6e;"><i class="bi bi-search"></i></div>
                 <div class="adm-card-tag">Search</div>
                 <div class="adm-card-title">Search Patient</div>
-                <div class="adm-card-desc">Quickly find a patient by name or ID.</div>
-                <button class="adm-btn adm-btn-disabled" disabled>Search (soon)</button>
+                <div class="adm-card-desc">Quickly find a patient by name or email.</div>
+                <button class="adm-btn adm-btn-filled" onclick="openSearchModal()">Search</button>
             </div>
         </div>
         <div class="col-md-3">
@@ -75,7 +75,171 @@ $name = session('user_name') ?? 'User';
     </div><!-- end adm-page -->
 </div><!-- end dashboard-wrapper -->
 
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 50px rgba(15,23,42,0.18);">
+            <div class="modal-header border-0 px-4 pt-4 pb-2">
+                <div>
+                    <h5 class="mb-0 fw-bold" style="font-size:1rem;">Search Patient</h5>
+                    <p class="text-muted mb-0" style="font-size:0.78rem;">Search by name or email address</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-2">
+                <div class="position-relative mb-3">
+                    <i class="bi bi-search position-absolute" style="left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.9rem;"></i>
+                    <input type="text" id="patientSearchInput" class="form-control ps-4"
+                        placeholder="Type a name or email…"
+                        style="border-radius:10px;border:1.5px solid #e2e8f0;font-size:0.85rem;padding:0.6rem 0.75rem 0.6rem 2.2rem;"
+                        autocomplete="off">
+                </div>
+                <div id="searchResultsWrap" style="max-height:340px;overflow-y:auto;">
+                    <div id="searchResults"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-1">
+                <span id="searchCount" style="font-size:0.75rem;color:#94a3b8;"></span>
+                <a href="<?= site_url('/admin/patients/clients') ?>" class="ms-auto adm-btn adm-btn-outline" style="font-size:0.78rem;">
+                    <i class="bi bi-people me-1"></i>View All Patients
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function() {
+    // Load patients via the existing client list endpoint
+    let patients = [];
+    let searchModal;
+
+    window.openSearchModal = function() {
+        if (!searchModal) {
+            searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
+        }
+        searchModal.show();
+        setTimeout(() => document.getElementById('patientSearchInput').focus(), 300);
+    };
+
+    document.getElementById('searchModal').addEventListener('shown.bs.modal', function() {
+        loadPatients();
+    });
+
+    function loadPatients() {
+        if (patients.length > 0) { renderResults(''); return; }
+        fetch('<?= site_url('/admin/patients/clients') ?>', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc    = parser.parseFromString(html, 'text/html');
+            const rows   = doc.querySelectorAll('table tbody tr');
+            patients = [];
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 6) return;
+                patients.push({
+                    id:      cells[0].textContent.trim(),
+                    name:    cells[1].textContent.trim(),
+                    email:   cells[2].textContent.trim(),
+                    phone:   cells[3].textContent.trim(),
+                    status:  cells[4].textContent.trim(),
+                    created: cells[5].textContent.trim(),
+                    initials: cells[1].textContent.trim().substring(0, 2).toUpperCase(),
+                });
+            });
+            renderResults('');
+        })
+        .catch(() => {
+            document.getElementById('searchResults').innerHTML =
+                '<p class="text-center text-muted py-3" style="font-size:0.82rem;">Could not load patients.</p>';
+        });
+    }
+
+    function renderResults(query) {
+        const q = query.toLowerCase().trim();
+        const filtered = q
+            ? patients.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                p.email.toLowerCase().includes(q) ||
+                p.phone.toLowerCase().includes(q)
+              )
+            : patients;
+
+        const countEl = document.getElementById('searchCount');
+        countEl.textContent = q
+            ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''} for "${query}"`
+            : `${patients.length} patient${patients.length !== 1 ? 's' : ''} total`;
+
+        if (filtered.length === 0) {
+            document.getElementById('searchResults').innerHTML =
+                `<div class="text-center py-4" style="color:#94a3b8;">
+                    <i class="bi bi-person-x" style="font-size:1.8rem;display:block;margin-bottom:0.5rem;"></i>
+                    <span style="font-size:0.82rem;">No patients found for "<strong>${esc(query)}</strong>"</span>
+                </div>`;
+            return;
+        }
+
+        document.getElementById('searchResults').innerHTML = filtered.map(p => {
+            const isActive = p.status.toLowerCase().includes('active');
+            const statusBadge = isActive
+                ? '<span style="background:#d1fae5;color:#065f46;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;">Active</span>'
+                : '<span style="background:#f1f5f9;color:#64748b;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;">Deleted</span>';
+            const highlighted = (text) => {
+                if (!q) return esc(text);
+                return esc(text).replace(new RegExp(`(${escRegex(q)})`, 'gi'),
+                    '<mark style="background:#fef9c3;padding:0;border-radius:2px;">$1</mark>');
+            };
+            return `
+            <div class="search-result-item d-flex align-items-center gap-3 px-1 py-2"
+                 style="border-bottom:1px solid #f1f5f9;cursor:default;">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b556e,#2e445a);
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:0.72rem;font-weight:700;color:white;flex-shrink:0;">
+                    ${esc(p.initials)}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.85rem;font-weight:600;color:#0f172a;">${highlighted(p.name)}</div>
+                    <div style="font-size:0.75rem;color:#64748b;">${highlighted(p.email)}</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    ${statusBadge}
+                    <a href="<?= site_url('/admin/patients/history/') ?>${p.id}"
+                       class="adm-btn adm-btn-outline" style="font-size:0.72rem;padding:4px 10px;">
+                        <i class="bi bi-clock-history me-1"></i>History
+                    </a>
+                    <a href="<?= site_url('/admin/patients/edit/') ?>${p.id}"
+                       class="adm-btn adm-btn-filled" style="font-size:0.72rem;padding:4px 10px;">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function esc(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function escRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    document.getElementById('patientSearchInput').addEventListener('input', function() {
+        renderResults(this.value);
+    });
+
+    // Clear search when modal closes
+    document.getElementById('searchModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('patientSearchInput').value = '';
+        renderResults('');
+    });
+})();
+</script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { background: #edf2f7; font-family: 'Inter', sans-serif; }

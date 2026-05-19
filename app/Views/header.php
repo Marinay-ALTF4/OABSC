@@ -7,6 +7,16 @@ if ($role === 'assistant_admin') {
 }
 $isDashboardPage = url_is('dashboard');
 $isPatientsPage = url_is('admin/patients*');
+
+// Load notifications for the current user on every page (frontend-only, no controller change needed)
+if (empty($notifications) && session()->get('isLoggedIn')) {
+    $notifModel    = new \App\Models\NotificationModel();
+    $userId        = (int) session('user_id');
+    $notifications = $notifModel->getAll($userId);
+    $unread_notif_count = count($notifModel->getUnread($userId));
+}
+$notifications       = $notifications ?? [];
+$unread_notif_count  = $unread_notif_count ?? 0;
 ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <div class="container-fluid px-4">
@@ -33,7 +43,7 @@ $isPatientsPage = url_is('admin/patients*');
             <div class="position-relative" id="notif-bell-wrap">
                 <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
                     <i class="bi bi-bell"></i>
-                    <span class="notif-dot d-none" id="notif-dot"></span>
+                    <span class="notif-dot <?= $unread_notif_count > 0 ? '' : 'd-none' ?>" id="notif-dot"></span>
                 </button>
                 <div class="notif-dropdown d-none" id="notif-dropdown">
                     <div class="notif-dropdown-header">
@@ -475,31 +485,7 @@ $isPatientsPage = url_is('admin/patients*');
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Always fetch fresh notifications from server (works on all pages)
-        fetch('<?= site_url('/notifications/fetch') ?>', {
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
-            defaultNotifs = data;
-            renderAll();
-        })
-        .catch(() => renderAll());
-
-        // Poll every 30 seconds for new notifications
-        setInterval(function() {
-            fetch('<?= site_url('/notifications/fetch') ?>', {
-                headers: {'X-Requested-With': 'XMLHttpRequest'}
-            })
-            .then(res => res.ok ? res.json() : null)
-            .then(data => {
-                if (data) {
-                    defaultNotifs = data;
-                    renderAll();
-                }
-            })
-            .catch(() => {});
-        }, 30000);
+        renderAll();
     });
 })();
 </script>
