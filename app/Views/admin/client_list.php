@@ -49,8 +49,7 @@
                         <div class="text-center text-muted py-5">
                             <i class="bi bi-people" style="font-size:2rem;opacity:0.3;"></i>
                             <p class="mt-2 mb-0" style="font-size:0.875rem;">No patients found.</p>
-                        </div>
-                    <?php else: ?>
+                        </div>                    <?php else: ?>
                         <div class="d-flex align-items-center justify-content-between px-3 pt-3 pb-1">
                             <span id="searchCount" style="font-size:0.75rem;color:#94a3b8;">
                                 <?= count($users) ?> patient<?= count($users) !== 1 ? 's' : '' ?>
@@ -66,6 +65,7 @@
                                         <th>Phone</th>
                                         <th>Status</th>
                                         <th>Registered</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="clientTableBody">
@@ -89,6 +89,15 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td class="pl-date"><?= esc($user['created_at'] ?? '—') ?></td>
+                                            <td>
+                                                <a href="<?= site_url('/admin/patients/history/' . (int)$user['id']) ?>"
+                                                   class="pl-action-btn pl-action-view">
+                                                    <i class="bi bi-clock-history me-1"></i>View Appointments
+                                                    <?php if (($user['appointment_count'] ?? 0) > 0): ?>
+                                                        <span class="appt-count-badge"><?= (int)$user['appointment_count'] ?></span>
+                                                    <?php endif; ?>
+                                                </a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -131,7 +140,7 @@
         if (q && visible === 0) {
             const tr = document.createElement('tr');
             tr.id = 'no-results-row';
-            tr.innerHTML = `<td colspan="6" class="text-center py-4" style="color:#94a3b8;font-size:0.85rem;">
+            tr.innerHTML = `<td colspan="7" class="text-center py-4" style="color:#94a3b8;font-size:0.85rem;">
                 <i class="bi bi-person-x" style="font-size:1.5rem;display:block;margin-bottom:0.4rem;"></i>
                 No patients match "<strong>${q}</strong>"
             </td>`;
@@ -224,6 +233,19 @@
         background: linear-gradient(135deg,#3b556e,#2e445a);
         display: flex; align-items: center; justify-content: center;
         font-size: 0.7rem; font-weight: 700; color: white;
+    }
+    .pl-action-btn {
+        font-size: 0.75rem; font-weight: 600; padding: 5px 12px;
+        border-radius: 8px; border: none; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center;
+        transition: all 0.15s; white-space: nowrap;
+    }
+    .pl-action-view { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .pl-action-view:hover { background: #dbeafe; color: #1e3a8a; }
+    .appt-count-badge {
+        background: #1e40af; color: white;
+        font-size: 0.65rem; font-weight: 700;
+        padding: 1px 6px; border-radius: 999px; margin-left: 5px;
     }
 </style>
 </body>

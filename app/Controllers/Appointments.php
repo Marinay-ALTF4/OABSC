@@ -110,6 +110,28 @@ class Appointments extends BaseController
             ]);
         }
 
+        // ── Validate that the selected date falls on a schedule day for the doctor ──
+        $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
+        if ($doctorNamePost) {
+            $nameOnly   = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
+            $doctorUser = (new UserModel())->where('role', 'doctor')->where('name', $nameOnly)->first();
+            if ($doctorUser) {
+                $scheduleModel = new \App\Models\DoctorScheduleModel();
+                $schedules     = $scheduleModel->getScheduleByDoctor((int) $doctorUser['id']);
+                if (! empty($schedules)) {
+                    $allowedDays = array_map(fn($s) => strtolower($s['day']), $schedules);
+                    $dayNames    = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                    $selectedDay = $dayNames[(int) date('w', strtotime($appointmentDate))];
+                    if (! in_array($selectedDay, $allowedDays, true)) {
+                        $allowedLabels = implode(', ', array_map('ucfirst', $allowedDays));
+                        return redirect()->back()->withInput()->with('errors', [
+                            'appointment_date' => "Dr. {$nameOnly} is not available on " . ucfirst($selectedDay) . ". Available days: {$allowedLabels}.",
+                        ]);
+                    }
+                }
+            }
+        }
+
         $ownerColumn = $this->ownerColumn();
         if ($ownerColumn === null) {
             return redirect()->back()->withInput()->with('errors', [

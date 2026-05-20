@@ -260,7 +260,8 @@ class Admin extends BaseController
             return $access;
         }
 
-        return view('admin/patients');
+        // Redirect directly to the patient list — skip the hub page
+        return redirect()->to('/admin/patients/clients');
     }
 
     public function clientList()
@@ -273,8 +274,20 @@ class Admin extends BaseController
         $userModel = new UserModel();
         $users = $userModel->withDeleted()->where('role', 'client')->orderBy('id', 'DESC')->findAll();
 
+        // Attach appointment count per patient
+        $apptModel = new \App\Models\AppointmentModel();
+        $db = \Config\Database::connect();
+        $ownerCol = $db->fieldExists('client_id', 'appointments') ? 'client_id' : 'user_id';
+
+        foreach ($users as &$user) {
+            $user['appointment_count'] = $apptModel
+                ->where($ownerCol, (int) $user['id'])
+                ->countAllResults(false);
+        }
+
         return view('admin/client_list', [
-            'users' => $users,
+            'users'    => $users,
+            'ownerCol' => $ownerCol,
         ]);
     }
 
@@ -331,8 +344,12 @@ class Admin extends BaseController
             if (! $patient) {
                 return redirect()->to('/admin/patients/history')->with('error', 'Patient not found.');
             }
+
+            $db       = \Config\Database::connect();
+            $ownerCol = $db->fieldExists('client_id', 'appointments') ? 'client_id' : 'user_id';
+
             $appointments = $appointmentModel
-                ->where('client_id', $id)
+                ->where($ownerCol, $id)
                 ->orderBy('appointment_date', 'DESC')
                 ->findAll();
 

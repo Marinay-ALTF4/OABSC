@@ -543,7 +543,39 @@ $bookedSlots = $bookedSlots ?? [];
         const selectedTime = normalizeTime(timeInput.value);
         const bookedKeys = getBookedKeySet();
 
+        // Get current time for today's date comparison
+        const now = new Date();
+        const todayStr = now.toISOString().slice(0, 10);
+        const isToday = date === todayStr;
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
         slotGrid.innerHTML = '';
+
+        // ── Check if selected date is a valid schedule day for this doctor ──
+        if (doctor && date) {
+            const profile = doctorProfiles[doctor];
+            const scheduleDays = (profile && profile.schedules && profile.schedules.length > 0)
+                ? profile.schedules.map(s => s.day.toLowerCase())
+                : null;
+
+            if (scheduleDays !== null) {
+                const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                const selectedDayName = dayNames[new Date(date + 'T00:00:00').getDay()];
+
+                if (!scheduleDays.includes(selectedDayName)) {
+                    const allowedLabels = profile.schedules.map(s => s.day).join(', ');
+                    slotGrid.innerHTML = `
+                        <div class="slot-unavailable-msg">
+                            <i class="bi bi-calendar-x me-2"></i>
+                            <strong>${doctor}</strong> is not available on <strong>${selectedDayName.charAt(0).toUpperCase() + selectedDayName.slice(1)}</strong>.
+                            <div class="mt-1" style="font-size:0.78rem;color:#64748b;">Available days: <strong>${allowedLabels}</strong></div>
+                        </div>`;
+                    timeInput.value = '';
+                    return;
+                }
+            }
+        }
 
         slotTimes.forEach(function (time) {
             const button = document.createElement('button');
@@ -554,13 +586,25 @@ $bookedSlots = $bookedSlots ?? [];
             const bookingKey = getBookingKey(doctor, date, time);
             const isBooked = !!doctor && !!date && bookedKeys.has(bookingKey);
 
+            // Check if slot time has already passed today
+            let isPastSlot = false;
+            if (isToday) {
+                const [slotHour, slotMinute] = time.split(':').map(Number);
+                isPastSlot = slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute);
+            }
+
             if (isBooked) {
                 button.classList.add('booked');
                 button.disabled = true;
                 button.title = 'Already booked';
+            } else if (isPastSlot) {
+                button.classList.add('booked');
+                button.disabled = true;
+                button.title = 'This time has already passed';
+                button.style.opacity = '0.45';
             }
 
-            if (!isBooked && selectedTime === time) {
+            if (!isBooked && !isPastSlot && selectedTime === time) {
                 button.classList.add('active');
             }
 
@@ -752,6 +796,17 @@ $bookedSlots = $bookedSlots ?? [];
         border-color: #dbe4ef;
         color: #94a3b8;
         cursor: not-allowed;
+    }
+
+    .slot-unavailable-msg {
+        background: #fff7ed;
+        border: 1.5px solid #fed7aa;
+        border-radius: 12px;
+        padding: 0.85rem 1.1rem;
+        color: #c2410c;
+        font-size: 0.85rem;
+        font-weight: 500;
+        width: 100%;
     }
 
     /* Primary button — matches dashboard .btn-filled */
