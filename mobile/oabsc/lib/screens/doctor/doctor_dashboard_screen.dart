@@ -76,8 +76,17 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       await _apiService.post('notifications/mark-read', {'user_id': userId});
     }
     setState(() {
-      _notifications.clear();
+      for (var n in _notifications) {
+        n['is_read'] = 1;
+      }
     });
+  }
+
+  int get _unreadNotificationsCount {
+    return _notifications.where((n) {
+      final isRead = n['is_read'];
+      return isRead == 0 || isRead == '0' || isRead == false;
+    }).length;
   }
 
   Future<void> _deleteNotification(int id) async {
@@ -134,8 +143,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
               icon: Badge(
-                isLabelVisible: _notifications.isNotEmpty,
-                label: Text(_notifications.length.toString()),
+                isLabelVisible: _unreadNotificationsCount > 0,
+                label: Text(_unreadNotificationsCount.toString()),
                 child: const Icon(Icons.notifications_outlined, size: 22),
               ),
               onPressed: () {

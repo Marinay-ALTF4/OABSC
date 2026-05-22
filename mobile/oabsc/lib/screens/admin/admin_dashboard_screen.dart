@@ -11,6 +11,7 @@ import 'add_role_view.dart';
 import 'patient_records_view.dart';
 import 'add_patient_view.dart';
 import 'patient_list_view.dart';
+import 'patient_history_view.dart';
 import 'appointments_view.dart';
 import 'doctor_schedules_view.dart';
 import 'access_requests_view.dart';
@@ -36,6 +37,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String _adminName = 'Admin';
   String _adminRole = 'admin';
   List<Map<String, dynamic>> _notifications = [];
+  Map<String, dynamic>? _selectedPatient;
 
   @override
   void initState() {
@@ -81,8 +83,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       await _apiService.post('notifications/mark-read', {'user_id': userId});
     }
     setState(() {
-      _notifications.clear();
+      for (var n in _notifications) {
+        n['is_read'] = 1;
+      }
     });
+  }
+
+  int get _unreadNotificationsCount {
+    return _notifications.where((n) {
+      final isRead = n['is_read'];
+      return isRead == 0 || isRead == '0' || isRead == false;
+    }).length;
   }
 
   Future<void> _deleteNotification(int id) async {
@@ -122,6 +133,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return 1;
       case 'patient_records':
       case 'patient_list':
+      case 'add_patient':
+      case 'patient_history':
         return 2;
       case 'manage_permissions':
         return 3;
@@ -191,8 +204,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             padding: const EdgeInsets.only(right: AppSpacing.md),
             child: IconButton(
               icon: Badge(
-                isLabelVisible: _notifications.isNotEmpty,
-                label: Text(_notifications.length.toString()),
+                isLabelVisible: _unreadNotificationsCount > 0,
+                label: Text(_unreadNotificationsCount.toString()),
                 child: const Icon(Icons.notifications_outlined, size: 22, color: AppColors.textPrimary),
               ),
               onPressed: () {
@@ -462,7 +475,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         );
       case 'patient_list':
         return PatientListView(
-            onBack: () => setState(() => _currentView = 'patient_records'));
+            onBack: () => setState(() => _currentView = 'patient_records'),
+            onViewHistory: (patient) => setState(() {
+                  _selectedPatient = patient;
+                  _currentView = 'patient_history';
+                }));
+      case 'patient_history':
+        if (_selectedPatient == null) return const SizedBox.shrink();
+        return PatientHistoryView(
+            patient: _selectedPatient!,
+            onBack: () => setState(() => _currentView = 'patient_list'));
       case 'add_patient':
         return AddPatientView(
             onBack: () => setState(() => _currentView = 'patient_records'));

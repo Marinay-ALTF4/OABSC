@@ -2081,7 +2081,7 @@ class Email
         $result = null;
 
         for ($written = $timestamp = 0, $length = static::strlen($data); $written < $length; $written += $result) {
-            if (($result = fwrite($this->SMTPConnect, static::substr($data, $written))) === false) {
+            if (!is_resource($this->SMTPConnect) || ($result = @fwrite($this->SMTPConnect, static::substr($data, $written))) === false) {
                 break;
             }
 
@@ -2119,7 +2119,7 @@ class Email
     {
         $data = '';
 
-        while ($str = fgets($this->SMTPConnect, 512)) {
+        while (is_resource($this->SMTPConnect) && ($str = @fgets($this->SMTPConnect, 512))) {
             $data .= $str;
 
             if ($str[3] === ' ') {

@@ -86,10 +86,11 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (mounted) {
         if (r['success'] == true) {
+          final msg = r['message'] ?? 'Verification code sent to your email!';
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Verification code sent to your email!'),
-              backgroundColor: Color(0xFF059669),
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: const Color(0xFF059669),
             ),
           );
           setState(() => _showOtpField = true);
@@ -163,10 +164,11 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (mounted) {
         if (r['success'] == true) {
+          final msg = r['message'] ?? 'A new verification code has been sent!';
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('A new verification code has been sent!'),
-              backgroundColor: Color(0xFF059669),
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: const Color(0xFF059669),
             ),
           );
           _startTimer();

@@ -307,7 +307,10 @@ class Api extends BaseController
             return false;
         }
 
+        $emailConfig->CRLF = "\r\n";
+        $emailConfig->newline = "\r\n";
         $emailService->initialize($emailConfig);
+        $emailService->setMailType('html');
         $emailService->setFrom($fromEmail, $fromName);
         $emailService->setTo($email);
         $emailService->setSubject('Your verification code: ' . $code);
@@ -838,8 +841,26 @@ class Api extends BaseController
     /**
      * GET /api/prescriptions
      */
+    private function ensurePrescriptionsTable()
+    {
+        $db = \Config\Database::connect();
+        if (! $db->tableExists('prescriptions')) {
+            $db->query("CREATE TABLE prescriptions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                doctor_id INT NOT NULL,
+                patient_name VARCHAR(255) NOT NULL,
+                medication VARCHAR(255) NOT NULL,
+                dosage VARCHAR(255) NOT NULL,
+                instructions TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )");
+        }
+    }
+
     public function getPrescriptions()
     {
+        $this->ensurePrescriptionsTable();
         $request = $this->httpRequest();
         $userId = $request->getGet('user_id');
         $model = new \App\Models\PrescriptionModel();
@@ -852,6 +873,7 @@ class Api extends BaseController
      */
     public function savePrescription()
     {
+        $this->ensurePrescriptionsTable();
         $request = $this->httpRequest();
         $json = $request->getJSON(true);
         $model = new \App\Models\PrescriptionModel();
@@ -860,6 +882,19 @@ class Api extends BaseController
             $model->update($json['id'], $json);
         } else {
             $model->insert($json);
+            
+            // Send notification to the patient
+            $userModel = new \App\Models\UserModel();
+            $patient = $userModel->where('name', $json['patient_name'])->where('role', 'client')->first();
+            if ($patient) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->send(
+                    (int) $patient['id'],
+                    'New Prescription',
+                    'Your doctor has prescribed a new medication for you: ' . $json['medication'] . '. Dosage: ' . $json['dosage'],
+                    'prescription'
+                );
+            }
         }
         
         return $this->respond(['success' => true]);
@@ -893,7 +928,6 @@ class Api extends BaseController
         $notifModel = new NotificationModel();
         $notifications = $notifModel
             ->where('user_id', (int) $userId)
-            ->where('is_read', 0)
             ->orderBy('created_at', 'DESC')
             ->findAll(50); // Limit to 50
 

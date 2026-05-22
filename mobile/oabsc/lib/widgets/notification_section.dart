@@ -79,6 +79,8 @@ class NotificationSection extends StatelessWidget {
           final body = (notif['body'] ?? '').toString();
           final type = (notif['type'] ?? 'info').toString();
           final dateStr = (notif['created_at'] ?? '').toString();
+          final isReadRaw = notif['is_read'];
+          final isRead = isReadRaw == 1 || isReadRaw == '1' || isReadRaw == true;
           
           IconData iconData = Icons.info_outline;
           Color iconColor = const Color(0xFF3B82F6); // Blue
@@ -109,9 +111,17 @@ class NotificationSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+                      Row(
+                        children: [
+                          Flexible(child: Text(title, style: TextStyle(fontWeight: isRead ? FontWeight.w500 : FontWeight.w700, fontSize: 13, color: AppColors.textPrimary))),
+                          if (!isRead) ...[
+                            const SizedBox(width: 6),
+                            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle)),
+                          ],
+                        ],
+                      ),
                       const SizedBox(height: 2),
-                      Text(body, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      Text(body, style: TextStyle(fontSize: 12, color: isRead ? AppColors.textSecondary : AppColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Text(_formatDate(dateStr), style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
                     ],

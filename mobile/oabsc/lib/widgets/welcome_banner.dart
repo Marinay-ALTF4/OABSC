@@ -50,9 +50,11 @@ class WelcomeBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Panel label
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.sm,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -73,7 +75,7 @@ class WelcomeBanner extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Date badge inside the row (moved to top right like the screenshot, but keeping it inside the banner)
+                    // Date badge inside the wrap
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.md,

@@ -4,8 +4,9 @@ import '../../services/api_service.dart';
 
 class PatientListView extends StatefulWidget {
   final VoidCallback onBack;
+  final void Function(Map<String, dynamic> patient) onViewHistory;
 
-  const PatientListView({super.key, required this.onBack});
+  const PatientListView({super.key, required this.onBack, required this.onViewHistory});
 
   @override
   State<PatientListView> createState() => _PatientListViewState();
@@ -14,6 +15,7 @@ class PatientListView extends StatefulWidget {
 class _PatientListViewState extends State<PatientListView> {
   final ApiService _apiService = ApiService();
   List<dynamic> _patients = [];
+  String _searchQuery = '';
   bool _isLoading = true;
 
   @override
@@ -108,7 +110,28 @@ class _PatientListViewState extends State<PatientListView> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xxl),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Search bar
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search patients by name, email, or phone...',
+              prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+            ),
+            onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
+          ),
+          const SizedBox(height: AppSpacing.xl),
 
           // Table container
           Container(
@@ -161,14 +184,22 @@ class _PatientListViewState extends State<PatientListView> {
                               DataColumn(label: Text('PHONE')),
                               DataColumn(label: Text('STATUS')),
                               DataColumn(label: Text('REGISTERED')),
+                              DataColumn(label: Text('ACTION')),
                             ],
-                            rows: _patients.map((patient) {
+                            rows: _patients.where((p) {
+                              if (_searchQuery.isEmpty) return true;
+                              final name = (p['name'] ?? '').toString().toLowerCase();
+                              final email = (p['email'] ?? '').toString().toLowerCase();
+                              final phone = (p['phone'] ?? '').toString().toLowerCase();
+                              return name.contains(_searchQuery) || email.contains(_searchQuery) || phone.contains(_searchQuery);
+                            }).map((patient) {
                               return _buildPatientRow(
                                 id: patient['id'].toString(),
                                 name: patient['name'] ?? '',
                                 email: patient['email'] ?? '',
                                 phone: patient['phone'] ?? '—',
                                 date: patient['created_at'] ?? '',
+                                patient: patient as Map<String, dynamic>,
                               );
                             }).toList(),
                           ),
@@ -186,6 +217,7 @@ class _PatientListViewState extends State<PatientListView> {
     required String email,
     required String phone,
     required String date,
+    required Map<String, dynamic> patient,
   }) {
     return DataRow(
       cells: [
@@ -230,6 +262,20 @@ class _PatientListViewState extends State<PatientListView> {
           ),
         ),
         DataCell(Text(date, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
+        DataCell(
+          OutlinedButton.icon(
+            onPressed: () => widget.onViewHistory(patient),
+            icon: const Icon(Icons.access_time, size: 14),
+            label: const Text('View Appointments', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: const Size(0, 32),
+              side: const BorderSide(color: AppColors.primary),
+              foregroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+        ),
       ],
     );
   }
