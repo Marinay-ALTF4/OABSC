@@ -3,137 +3,153 @@ import '../theme/app_theme.dart';
 
 /// Notification & Alerts section widget matching the website's notification area
 class NotificationSection extends StatelessWidget {
-  final List<String> notifications;
+  final List<Map<String, dynamic>> notifications;
   final VoidCallback? onMarkAllRead;
+  final Function(int)? onDelete;
+  final Function(Map<String, dynamic>)? onView;
 
   const NotificationSection({
     super.key,
     this.notifications = const [],
     this.onMarkAllRead,
+    this.onDelete,
+    this.onView,
   });
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'Just now';
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final m = months[dt.month - 1];
+      final d = dt.day;
+      final hr = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+      final min = dt.minute.toString().padLeft(2, '0');
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$m $d, $hr:$min $ampm';
+    } catch (_) {
+      return dateStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header
+        // Header
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(
-              Icons.notifications_outlined,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
-            const SizedBox(width: AppSpacing.sm),
             const Text(
-              'NOTIFICATIONS & ALERTS',
+              'Notifications',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-                letterSpacing: 1.2,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            GestureDetector(
+              onTap: onMarkAllRead,
+              child: const Text(
+                'Mark all read',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF3B82F6),
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
-        // Notification card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border, width: 0.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        const SizedBox(height: AppSpacing.sm),
+        
+        if (notifications.isEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          const Text(
+            'No notifications right now',
+            style: TextStyle(fontSize: 13, color: AppColors.textHint),
           ),
-          child: Column(
-            children: [
-              // Status row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+        ],
+
+        // Notifications list
+        ...notifications.map((notif) {
+          final id = notif['id'] is int ? notif['id'] as int : int.tryParse(notif['id']?.toString() ?? '0') ?? 0;
+          final title = (notif['title'] ?? 'Notification').toString();
+          final body = (notif['body'] ?? '').toString();
+          final type = (notif['type'] ?? 'info').toString();
+          final dateStr = (notif['created_at'] ?? '').toString();
+          
+          IconData iconData = Icons.info_outline;
+          Color iconColor = const Color(0xFF3B82F6); // Blue
+          if (type == 'appointment') {
+             iconData = Icons.event_available;
+             iconColor = const Color(0xFF10B981); // Emerald green
+          }
+
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(iconData, color: iconColor, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      const Text(
-                        'All caught up!',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.success,
-                        ),
-                      ),
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+                      const SizedBox(height: 2),
+                      Text(body, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Text(_formatDate(dateStr), style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
                     ],
                   ),
-                  GestureDetector(
-                    onTap: onMarkAllRead,
-                    child: const Text(
-                      'Mark all as read',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.accent,
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => onView?.call(notif),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4F46E5), // Indigo blue
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text('View', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              if (notifications.isEmpty) ...[
-                const SizedBox(height: AppSpacing.lg),
-                const Divider(height: 1),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  'No notifications',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textHint,
-                  ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () => onDelete?.call(id),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF43F5E), // Rose red
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.delete_outline, color: Colors.white, size: 15),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-              // Show notifications if they exist
-              ...notifications.map(
-                (notification) => Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.sm),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.circle,
-                        size: 6,
-                        color: AppColors.accent,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          notification,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        }),
       ],
     );
   }

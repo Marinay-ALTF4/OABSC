@@ -35,6 +35,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   bool _isLoadingStats = true;
   String _adminName = 'Admin';
   String _adminRole = 'admin';
+  List<Map<String, dynamic>> _notifications = [];
 
   @override
   void initState() {
@@ -55,16 +56,59 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     try {
       final userId = await _authService.getSavedUserId();
       final role = await _authService.getSavedRole();
-      final response =
-          await _apiService.get('dashboard?user_id=$userId&role=$role');
+      final response = await _apiService.get('dashboard?user_id=$userId&role=$role');
+      final notifResponse = await _apiService.get('notifications?user_id=$userId');
+
       if (response['success'] == true || response['total_appointments'] != null) {
         setState(() => _stats = response);
+      }
+      if (notifResponse['notifications'] != null) {
+        final rawNotifs = notifResponse['notifications'] as List;
+        setState(() {
+          _notifications = rawNotifs.map((n) => n as Map<String, dynamic>).toList();
+        });
       }
     } catch (e) {
       debugPrint('Error fetching dashboard stats: $e');
     } finally {
       if (mounted) setState(() => _isLoadingStats = false);
     }
+  }
+
+  Future<void> _markAllNotificationsRead() async {
+    final userId = await _authService.getSavedUserId();
+    if (userId != null) {
+      await _apiService.post('notifications/mark-read', {'user_id': userId});
+    }
+    setState(() {
+      _notifications.clear();
+    });
+  }
+
+  Future<void> _deleteNotification(int id) async {
+    final response = await _apiService.delete('notifications/$id');
+    if (response['success'] == true) {
+      setState(() {
+        _notifications.removeWhere((n) => (n['id'] is int ? n['id'] : int.tryParse(n['id']?.toString() ?? '')) == id);
+      });
+    }
+  }
+
+  void _viewNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text((notification['title'] ?? 'Notification').toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text((notification['body'] ?? '').toString(), style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   // ── Sidebar nav index ──────────────────────────────────────
@@ -146,9 +190,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.md),
             child: IconButton(
-              icon: const Icon(Icons.notifications_outlined,
-                  size: 22, color: AppColors.textPrimary),
-              onPressed: () {},
+              icon: Badge(
+                isLabelVisible: _notifications.isNotEmpty,
+                label: Text(_notifications.length.toString()),
+                child: const Icon(Icons.notifications_outlined, size: 22, color: AppColors.textPrimary),
+              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (context) => Container(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                    decoration: const BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: SingleChildScrollView(
+                      child: NotificationSection(
+                        notifications: _notifications,
+                        onMarkAllRead: () async {
+                          await _markAllNotificationsRead();
+                          if (mounted) Navigator.pop(context);
+                        },
+                        onDelete: _deleteNotification,
+                        onView: _viewNotification,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -525,7 +597,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: AppSpacing.xxl),
 
           // ── Notifications ────────────────────────────────
-          const NotificationSection(),
+          NotificationSection(
+            notifications: _notifications,
+            onMarkAllRead: _markAllNotificationsRead,
+            onDelete: _deleteNotification,
+            onView: _viewNotification,
+          ),
         ],
       ),
     );

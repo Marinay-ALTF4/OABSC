@@ -4,6 +4,7 @@ import '../../utils/constants.dart';
 import '../../widgets/quick_access_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
+import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import 'book_appointment_view.dart';
 import 'my_appointments_view.dart';
@@ -19,14 +20,19 @@ class ClientDashboardScreen extends StatefulWidget {
 }
 
 class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
+  final ApiService _apiService = ApiService();
   String _currentView = 'dashboard';
   String _userName = 'Client';
   String _userInitials = 'C';
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = true;
+  Map<String, dynamic> _dashboardData = {};
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadDashboardData();
   }
 
   Future<void> _loadUserInfo() async {
@@ -44,6 +50,60 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
         _userInitials = initials;
       });
     }
+  }
+
+  Future<void> _loadDashboardData() async {
+    final userId = await AuthService().getSavedUserId();
+    
+    final response = await _apiService.get('dashboard?user_id=$userId&role=client');
+    final notifResponse = await _apiService.get('notifications?user_id=$userId');
+
+    if (mounted) {
+      setState(() {
+        _dashboardData = response;
+        if (notifResponse['notifications'] != null) {
+          final rawNotifs = notifResponse['notifications'] as List;
+          _notifications = rawNotifs.map((n) => n as Map<String, dynamic>).toList();
+        }
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _markAllNotificationsRead() async {
+    final userId = await AuthService().getSavedUserId();
+    if (userId != null) {
+      await _apiService.post('notifications/mark-read', {'user_id': userId});
+    }
+    setState(() {
+      _notifications.clear();
+    });
+  }
+
+  Future<void> _deleteNotification(int id) async {
+    final response = await _apiService.delete('notifications/$id');
+    if (response['success'] == true) {
+      setState(() {
+        _notifications.removeWhere((n) => (n['id'] is int ? n['id'] : int.tryParse(n['id']?.toString() ?? '')) == id);
+      });
+    }
+  }
+
+  void _viewNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text((notification['title'] ?? 'Notification').toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text((notification['body'] ?? '').toString(), style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -107,8 +167,37 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
               ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, size: 22),
-            onPressed: () {},
+            icon: Badge(
+              isLabelVisible: _notifications.isNotEmpty,
+              label: Text(_notifications.length.toString()),
+              child: const Icon(Icons.notifications_outlined, size: 22),
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                  decoration: const BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: NotificationSection(
+                      notifications: _notifications,
+                      onMarkAllRead: () async {
+                        await _markAllNotificationsRead();
+                        if (mounted) Navigator.pop(context);
+                      },
+                      onDelete: _deleteNotification,
+                      onView: _viewNotification,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           PopupMenuButton<String>(
             offset: const Offset(0, 50),
@@ -381,7 +470,12 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
           const SizedBox(height: AppSpacing.xxl),
 
           // Notifications section
-          const NotificationSection(),
+          NotificationSection(
+            notifications: _notifications,
+            onMarkAllRead: _markAllNotificationsRead,
+            onDelete: _deleteNotification,
+            onView: _viewNotification,
+          ),
           const SizedBox(height: AppSpacing.lg),
         ],
       ),

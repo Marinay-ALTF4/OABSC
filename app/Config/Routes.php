@@ -130,6 +130,8 @@ $routes->get('/api/doctors', 'Api::doctors');
 $routes->get('/api/profile', 'Api::profile');
 $routes->post('/api/profile/update', 'Api::updateProfile');
 $routes->get('/api/notifications', 'Api::notifications');
+$routes->post('/api/notifications/mark-read', 'Api::markNotificationsRead');
+$routes->delete('/api/notifications/(:num)', 'Api::deleteNotification/$1');
 $routes->post('/api/admin/users/add', 'Api::addUser');
 $routes->post('/api/admin/roles/add', 'Api::addRole');
 $routes->post('/api/doctor/schedule/save', 'Api::saveDoctorSchedule');
