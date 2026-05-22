@@ -676,6 +676,14 @@ class Api extends BaseController
             }
         }
 
+        // Handle password update
+        if (isset($json['current_password']) && isset($json['new_password'])) {
+            if (! password_verify((string) $json['current_password'], $user['password_hash'] ?? '')) {
+                return $this->failValidationErrors(['current_password' => 'Incorrect current password.']);
+            }
+            $updateData['password_hash'] = password_hash((string) $json['new_password'], PASSWORD_DEFAULT);
+        }
+
         if (empty($updateData)) {
             return $this->failValidationErrors(['_form' => 'No fields to update.']);
         }
