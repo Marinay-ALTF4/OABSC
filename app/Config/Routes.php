@@ -28,19 +28,19 @@ $routes->get('/settings', 'Settings::index');
 $routes->post('/settings/update', 'Settings::update');
 
 // Secretary
-$routes->get('/secretary/appointments', 'Secretary::appointments');
-$routes->get('/secretary/queue', 'Secretary::queue');
-$routes->get('/secretary/records', 'Secretary::records');
-$routes->get('/secretary/register', 'Secretary::register');
-$routes->post('/secretary/register', 'Secretary::register');
-$routes->get('/secretary/schedules', 'Secretary::schedules');
-$routes->get('/secretary/approvals', 'Secretary::approvals');
+$routes->get('/secretary/appointments',   'Secretary::appointments',   ['filter' => 'permission']);
+$routes->get('/secretary/queue',          'Secretary::queue',          ['filter' => 'permission']);
+$routes->get('/secretary/records',        'Secretary::records',        ['filter' => 'permission']);
+$routes->get('/secretary/register',       'Secretary::register',       ['filter' => 'permission']);
+$routes->post('/secretary/register',      'Secretary::register',       ['filter' => 'permission']);
+$routes->get('/secretary/schedules',      'Secretary::schedules',      ['filter' => 'permission']);
+$routes->get('/secretary/approvals',      'Secretary::approvals',      ['filter' => 'permission']);
 $routes->post('/secretary/update-status', 'Secretary::updateStatus');
 
 // Client Appointments
-$routes->get('/appointments/new', 'Appointments::new');
-$routes->post('/appointments', 'Appointments::create');
-$routes->get('/appointments/my', 'Appointments::my');
+$routes->get('/appointments/new',            'Appointments::new',    ['filter' => 'permission']);
+$routes->post('/appointments',               'Appointments::create', ['filter' => 'permission']);
+$routes->get('/appointments/my',             'Appointments::my',     ['filter' => 'permission']);
 $routes->post('/appointments/cancel/(:num)', 'Appointments::cancel/$1');
 
 // Notifications
@@ -49,28 +49,29 @@ $routes->post('/notifications/delete/(:num)', 'Notifications::deleteOne/$1');
 $routes->get('/notifications/fetch', 'Notifications::fetch');
 
 // Access Requests
-$routes->post('/access-request/send', 'AccessRequest::request');
+$routes->post('/access-request/send',    'AccessRequest::request');
 $routes->post('/access-request/approve', 'AccessRequest::approve');
+$routes->get('/access-denied',           'AccessRequest::denied');
 
 // Doctor Schedule
-$routes->get('/doctor/schedule', 'DoctorSchedule::index');
-$routes->post('/doctor/schedule/save', 'DoctorSchedule::save');
+$routes->get('/doctor/schedule',       'DoctorSchedule::index',  ['filter' => 'permission']);
+$routes->post('/doctor/schedule/save', 'DoctorSchedule::save',   ['filter' => 'permission']);
 $routes->get('/api/doctor/(:num)/schedule', 'DoctorSchedule::getByDoctor/$1');
 
 // Doctor Appointments
-$routes->get('/doctor/records', 'DoctorAppointments::records');
-$routes->get('/doctor/records/(:num)', 'DoctorAppointments::records/$1');
-$routes->get('/doctor/notes', 'DoctorAppointments::notes');
-$routes->post('/doctor/notes', 'DoctorAppointments::saveNote');
-$routes->get('/doctor/prescriptions', 'DoctorAppointments::prescriptions');
-$routes->post('/doctor/prescriptions', 'DoctorAppointments::savePrescription');
-$routes->get('/doctor/queue', 'DoctorAppointments::queue');
-$routes->get('/doctor/appointments', 'DoctorAppointments::index');
+$routes->get('/doctor/records',              'DoctorAppointments::records',         ['filter' => 'permission']);
+$routes->get('/doctor/records/(:num)',       'DoctorAppointments::records/$1',      ['filter' => 'permission']);
+$routes->get('/doctor/notes',                'DoctorAppointments::notes',           ['filter' => 'permission']);
+$routes->post('/doctor/notes',               'DoctorAppointments::saveNote',        ['filter' => 'permission']);
+$routes->get('/doctor/prescriptions',        'DoctorAppointments::prescriptions',   ['filter' => 'permission']);
+$routes->post('/doctor/prescriptions',       'DoctorAppointments::savePrescription',['filter' => 'permission']);
+$routes->get('/doctor/queue',                'DoctorAppointments::queue',           ['filter' => 'permission']);
+$routes->get('/doctor/appointments',         'DoctorAppointments::index',           ['filter' => 'permission']);
 $routes->post('/doctor/appointments/status', 'DoctorAppointments::updateStatus');
 
 // Client Profile
-$routes->get('/profile', 'Profile::index');
-$routes->post('/profile/save', 'Profile::save');
+$routes->get('/profile',       'Profile::index', ['filter' => 'permission']);
+$routes->post('/profile/save', 'Profile::save',  ['filter' => 'permission']);
 
 // Admin
 $routes->get('/admin/login', 'Auth::adminLogin');

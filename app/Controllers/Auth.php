@@ -445,12 +445,14 @@ class Auth extends BaseController
             ]);
 
             if (! $userId) {
-                $errors = $userModel->errors();
 
                 return redirect()->to('/register')->withInput()->with('errors', [
                     '_form' => $errors['email'] ?? 'Unable to create account right now. Please try again.',
                 ]);
             }
+
+            // Apply deny overrides if this role has disabled features
+            applyDenyOverridesForNewUser((int) $userId, $pendingRegistration['role'] ?? 'client');
 
             session()->remove(self::PENDING_REGISTRATION_KEY);
 

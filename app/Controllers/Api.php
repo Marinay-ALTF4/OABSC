@@ -130,6 +130,8 @@ class Api extends BaseController
             return $this->failServerError('Unable to register account right now.');
         }
 
+        applyDenyOverridesForNewUser((int) $userId, 'client');
+
         return $this->respondCreated([
             'message' => 'Registration successful. Please login.',
             'user_id' => $userId,
@@ -285,6 +287,8 @@ class Api extends BaseController
         if (! $userId) {
             return $this->failServerError('Unable to create account right now.');
         }
+
+        applyDenyOverridesForNewUser((int) $userId, 'client');
 
         // Clean up pending registration
         $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
@@ -1058,6 +1062,8 @@ class Api extends BaseController
         if (! $userId) {
             return $this->failServerError('Unable to add user.');
         }
+
+        applyDenyOverridesForNewUser((int) $userId, (string) $role);
 
         return $this->respondCreated([
             'message' => 'User added successfully.',
