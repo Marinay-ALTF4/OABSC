@@ -95,7 +95,7 @@ class QuickAccessCard extends StatelessWidget {
                 ? ElevatedButton(
                     onPressed: onButtonTap,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
+                      backgroundColor: const Color(0xFF4F46E5), // Indigo matching web
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
@@ -115,8 +115,8 @@ class QuickAccessCard extends StatelessWidget {
                 : OutlinedButton(
                     onPressed: onButtonTap,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.accent,
-                      side: const BorderSide(color: AppColors.accent),
+                      foregroundColor: iconColor,
+                      side: BorderSide(color: iconColor),
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
                       ),

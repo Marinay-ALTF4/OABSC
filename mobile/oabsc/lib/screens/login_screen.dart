@@ -62,8 +62,9 @@ class _LoginScreenState extends State<LoginScreen>
       final role = user['role'] as String? ?? 'client';
 
       // Redirect directly to the dashboard for the user's role
+      final String normalizedRole = role == 'assistant_admin' ? 'assistantAdmin' : role;
       final userRole = UserRole.values.firstWhere(
-        (r) => r.name == role,
+        (r) => r.name == normalizedRole,
         orElse: () => UserRole.client,
       );
       final route = AppRoutes.dashboardForRole(userRole);

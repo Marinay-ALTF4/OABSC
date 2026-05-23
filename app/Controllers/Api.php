@@ -130,6 +130,8 @@ class Api extends BaseController
             return $this->failServerError('Unable to register account right now.');
         }
 
+        applyDenyOverridesForNewUser((int) $userId, 'client');
+
         return $this->respondCreated([
             'message' => 'Registration successful. Please login.',
             'user_id' => $userId,
@@ -286,6 +288,8 @@ class Api extends BaseController
             return $this->failServerError('Unable to create account right now.');
         }
 
+        applyDenyOverridesForNewUser((int) $userId, 'client');
+
         // Clean up pending registration
         $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
 
@@ -307,7 +311,10 @@ class Api extends BaseController
             return false;
         }
 
+        $emailConfig->CRLF = "\r\n";
+        $emailConfig->newline = "\r\n";
         $emailService->initialize($emailConfig);
+        $emailService->setMailType('html');
         $emailService->setFrom($fromEmail, $fromName);
         $emailService->setTo($email);
         $emailService->setSubject('Your verification code: ' . $code);
@@ -676,6 +683,14 @@ class Api extends BaseController
             }
         }
 
+        // Handle password update
+        if (isset($json['current_password']) && isset($json['new_password'])) {
+            if (! password_verify((string) $json['current_password'], $user['password_hash'] ?? '')) {
+                return $this->failValidationErrors(['current_password' => 'Incorrect current password.']);
+            }
+            $updateData['password_hash'] = password_hash((string) $json['new_password'], PASSWORD_DEFAULT);
+        }
+
         if (empty($updateData)) {
             return $this->failValidationErrors(['_form' => 'No fields to update.']);
         }
@@ -758,7 +773,27 @@ class Api extends BaseController
         $status = $json['status'];
         
         $model = new \App\Models\AppointmentModel();
+        $appointment = $model->find($id);
+        
+        // Prevent duplicate updates and notifications
+        if ($appointment && $appointment['status'] === $status) {
+            return $this->respond(['success' => true]);
+        }
+
         $model->update($id, ['status' => $status]);
+        
+        // Notify client about the status change
+        if ($appointment) {
+            $ownerCol = $this->ownerColumn();
+            $patientId = $ownerCol ? (int) ($appointment[$ownerCol] ?? 0) : 0;
+            if ($patientId > 0) {
+                $notifModel = new \App\Models\NotificationModel();
+                $date = $appointment['appointment_date'] ?? 'a scheduled date';
+                $title = 'Appointment ' . ucfirst($status);
+                $body = "Your appointment on {$date} has been marked as {$status}.";
+                $notifModel->send($patientId, $title, $body, 'appointment');
+            }
+        }
         
         return $this->respond(['success' => true]);
     }
@@ -810,8 +845,26 @@ class Api extends BaseController
     /**
      * GET /api/prescriptions
      */
+    private function ensurePrescriptionsTable()
+    {
+        $db = \Config\Database::connect();
+        if (! $db->tableExists('prescriptions')) {
+            $db->query("CREATE TABLE prescriptions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                doctor_id INT NOT NULL,
+                patient_name VARCHAR(255) NOT NULL,
+                medication VARCHAR(255) NOT NULL,
+                dosage VARCHAR(255) NOT NULL,
+                instructions TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )");
+        }
+    }
+
     public function getPrescriptions()
     {
+        $this->ensurePrescriptionsTable();
         $request = $this->httpRequest();
         $userId = $request->getGet('user_id');
         $model = new \App\Models\PrescriptionModel();
@@ -824,6 +877,7 @@ class Api extends BaseController
      */
     public function savePrescription()
     {
+        $this->ensurePrescriptionsTable();
         $request = $this->httpRequest();
         $json = $request->getJSON(true);
         $model = new \App\Models\PrescriptionModel();
@@ -832,6 +886,19 @@ class Api extends BaseController
             $model->update($json['id'], $json);
         } else {
             $model->insert($json);
+            
+            // Send notification to the patient
+            $userModel = new \App\Models\UserModel();
+            $patient = $userModel->where('name', $json['patient_name'])->where('role', 'client')->first();
+            if ($patient) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->send(
+                    (int) $patient['id'],
+                    'New Prescription',
+                    'Your doctor has prescribed a new medication for you: ' . $json['medication'] . '. Dosage: ' . $json['dosage'],
+                    'prescription'
+                );
+            }
         }
         
         return $this->respond(['success' => true]);
@@ -872,6 +939,38 @@ class Api extends BaseController
             'count'         => count($notifications),
             'notifications' => $notifications,
         ]);
+    }
+
+    /**
+     * POST /api/notifications/mark-read
+     * Mark all notifications as read for a user.
+     */
+    public function markNotificationsRead()
+    {
+        $request = $this->httpRequest();
+        $json = $request->getJSON(true);
+        $userId = (int) ($json['user_id'] ?? 0);
+
+        if (! $userId) {
+            return $this->failValidationErrors(['user_id' => 'user_id is required.']);
+        }
+
+        $notifModel = new NotificationModel();
+        // The NotificationModel has a markAllRead method
+        $notifModel->markAllRead($userId);
+
+        return $this->respond(['success' => true]);
+    }
+
+    /**
+     * DELETE /api/notifications/:id
+     * Delete a notification.
+     */
+    public function deleteNotification($id)
+    {
+        $model = new NotificationModel();
+        $model->delete($id);
+        return $this->respond(['success' => true]);
     }
 
     // ──────────────────── Users (admin) ──────────────────────
@@ -963,6 +1062,8 @@ class Api extends BaseController
         if (! $userId) {
             return $this->failServerError('Unable to add user.');
         }
+
+        applyDenyOverridesForNewUser((int) $userId, (string) $role);
 
         return $this->respondCreated([
             'message' => 'User added successfully.',
@@ -1126,11 +1227,31 @@ class Api extends BaseController
         }
 
         $model      = new AppointmentModel();
+        $appointment = $model->find($id);
+
+        // Prevent duplicate updates and notifications
+        if ($appointment && $appointment['status'] === $status) {
+            return $this->respond(['success' => true, 'message' => 'Status unchanged.']);
+        }
+
         $updateData = ['status' => $status];
         if ($status === 'cancelled') {
             $updateData['archived_at'] = date('Y-m-d H:i:s');
         }
         $model->update($id, $updateData);
+
+        // Notify client about the status change
+        if ($appointment) {
+            $ownerCol = $this->ownerColumn();
+            $patientId = $ownerCol ? (int) ($appointment[$ownerCol] ?? 0) : 0;
+            if ($patientId > 0) {
+                $notifModel = new \App\Models\NotificationModel();
+                $date = $appointment['appointment_date'] ?? 'a scheduled date';
+                $title = 'Appointment ' . ucfirst($status);
+                $body = "Your appointment on {$date} has been marked as {$status}.";
+                $notifModel->send($patientId, $title, $body, 'appointment');
+            }
+        }
 
         return $this->respond(['success' => true, 'message' => 'Status updated.']);
     }
@@ -1282,6 +1403,18 @@ class Api extends BaseController
             'INSERT INTO announcements (title, content, created_by) VALUES (?, ?, ?)',
             [$title, $content, $userId]
         );
+
+        // Notify all active users
+        try {
+            $userModel = new \App\Models\UserModel();
+            $notifModel = new \App\Models\NotificationModel();
+            $allUsers = $userModel->where('deleted_at IS NULL')->findAll();
+            foreach ($allUsers as $u) {
+                $notifModel->send((int) $u['id'], 'New Announcement', $title, 'announcement');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Failed to notify users on announcement: ' . $e->getMessage());
+        }
 
         return $this->respondCreated(['success' => true, 'message' => 'Announcement posted.']);
     }

@@ -4,6 +4,7 @@ import '../../utils/constants.dart';
 import '../../widgets/quick_access_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
+import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import 'book_appointment_view.dart';
 import 'my_appointments_view.dart';
@@ -19,7 +20,100 @@ class ClientDashboardScreen extends StatefulWidget {
 }
 
 class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
+  final ApiService _apiService = ApiService();
   String _currentView = 'dashboard';
+  String _userName = 'Client';
+  String _userInitials = 'C';
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = true;
+  Map<String, dynamic> _dashboardData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final name = await AuthService().getSavedName();
+    if (name != null && name.isNotEmpty && mounted) {
+      final firstName = name.split(' ').first;
+      final parts = name.split(' ');
+      final initials = parts.length > 1
+          ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+          : parts[0].isNotEmpty
+              ? parts[0][0].toUpperCase()
+              : 'C';
+      setState(() {
+        _userName = firstName;
+        _userInitials = initials;
+      });
+    }
+  }
+
+  Future<void> _loadDashboardData() async {
+    final userId = await AuthService().getSavedUserId();
+    
+    final response = await _apiService.get('dashboard?user_id=$userId&role=client');
+    final notifResponse = await _apiService.get('notifications?user_id=$userId');
+
+    if (mounted) {
+      setState(() {
+        _dashboardData = response;
+        if (notifResponse['notifications'] != null) {
+          final rawNotifs = notifResponse['notifications'] as List;
+          _notifications = rawNotifs.map((n) => n as Map<String, dynamic>).toList();
+        }
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _markAllNotificationsRead() async {
+    final userId = await AuthService().getSavedUserId();
+    if (userId != null) {
+      await _apiService.post('notifications/mark-read', {'user_id': userId});
+    }
+    setState(() {
+      for (var n in _notifications) {
+        n['is_read'] = 1;
+      }
+    });
+  }
+
+  int get _unreadNotificationsCount {
+    return _notifications.where((n) {
+      final isRead = n['is_read'];
+      return isRead == 0 || isRead == '0' || isRead == false;
+    }).length;
+  }
+
+  Future<void> _deleteNotification(int id) async {
+    final response = await _apiService.delete('notifications/$id');
+    if (response['success'] == true) {
+      setState(() {
+        _notifications.removeWhere((n) => (n['id'] is int ? n['id'] : int.tryParse(n['id']?.toString() ?? '')) == id);
+      });
+    }
+  }
+
+  void _viewNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text((notification['title'] ?? 'Notification').toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text((notification['body'] ?? '').toString(), style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,62 +122,91 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        leading: _currentView != 'dashboard' 
-          ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => setState(() => _currentView = 'dashboard'),
-            )
-          : null,
+        leading: _currentView != 'dashboard'
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                onPressed: () => setState(() => _currentView = 'dashboard'),
+              )
+            : null,
         title: _currentView == 'chat'
-          ? const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'MediTalk AI Support',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+            ? const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chat with Clinic',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                Text(
-                  'Chat with our staff in real-time',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
+                  Text(
+                    'Ask questions or send a message to staff',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-              ],
-            )
-          : Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipOval(
-              child: Image.asset(
-                AppConstants.logoPath,
-                width: 28,
-                height: 28,
-                fit: BoxFit.cover,
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipOval(
+                    child: Image.asset(
+                      AppConstants.logoPath,
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  const Flexible(
+                    child: Text(
+                      'Clinic Appointment System',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            const Flexible(
-              child: Text(
-                'Clinic Appointment System',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, size: 22),
-            onPressed: () {},
+            icon: Badge(
+              isLabelVisible: _unreadNotificationsCount > 0,
+              label: Text(_unreadNotificationsCount.toString()),
+              child: const Icon(Icons.notifications_outlined, size: 22),
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                  decoration: const BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: NotificationSection(
+                      notifications: _notifications,
+                      onMarkAllRead: () async {
+                        await _markAllNotificationsRead();
+                        if (mounted) Navigator.pop(context);
+                      },
+                      onDelete: _deleteNotification,
+                      onView: _viewNotification,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           PopupMenuButton<String>(
             offset: const Offset(0, 50),
@@ -103,22 +226,22 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 14,
-                    backgroundColor: Color(0xFF10B981),
+                    backgroundColor: const Color(0xFF10B981),
                     child: Text(
-                      'C',
-                      style: TextStyle(
-                        fontSize: 12,
+                      _userInitials,
+                      style: const TextStyle(
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  const Text(
-                    'Client',
-                    style: TextStyle(
+                  Text(
+                    _userName,
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,
@@ -171,35 +294,35 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
         ],
       ),
       body: _buildBody(),
-      floatingActionButton: _currentView == 'dashboard' 
-        ? Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+      floatingActionButton: _currentView == 'dashboard'
+          ? Container(
+              height: 60,
+              width: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)], // Purple gradient
                 ),
-              ],
-            ),
-            child: FloatingActionButton(
-              onPressed: () => setState(() => _currentView = 'chat'),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              highlightElevation: 0,
-              shape: const CircleBorder(),
-              child: const Icon(Icons.forum_rounded, color: Colors.white, size: 26),
-            ),
-          )
-        : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: () => setState(() => _currentView = 'chat'),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                highlightElevation: 0,
+                shape: const CircleBorder(),
+                child: const Icon(Icons.forum_rounded, color: Colors.white, size: 26),
+              ),
+            )
+          : null,
     );
   }
 
@@ -231,17 +354,19 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
   }
 
   Widget _buildDashboard() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 600;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Welcome banner
-          const WelcomeBanner(
+          WelcomeBanner(
             panelLabel: 'PATIENT PORTAL',
-            title: 'Welcome, Client',
-            subtitle:
-                'From here you can request or review your appointments.',
+            title: 'Welcome, $_userName',
+            subtitle: 'From here you can request or review your appointments.',
             illustrationPath: 'lib/images/doctor-dashboard-illustration.svg',
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -258,49 +383,108 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Quick access cards
-          QuickAccessCard(
-            categoryLabel: 'BOOK',
-            title: 'New Appointment',
-            description:
-                'Choose your doctor, date, and time that works best for you.',
-            buttonText: 'Book Appointment',
-            icon: Icons.calendar_today_outlined,
-            iconColor: AppColors.accentLight,
-            iconBgColor: AppColors.iconBlueBg,
-            isPrimary: true,
-            onButtonTap: () => setState(() => _currentView = 'book_appointment'),
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          QuickAccessCard(
-            categoryLabel: 'MY VISITS',
-            title: 'My Appointments',
-            description:
-                'View or cancel your upcoming visits and see past appointments.',
-            buttonText: 'View Appointments',
-            icon: Icons.assignment_outlined,
-            iconColor: const Color(0xFF10B981),
-            iconBgColor: AppColors.iconGreenBg,
-            onButtonTap: () => setState(() => _currentView = 'my_appointments'),
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          QuickAccessCard(
-            categoryLabel: 'MESSAGING',
-            title: 'Chat with Clinic',
-            description:
-                'Ask questions or send a message to your doctor or clinic staff before your visit.',
-            buttonText: 'Open Chat',
-            icon: Icons.chat_bubble_outline_rounded,
-            iconColor: const Color(0xFF8B5CF6),
-            iconBgColor: const Color(0xFFF3E8FF),
-            onButtonTap: () => setState(() => _currentView = 'chat'),
-          ),
+          // Quick access cards — 3-column on wide, stacked on narrow
+          if (isWide)
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: QuickAccessCard(
+                      categoryLabel: 'BOOK',
+                      title: 'New Appointment',
+                      description:
+                          'Choose your doctor, date, and time that works best for you.',
+                      buttonText: 'Book Appointment',
+                      icon: Icons.calendar_today_outlined,
+                      iconColor: AppColors.accentLight,
+                      iconBgColor: AppColors.iconBlueBg,
+                      isPrimary: true,
+                      onButtonTap: () =>
+                          setState(() => _currentView = 'book_appointment'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: QuickAccessCard(
+                      categoryLabel: 'MY VISITS',
+                      title: 'My Appointments',
+                      description:
+                          'View or cancel your upcoming visits and see past appointments.',
+                      buttonText: 'View Appointments',
+                      icon: Icons.assignment_outlined,
+                      iconColor: const Color(0xFF10B981),
+                      iconBgColor: AppColors.iconGreenBg,
+                      onButtonTap: () =>
+                          setState(() => _currentView = 'my_appointments'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: QuickAccessCard(
+                      categoryLabel: 'MESSAGING',
+                      title: 'Chat with Clinic',
+                      description:
+                          'Ask questions or send a message to your doctor or clinic staff before your visit.',
+                      buttonText: 'Open Chat',
+                      icon: Icons.chat_bubble_outline_rounded,
+                      iconColor: const Color(0xFF8B5CF6),
+                      iconBgColor: const Color(0xFFF3E8FF),
+                      onButtonTap: () => setState(() => _currentView = 'chat'),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            QuickAccessCard(
+              categoryLabel: 'BOOK',
+              title: 'New Appointment',
+              description:
+                  'Choose your doctor, date, and time that works best for you.',
+              buttonText: 'Book Appointment',
+              icon: Icons.calendar_today_outlined,
+              iconColor: AppColors.accentLight,
+              iconBgColor: AppColors.iconBlueBg,
+              isPrimary: true,
+              onButtonTap: () =>
+                  setState(() => _currentView = 'book_appointment'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            QuickAccessCard(
+              categoryLabel: 'MY VISITS',
+              title: 'My Appointments',
+              description:
+                  'View or cancel your upcoming visits and see past appointments.',
+              buttonText: 'View Appointments',
+              icon: Icons.assignment_outlined,
+              iconColor: const Color(0xFF10B981),
+              iconBgColor: AppColors.iconGreenBg,
+              onButtonTap: () =>
+                  setState(() => _currentView = 'my_appointments'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            QuickAccessCard(
+              categoryLabel: 'MESSAGING',
+              title: 'Chat with Clinic',
+              description:
+                  'Ask questions or send a message to your doctor or clinic staff before your visit.',
+              buttonText: 'Open Chat',
+              icon: Icons.chat_bubble_outline_rounded,
+              iconColor: const Color(0xFF8B5CF6),
+              iconBgColor: const Color(0xFFF3E8FF),
+              onButtonTap: () => setState(() => _currentView = 'chat'),
+            ),
+          ],
           const SizedBox(height: AppSpacing.xxl),
 
           // Notifications section
-          const NotificationSection(),
+          NotificationSection(
+            notifications: _notifications,
+            onMarkAllRead: _markAllNotificationsRead,
+            onDelete: _deleteNotification,
+            onView: _viewNotification,
+          ),
           const SizedBox(height: AppSpacing.lg),
         ],
       ),

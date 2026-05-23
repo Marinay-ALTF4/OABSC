@@ -183,14 +183,14 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $arModel    = new \App\Models\AccessRequestModel();
-        $userModel2 = new UserModel();
+        $userModel  = new UserModel();
 
-        $pending  = $arModel->where('status', 'pending')->orderBy('id', 'DESC')->findAll();
-        $all      = $arModel->orderBy('id', 'DESC')->limit(50)->findAll();
+        $pending = $arModel->where('status', 'pending')->orderBy('id', 'DESC')->findAll();
+        $all     = $arModel->orderBy('id', 'DESC')->limit(100)->findAll();
 
-        // Attach user info
+        // Attach user info to all requests
         foreach ($all as &$req) {
-            $u = $userModel2->find($req['user_id']);
+            $u = $userModel->find($req['user_id']);
             $req['user_name']  = $u['name']  ?? '—';
             $req['user_email'] = $u['email'] ?? '—';
         }
@@ -432,6 +432,10 @@ class Admin extends BaseController
                     'role'          => $role,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                 ]);
+
+                if ($created) {
+                    applyDenyOverridesForNewUser((int) $created, $role);
+                }
 
                 (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_MODIFIED, (int) session('user_id'), null, 'user_added:' . $email);
 

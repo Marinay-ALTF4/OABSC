@@ -156,8 +156,10 @@ class _AuditReportsViewState extends State<AuditReportsView> {
                 header: Row(children: [
                   const Icon(Icons.bar_chart_rounded, size: 14, color: _navy),
                   const SizedBox(width: 6),
-                  Text('Login Activity — ${_filter[0].toUpperCase()}${_filter.substring(1)} Breakdown',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _navy)),
+                  Flexible(
+                    child: Text('Login Activity — ${_filter[0].toUpperCase()}${_filter.substring(1)} Breakdown',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _navy)),
+                  ),
                 ]),
                 child: SizedBox(
                   height: 220,
@@ -334,14 +336,23 @@ class _AuditReportsViewState extends State<AuditReportsView> {
   Widget _buildEventLog() {
     final evs = _events();
     return _Panel(
-      header: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Row(children: const [
-          Icon(Icons.list_alt_rounded, size: 14, color: _navy),
-          SizedBox(width: 6),
-          Text('Event Log (last 100 events)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _navy)),
-        ]),
-        Text('Since ${_fmtSince()}', style: const TextStyle(fontSize: 11, color: _slate)),
-      ]),
+      header: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.list_alt_rounded, size: 14, color: _navy),
+              SizedBox(width: 6),
+              Text('Event Log (last 100 events)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _navy)),
+            ],
+          ),
+          Text('Since ${_fmtSince()}', style: const TextStyle(fontSize: 11, color: _slate)),
+        ],
+      ),
       child: evs.isEmpty
           ? const Padding(padding: EdgeInsets.all(20), child: Text('No events recorded for this period.', style: TextStyle(color: _slate, fontSize: 13)))
           : SingleChildScrollView(

@@ -192,7 +192,7 @@ $name = session('user_name') ?? 'User';
             <a href="<?= site_url('/secretary/queue') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-list-ol"></i> Patient Queue
             </a>
-            <a href="<?= site_url('/admin/patients') ?>" class="sec2-sidebar-item">
+            <a href="<?= site_url('/secretary/records') ?>" class="sec2-sidebar-item">
                 <i class="bi bi-folder2-open"></i> Patient Records
             </a>
             <a href="<?= site_url('/secretary/register') ?>" class="sec2-sidebar-item">

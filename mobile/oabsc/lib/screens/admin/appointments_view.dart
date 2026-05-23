@@ -174,46 +174,55 @@ class _AppointmentTable extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Table header
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 10, horizontal: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(8)),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: const Row(children: [
-                _TH('#', 36),
-                _TH('PATIENT', 120),
-                _TH('DOCTOR', 100),
-                _TH('DATE', 90),
-                _TH('TIME', 70),
-                _TH('STATUS', 90),
-                _TH('ACTION', 100),
-              ]),
-            ),
-            // Rows
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(8)),
-                border: Border.all(color: AppColors.border),
-              ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: Column(
-                children: rows.asMap().entries.map((e) {
-                  final i = e.key;
-                  final r = e.value as Map;
-                  return _AppointmentRow(
-                    index: i + 1,
-                    row: r,
-                    tab: tab,
-                    onAction: onAction,
-                    isLast: i == rows.length - 1,
-                  );
-                }).toList(),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Table header
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(8)),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Row(children: [
+                      _TH('#', 36),
+                      _TH('PATIENT', 120),
+                      _TH('DOCTOR', 100),
+                      _TH('DATE', 90),
+                      _TH('TIME', 70),
+                      _TH('STATUS', 90),
+                      _TH('ACTION', 100),
+                    ]),
+                  ),
+                  // Rows
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(8)),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: rows.asMap().entries.map((e) {
+                        final i = e.key;
+                        final r = e.value as Map;
+                        return _AppointmentRow(
+                          index: i + 1,
+                          row: r,
+                          tab: tab,
+                          onAction: onAction,
+                          isLast: i == rows.length - 1,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

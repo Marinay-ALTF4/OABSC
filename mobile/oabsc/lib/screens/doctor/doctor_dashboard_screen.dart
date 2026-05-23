@@ -33,6 +33,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     'completed': '0',
     'total_consultations': '0',
   };
+  List<Map<String, dynamic>> _notifications = [];
 
   @override
   void initState() {
@@ -50,15 +51,68 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
     if (userId != null) {
       final response = await _apiService.get('dashboard?user_id=$userId&role=doctor');
-      if (response['success'] == true || response['total_consultations'] != null) {
+      final notifResponse = await _apiService.get('notifications?user_id=$userId');
+
+      if (mounted) {
         setState(() {
-          _stats['today_patients'] = (response['today_patients'] ?? 0).toString();
-          _stats['upcoming'] = (response['upcoming'] ?? 0).toString();
-          _stats['completed'] = (response['completed'] ?? 0).toString();
-          _stats['total_consultations'] = (response['total_consultations'] ?? 0).toString();
+          if (response['success'] == true || response['total_consultations'] != null) {
+            _stats['today_patients'] = (response['today_patients'] ?? 0).toString();
+            _stats['upcoming'] = (response['upcoming'] ?? 0).toString();
+            _stats['completed'] = (response['completed'] ?? 0).toString();
+            _stats['total_consultations'] = (response['total_consultations'] ?? 0).toString();
+          }
+          if (notifResponse['notifications'] != null) {
+            final rawNotifs = notifResponse['notifications'] as List;
+            _notifications = rawNotifs.map((n) => n as Map<String, dynamic>).toList();
+          }
         });
       }
     }
+  }
+
+  Future<void> _markAllNotificationsRead() async {
+    final userId = await _authService.getSavedUserId();
+    if (userId != null) {
+      await _apiService.post('notifications/mark-read', {'user_id': userId});
+    }
+    setState(() {
+      for (var n in _notifications) {
+        n['is_read'] = 1;
+      }
+    });
+  }
+
+  int get _unreadNotificationsCount {
+    return _notifications.where((n) {
+      final isRead = n['is_read'];
+      return isRead == 0 || isRead == '0' || isRead == false;
+    }).length;
+  }
+
+  Future<void> _deleteNotification(int id) async {
+    final response = await _apiService.delete('notifications/$id');
+    if (response['success'] == true) {
+      setState(() {
+        _notifications.removeWhere((n) => (n['id'] is int ? n['id'] : int.tryParse(n['id']?.toString() ?? '')) == id);
+      });
+    }
+  }
+
+  void _viewNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text((notification['title'] ?? 'Notification').toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text((notification['body'] ?? '').toString(), style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   List<DrawerNavItem> get _menuItems => [
@@ -88,8 +142,37 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
-              icon: const Icon(Icons.notifications_outlined, size: 22),
-              onPressed: () {},
+              icon: Badge(
+                isLabelVisible: _unreadNotificationsCount > 0,
+                label: Text(_unreadNotificationsCount.toString()),
+                child: const Icon(Icons.notifications_outlined, size: 22),
+              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (context) => Container(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                    decoration: const BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: SingleChildScrollView(
+                      child: NotificationSection(
+                        notifications: _notifications,
+                        onMarkAllRead: () async {
+                          await _markAllNotificationsRead();
+                          if (mounted) Navigator.pop(context);
+                        },
+                        onDelete: _deleteNotification,
+                        onView: _viewNotification,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -144,7 +227,12 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           ]);
         }),
         const SizedBox(height: 24),
-        const NotificationSection(),
+          NotificationSection(
+            notifications: _notifications,
+            onMarkAllRead: _markAllNotificationsRead,
+            onDelete: _deleteNotification,
+            onView: _viewNotification,
+          ),
       ]),
     );
   }

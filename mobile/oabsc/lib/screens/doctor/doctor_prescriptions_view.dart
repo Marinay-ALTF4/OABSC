@@ -69,7 +69,7 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
         'doctor_id': userId,
         'patient_name': _selectedPatient,
         'medication': _medicineController.text.trim(),
-        'dosage': '${_dosageController.text} - ${_frequencyController.text} - ${_durationController.text}',
+        'dosage': 'Dosage: ${_dosageController.text} | Freq: ${_frequencyController.text} | Duration: ${_durationController.text}',
         'instructions': _instructionsController.text.trim(),
       });
 
@@ -212,14 +212,25 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
           ),
           const SizedBox(height: 24),
           _buildLabel('Patient'),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedPatient,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
-            hint: const Text('Select patient...', style: TextStyle(fontSize: 14)),
-            items: const [], // Empty for mock
-            onChanged: (val) => setState(() => _selectedPatient = val),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedPatient,
+                hint: const Text('Select patient...', style: TextStyle(fontSize: 14)),
+                items: _patients.map((p) => DropdownMenuItem(
+                  value: p['name'] as String,
+                  child: Text(p['name'] as String, style: const TextStyle(fontSize: 14)),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedPatient = val),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           _buildLabel('Medicine'),
@@ -283,27 +294,7 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
               contentPadding: EdgeInsets.all(12),
             ),
           ),
-          _buildLabel('Select Patient'),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: _selectedPatient,
-                hint: const Text('Choose a patient...', style: TextStyle(fontSize: 13)),
-                items: _patients.map((p) => DropdownMenuItem(
-                  value: p['name'] as String,
-                  child: Text(p['name'] as String, style: const TextStyle(fontSize: 13)),
-                )).toList(),
-                onChanged: (val) => setState(() => _selectedPatient = val),
-              ),
-            ),
-          ),
+
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -408,7 +399,8 @@ class _DoctorPrescriptionsViewState extends State<DoctorPrescriptionsView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Patient: ${presc['patient_name']}'),
-                            Text('Dosage: ${presc['dosage']}'),
+                            const SizedBox(height: 8),
+                            Text('${presc['dosage']}'),
                             const SizedBox(height: 8),
                             Text('Instructions: ${presc['instructions'] ?? 'None'}'),
                           ],

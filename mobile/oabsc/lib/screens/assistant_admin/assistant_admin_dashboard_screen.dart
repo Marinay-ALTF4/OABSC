@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/constants.dart';
-import '../../widgets/app_drawer.dart';
-import '../../widgets/stat_card.dart';
 import '../../widgets/welcome_banner.dart';
 import '../../widgets/notification_section.dart';
-import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 
+import '../admin/patient_records_view.dart';
+import '../admin/add_patient_view.dart';
+import '../admin/patient_list_view.dart';
+import '../admin/patient_history_view.dart';
+import '../admin/appointments_view.dart';
+import '../admin/doctor_schedules_view.dart';
+import '../admin/access_requests_view.dart';
+import '../admin/announcements_view.dart';
+import '../admin/audit_reports_view.dart';
+import '../admin/audit_log_view.dart';
+import '../admin/manage_permissions_view.dart';
+
+/// Assistant Admin Dashboard screen — based on the web admin panel design
 class AssistantAdminDashboardScreen extends StatefulWidget {
   const AssistantAdminDashboardScreen({super.key});
 
@@ -16,94 +27,664 @@ class AssistantAdminDashboardScreen extends StatefulWidget {
 }
 
 class _AssistantAdminDashboardScreenState extends State<AssistantAdminDashboardScreen> {
-  final _authService = AuthService();
-  final _apiService = ApiService();
-  int _activeNavIndex = 0;
+  String _currentView = 'dashboard';
+  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
+  Map<String, dynamic> _stats = {};
+  bool _isLoadingStats = true;
   String _adminName = 'Assistant Admin';
-  final Map<String, dynamic> _stats = {
-    'total_appointments': '0',
-    'today_appointments': '0',
-    'total_patients': '0',
-    'total_doctors': '0',
-    'pending': '0',
-  };
+  String _adminRole = 'assistant_admin';
+  List<Map<String, dynamic>> _notifications = [];
+  Map<String, dynamic>? _selectedPatient;
 
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    _loadInitialData();
   }
 
-  Future<void> _loadDashboardData() async {
+  Future<void> _loadInitialData() async {
     final name = await _authService.getSavedName();
-    final userId = await _authService.getSavedUserId();
-    
-    if (name != null) {
-      setState(() => _adminName = name);
-    }
+    final role = await _authService.getSavedRole();
+    if (name != null) setState(() => _adminName = name);
+    if (role != null) setState(() => _adminRole = role);
+    _fetchStats();
+  }
 
-    if (userId != null) {
-      final response = await _apiService.get('dashboard?user_id=$userId&role=assistant_admin');
+  Future<void> _fetchStats() async {
+    setState(() => _isLoadingStats = true);
+    try {
+      final userId = await _authService.getSavedUserId();
+      final role = await _authService.getSavedRole();
+      final response = await _apiService.get('dashboard?user_id=$userId&role=$role');
+      final notifResponse = await _apiService.get('notifications?user_id=$userId');
+
       if (response['success'] == true || response['total_appointments'] != null) {
+        setState(() => _stats = response);
+      }
+      if (notifResponse['notifications'] != null) {
+        final rawNotifs = notifResponse['notifications'] as List;
         setState(() {
-          _stats['total_appointments'] = (response['total_appointments'] ?? 0).toString();
-          _stats['today_appointments'] = (response['today_appointments'] ?? 0).toString();
-          _stats['total_patients'] = (response['total_patients'] ?? 0).toString();
-          _stats['total_doctors'] = (response['total_doctors'] ?? 0).toString();
-          _stats['pending'] = (response['pending'] ?? 0).toString();
+          _notifications = rawNotifs.map((n) => n as Map<String, dynamic>).toList();
         });
       }
+    } catch (e) {
+      debugPrint('Error fetching dashboard stats: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingStats = false);
     }
   }
 
-  List<DrawerNavItem> get _menuItems => [
-    DrawerNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', onTap: () => setState(() => _activeNavIndex = 0)),
-    DrawerNavItem(icon: Icons.folder_outlined, label: 'Patient Records', onTap: () => setState(() => _activeNavIndex = 1)),
-    DrawerNavItem(icon: Icons.person_add_outlined, label: 'Add Patient', onTap: () => setState(() => _activeNavIndex = 2)),
-  ];
+  Future<void> _markAllNotificationsRead() async {
+    final userId = await _authService.getSavedUserId();
+    if (userId != null) {
+      await _apiService.post('notifications/mark-read', {'user_id': userId});
+    }
+    setState(() {
+      for (var n in _notifications) {
+        n['is_read'] = 1;
+      }
+    });
+  }
 
+  int get _unreadNotificationsCount {
+    return _notifications.where((n) {
+      final isRead = n['is_read'];
+      return isRead == 0 || isRead == '0' || isRead == false;
+    }).length;
+  }
+
+  Future<void> _deleteNotification(int id) async {
+    final response = await _apiService.delete('notifications/$id');
+    if (response['success'] == true) {
+      setState(() {
+        _notifications.removeWhere((n) => (n['id'] is int ? n['id'] : int.tryParse(n['id']?.toString() ?? '')) == id);
+      });
+    }
+  }
+
+  void _viewNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text((notification['title'] ?? 'Notification').toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text((notification['body'] ?? '').toString(), style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Sidebar nav index ──────────────────────────────────────
+  int get _activeNavIndex {
+    switch (_currentView) {
+      case 'dashboard':
+        return 0;
+      case 'patient_records':
+      case 'patient_list':
+      case 'add_patient':
+      case 'patient_history':
+        return 1;
+      case 'appointments':
+        return 2;
+      case 'doctor_schedules':
+        return 3;
+      case 'access_requests':
+        return 4;
+      case 'announcements':
+        return 5;
+      case 'audit_log':
+        return 6;
+      case 'audit_reports':
+        return 7;
+      default:
+        return 0;
+    }
+  }
+
+  // ── Build body ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    const roleLabel = 'Assistant Admin';
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFEDF2F7), // Match web background
       appBar: AppBar(
-        backgroundColor: AppColors.surface, elevation: 0,
-        leading: Builder(builder: (ctx) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(ctx).openDrawer())),
-        title: Row(mainAxisSize: MainAxisSize.min, children: [
-          ClipOval(child: Image.asset(AppConstants.logoPath, width: 28, height: 28, fit: BoxFit.cover)),
-          const SizedBox(width: 8),
-          const Flexible(child: Text('Clinic Appointment System', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
-        ]),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        shadowColor: const Color(0x14000000),
+        surfaceTintColor: Colors.transparent,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipOval(
+              child: Image.asset(
+                AppConstants.logoPath,
+                width: 28,
+                height: 28,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Flexible(
+              child: Text(
+                'Clinic Appointment System',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12.0),
+            padding: const EdgeInsets.only(right: AppSpacing.md),
             child: IconButton(
-              icon: const Icon(Icons.notifications_outlined, size: 22),
-              onPressed: () {},
+              icon: Badge(
+                isLabelVisible: _unreadNotificationsCount > 0,
+                label: Text(_unreadNotificationsCount.toString()),
+                child: const Icon(Icons.notifications_outlined, size: 22, color: AppColors.textPrimary),
+              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (context) => Container(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                    decoration: const BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: SingleChildScrollView(
+                      child: NotificationSection(
+                        notifications: _notifications,
+                        onMarkAllRead: () async {
+                          await _markAllNotificationsRead();
+                          if (mounted) Navigator.pop(context);
+                        },
+                        onDelete: _deleteNotification,
+                        onView: _viewNotification,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
-      drawer: AppDrawer(roleName: 'Assistant Admin', menuItems: _menuItems, activeIndex: _activeNavIndex),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          WelcomeBanner(panelLabel: 'ASSISTANT ADMIN PANEL', title: 'Welcome back, $_adminName', subtitle: 'Quick overview of your clinic\'s activity today.'),
-          const SizedBox(height: 20),
-          LayoutBuilder(builder: (context, constraints) {
-            final cols = constraints.maxWidth > 500 ? 3 : 2;
-            final w = (constraints.maxWidth - (cols - 1) * 12) / cols;
-            return Wrap(spacing: 12, runSpacing: 12, children: [
-              SizedBox(width: w, child: StatCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: _stats['total_appointments'], label: 'TOTAL APPOINTMENTS')),
-              SizedBox(width: w, child: StatCard(icon: Icons.assignment_outlined, iconColor: AppColors.accentLight, iconBgColor: AppColors.iconBlueBg, count: _stats['today_appointments'], label: "TODAY'S APPOINTMENTS")),
-              SizedBox(width: w, child: StatCard(icon: Icons.people_outline_rounded, iconColor: const Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: _stats['total_patients'], label: 'TOTAL PATIENTS')),
-              SizedBox(width: w, child: StatCard(icon: Icons.medical_services_outlined, iconColor: const Color(0xFF10B981), iconBgColor: AppColors.iconGreenBg, count: _stats['total_doctors'], label: 'DOCTORS AVAILABLE')),
-              SizedBox(width: w, child: StatCard(icon: Icons.pending_actions_rounded, iconColor: AppColors.warning, iconBgColor: AppColors.iconAmberBg, count: _stats['pending'], label: 'PENDING REQUESTS')),
-            ]);
-          }),
-          const SizedBox(height: 24),
-          const NotificationSection(),
-        ]),
+      drawer: _buildDrawer(roleLabel),
+      body: _buildBody(),
+    );
+  }
+
+  // ── Sidebar drawer — matches web admin sidebar exactly ─────
+  Widget _buildDrawer(String roleLabel) {
+    final navItems = [
+      _NavItem(Icons.dashboard_outlined, 'Dashboard',
+          () => setState(() { _currentView = 'dashboard'; _fetchStats(); })),
+      _NavItem(Icons.folder_open_outlined, 'Patient Records',
+          () => setState(() => _currentView = 'patient_records')),
+      // Manage Users and Manage Permissions are intentionally removed for assistant admin
+      _NavItem(Icons.calendar_month_outlined, 'Appointments',
+          () => setState(() => _currentView = 'appointments')),
+      _NavItem(Icons.calendar_today_outlined, 'Doctor Schedules',
+          () => setState(() => _currentView = 'doctor_schedules')),
+      _NavItem(Icons.check_circle_outline_rounded, 'Access Requests',
+          () => setState(() => _currentView = 'access_requests')),
+      _NavItem(Icons.campaign_outlined, 'Announcements',
+          () => setState(() => _currentView = 'announcements')),
+      _NavItem(Icons.history_rounded, 'System Audit Log',
+          () => setState(() => _currentView = 'audit_log')),
+      _NavItem(Icons.bar_chart_rounded, 'Audit Reports',
+          () => setState(() => _currentView = 'audit_reports')),
+    ];
+
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          children: [
+            // ── User section header ──────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.xl,
+              ),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppColors.border)),
+              ),
+              child: Row(
+                children: [
+                  // Avatar circle
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.iconBlueBg,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      size: 26,
+                      color: AppColors.accentLight,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _adminName,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          roleLabel.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2A6A7E),
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Navigation items ─────────────────────────────
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                itemCount: navItems.length,
+                itemBuilder: (context, index) {
+                  final item = navItems[index];
+                  final isActive = index == _activeNavIndex;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          item.onTap();
+                        },
+                        hoverColor: const Color(0xFF2A6A7E).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.md,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? const Color(0xFF2A6A7E) // Active Bg
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                item.icon,
+                                size: 20,
+                                color: isActive
+                                    ? Colors.white
+                                    : const Color(0xFF2A6A7E), // Inactive Icon
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isActive
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: isActive
+                                        ? Colors.white
+                                        : const Color(0xFF2A6A7E), // Inactive Text
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // ── Logout ───────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.of(context)
+                      .pushNamedAndRemoveUntil(
+                          AppRoutes.login, (route) => false),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout_rounded,
+                            size: 18, color: AppColors.error),
+                        SizedBox(width: AppSpacing.sm),
+                        Text(
+                          'Logout',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Route body ─────────────────────────────────────────────
+  Widget _buildBody() {
+    switch (_currentView) {
+      case 'dashboard':
+        return RefreshIndicator(
+          onRefresh: _fetchStats,
+          child: _buildDashboard(),
+        );
+      case 'patient_records':
+        return PatientRecordsView(
+          onBackToDashboard: () =>
+              setState(() => _currentView = 'dashboard'),
+          onViewPatientList: () =>
+              setState(() => _currentView = 'patient_list'),
+          onManageUsers: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('User Management is restricted to full Admins.'),
+                backgroundColor: AppColors.warning,
+              ),
+            );
+          },
+        );
+      case 'patient_list':
+        return PatientListView(
+            onBack: () => setState(() => _currentView = 'patient_records'),
+            onViewHistory: (patient) => setState(() {
+                  _selectedPatient = patient;
+                  _currentView = 'patient_history';
+                }));
+      case 'patient_history':
+        if (_selectedPatient == null) return const SizedBox.shrink();
+        return PatientHistoryView(
+            patient: _selectedPatient!,
+            onBack: () => setState(() => _currentView = 'patient_list'));
+      case 'add_patient':
+        return AddPatientView(
+            onBack: () => setState(() => _currentView = 'patient_records'));
+      case 'appointments':
+        return const AppointmentsView();
+      case 'doctor_schedules':
+        return const DoctorSchedulesView();
+      case 'access_requests':
+        return const AccessRequestsView();
+      case 'announcements':
+        return const AnnouncementsView();
+      case 'audit_log':
+        return const AuditLogView();
+      case 'audit_reports':
+        return const AuditReportsView();
+      default:
+        return _buildPlaceholder(_currentView);
+    }
+  }
+
+  Widget _buildPlaceholder(String view) {
+    const labels = {
+      'manage_permissions': 'Manage Permissions',
+    };
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.construction_rounded, size: 48, color: AppColors.textHint),
+          const SizedBox(height: AppSpacing.md),
+          Text(labels[view] ?? view,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          const SizedBox(height: AppSpacing.sm),
+          const Text('Coming soon', style: TextStyle(color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  // ── Dashboard content ──────────────────────────────────────
+  Widget _buildDashboard() {
+    const panelLabel = 'ASSISTANT ADMIN PANEL';
+    const subtitle = 'You have limited admin access.';
+
+    String stat(String key) =>
+        _isLoadingStats ? '...' : (_stats[key]?.toString() ?? '0');
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Welcome Banner ───────────────────────────────
+          WelcomeBanner(
+            panelLabel: panelLabel,
+            title: 'Welcome back, $_adminName',
+            subtitle: subtitle,
+            illustrationPath:
+                'lib/images/doctor-dashboard-illustration.svg',
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          // ── Stat cards — 3 per row, 2 rows (6 cards) ────
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // 3 cards per row on wider screens, 2 on phones
+              final crossCount = constraints.maxWidth > 480 ? 3 : 2;
+              final gap = 12.0;
+              final cardWidth =
+                  (constraints.maxWidth - gap * (crossCount - 1)) / crossCount;
+
+              final cards = [
+                _AdmStatCard(
+                  icon: Icons.event_available_outlined,
+                  bgColor: const Color(0xFFCCE4ED),
+                  iconColor: const Color(0xFF2A6A7E),
+                  count: stat('total_appointments'),
+                  label: 'Total Appointments',
+                ),
+                _AdmStatCard(
+                  icon: Icons.today,
+                  bgColor: const Color(0xFFB8D8E4),
+                  iconColor: const Color(0xFF1E5A6E),
+                  count: stat('today_appointments'),
+                  label: "Today's Appointments",
+                ),
+                _AdmStatCard(
+                  icon: Icons.people_outline_rounded,
+                  bgColor: const Color(0xFFA4CCD8),
+                  iconColor: const Color(0xFF164A5C),
+                  count: stat('total_patients'),
+                  label: 'Total Patients',
+                ),
+                _AdmStatCard(
+                  icon: Icons.badge,
+                  bgColor: const Color(0xFF4E8A9E),
+                  iconColor: const Color(0xFFE0F4FA),
+                  count: stat('total_doctors'),
+                  label: 'Doctors Available',
+                ),
+                _AdmStatCard(
+                  icon: Icons.hourglass_top,
+                  bgColor: const Color(0xFFCCE4ED),
+                  iconColor: const Color(0xFF2A6A7E),
+                  count: stat('pending'),
+                  label: 'Pending Requests',
+                ),
+                _AdmStatCard(
+                  icon: Icons.work_outline,
+                  bgColor: const Color(0xFFB8D8E4),
+                  iconColor: const Color(0xFF1E5A6E),
+                  count: stat('secretaries'),
+                  label: 'Secretaries',
+                ),
+              ];
+
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: cards
+                    .map((c) => SizedBox(width: cardWidth, child: c))
+                    .toList(),
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // ── Notifications ────────────────────────────────
+          NotificationSection(
+            notifications: _notifications,
+            onMarkAllRead: _markAllNotificationsRead,
+            onDelete: _deleteNotification,
+            onView: _viewNotification,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Internal nav item model ────────────────────────────────────
+class _NavItem {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _NavItem(this.icon, this.label, this.onTap);
+}
+
+// ── Stat card matching the web admin card style ────────────────
+class _AdmStatCard extends StatelessWidget {
+  final IconData icon;
+  final Color bgColor;
+  final Color iconColor;
+  final String count;
+  final String label;
+
+  const _AdmStatCard({
+    super.key,
+    required this.icon,
+    required this.bgColor,
+    required this.iconColor,
+    required this.count,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border, width: 0.5),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Icon badge
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 20, color: iconColor),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          // Count
+          Text(
+            count,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          // Label
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

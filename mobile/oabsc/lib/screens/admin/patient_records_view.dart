@@ -105,11 +105,11 @@ class PatientRecordsView extends StatelessWidget {
                       category: 'SEARCH',
                       title: 'Search Patient',
                       description: 'Quickly find a patient by name or ID.',
-                      buttonText: 'Search (soon)',
+                      buttonText: 'Search',
                       icon: Icons.search,
                       iconColor: const Color(0xFF0369A1), // Dark Blue
                       iconBgColor: const Color(0xFFE0F2FE), // Light Blue
-                      onPressed: () {},
+                      onPressed: onViewPatientList,
                     ),
                   ),
                   SizedBox(
@@ -122,7 +122,7 @@ class PatientRecordsView extends StatelessWidget {
                       icon: Icons.access_time_rounded,
                       iconColor: const Color(0xFF0F766E), // Dark Teal
                       iconBgColor: const Color(0xFFCCFBF1), // Light Teal
-                      onPressed: () {},
+                      onPressed: onViewPatientList,
                     ),
                   ),
                   SizedBox(

@@ -88,6 +88,9 @@ class Secretary extends BaseController
                     $db->transRollback();
                     return redirect()->back()->withInput()->with('errors', ['_form' => 'Unable to register patient. Transaction rolled back.']);
                 }
+
+                applyDenyOverridesForNewUser((int) $created, 'client');
+
                 $db->transComplete();
             } catch (\Throwable $e) {
                 $db->transRollback();
