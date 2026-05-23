@@ -467,5 +467,6 @@
     .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4; }
     .empty-state p { font-size: 0.85rem; margin: 0; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

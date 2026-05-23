@@ -48,5 +48,6 @@
     .sec-save-btn:hover { background: #245228; }
     .sec-doctor-card { background: #fff; border-radius: 14px; border: 1px solid #d0e8d2; padding: 20px; box-shadow: 0 1px 5px rgba(46,125,50,0.06); }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

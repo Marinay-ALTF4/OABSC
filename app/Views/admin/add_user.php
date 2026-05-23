@@ -315,5 +315,6 @@ function togglePw(id, btn) {
     .au-pw-toggle:hover { color: #475569; }
     .au-error { font-size: 0.78rem; color: #ef4444; margin-top: 4px; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>
