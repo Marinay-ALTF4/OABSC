@@ -1,48 +1,65 @@
+<?php
+$_chat_role = session('user_role') ?? 'guest';
+$_chat_name = session('user_name') ?? 'User';
+
+// Build contact list based on who is logged in
+// Admin & assistant_admin can message everyone
+// Others see admin + role-relevant contacts
+if (in_array($_chat_role, ['admin', 'assistant_admin'])) {
+    $_contacts = [
+        ['id'=>'c_secretary', 'name'=>'Secretary',       'icon'=>'bi-person-badge-fill', 'color'=>'#10b981', 'sub'=>'Front desk'],
+        ['id'=>'c_doctor',    'name'=>'Doctors',          'icon'=>'bi-heart-pulse-fill',  'color'=>'#8b5cf6', 'sub'=>'Medical staff'],
+        ['id'=>'c_patient',   'name'=>'Patients',         'icon'=>'bi-people-fill',       'color'=>'#f59e0b', 'sub'=>'Registered patients'],
+        ['id'=>'c_clinic',    'name'=>'Clinic Support',   'icon'=>'bi-hospital-fill',     'color'=>'#3b82f6', 'sub'=>'General inquiries'],
+    ];
+} elseif ($_chat_role === 'secretary') {
+    $_contacts = [
+        ['id'=>'c_admin',   'name'=>'Admin',          'icon'=>'bi-shield-fill',      'color'=>'#3b82f6', 'sub'=>'Administrator'],
+        ['id'=>'c_doctor',  'name'=>'Doctors',         'icon'=>'bi-heart-pulse-fill', 'color'=>'#8b5cf6', 'sub'=>'Medical staff'],
+        ['id'=>'c_patient', 'name'=>'Patients',        'icon'=>'bi-people-fill',      'color'=>'#f59e0b', 'sub'=>'Registered patients'],
+    ];
+} elseif ($_chat_role === 'doctor') {
+    $_contacts = [
+        ['id'=>'c_admin',     'name'=>'Admin',         'icon'=>'bi-shield-fill',      'color'=>'#3b82f6', 'sub'=>'Administrator'],
+        ['id'=>'c_secretary', 'name'=>'Secretary',     'icon'=>'bi-person-badge-fill','color'=>'#10b981', 'sub'=>'Front desk'],
+        ['id'=>'c_patient',   'name'=>'Patients',      'icon'=>'bi-people-fill',      'color'=>'#f59e0b', 'sub'=>'Your patients'],
+    ];
+} else {
+    // client / patient
+    $_contacts = [
+        ['id'=>'c_admin',     'name'=>'Admin',         'icon'=>'bi-shield-fill',      'color'=>'#3b82f6', 'sub'=>'Administrator'],
+        ['id'=>'c_secretary', 'name'=>'Secretary',     'icon'=>'bi-person-badge-fill','color'=>'#10b981', 'sub'=>'Front desk'],
+        ['id'=>'c_doctor',    'name'=>'Doctors',       'icon'=>'bi-heart-pulse-fill', 'color'=>'#8b5cf6', 'sub'=>'Medical staff'],
+        ['id'=>'c_clinic',    'name'=>'Clinic Support','icon'=>'bi-hospital-fill',    'color'=>'#ef4444', 'sub'=>'General inquiries'],
+    ];
+}
+$_first = $_contacts[0];
+?>
+
 <!-- ── Messages Widget ── -->
 <div id="chat-widget" class="msng-window d-none">
 
-    <!-- Sidebar: contact list -->
+    <!-- Sidebar -->
     <div class="msng-sidebar" id="msng-sidebar">
         <div class="msng-sidebar-header">
             <span class="msng-sidebar-title">Messages</span>
             <button class="msng-close-btn" onclick="closeChat()" title="Close"><i class="bi bi-x-lg"></i></button>
         </div>
-        <div class="msng-contact-list" id="msng-contact-list">
-            <div class="msng-contact active" data-id="clinic" data-name="Clinic Support" data-icon="bi-hospital" data-color="#3b82f6" onclick="selectContact(this)">
-                <div class="msng-avatar" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-hospital"></i></div>
+        <div class="msng-contact-list">
+            <?php foreach ($_contacts as $i => $_c): ?>
+            <div class="msng-contact <?= $i === 0 ? 'active' : '' ?>"
+                 data-id="<?= $_c['id'] ?>"
+                 data-name="<?= htmlspecialchars($_c['name']) ?>"
+                 data-icon="<?= $_c['icon'] ?>"
+                 data-color="<?= $_c['color'] ?>"
+                 onclick="selectContact(this)">
+                <div class="msng-avatar" style="background:<?= $_c['color'] ?>18;color:<?= $_c['color'] ?>;"><i class="bi <?= $_c['icon'] ?>"></i></div>
                 <div class="msng-contact-info">
-                    <div class="msng-contact-name">Clinic Support</div>
-                    <div class="msng-contact-preview" id="preview-clinic">General inquiries</div>
+                    <div class="msng-contact-name"><?= htmlspecialchars($_c['name']) ?></div>
+                    <div class="msng-contact-preview" id="preview-<?= $_c['id'] ?>"><?= htmlspecialchars($_c['sub']) ?></div>
                 </div>
             </div>
-            <div class="msng-contact" data-id="dr-santos" data-name="Dr. Santos" data-icon="bi-person-fill" data-color="#10b981" onclick="selectContact(this)">
-                <div class="msng-avatar" style="background:#f0fdf4;color:#10b981;"><i class="bi bi-person-fill"></i></div>
-                <div class="msng-contact-info">
-                    <div class="msng-contact-name">Dr. Santos</div>
-                    <div class="msng-contact-preview" id="preview-dr-santos">General Practitioner</div>
-                </div>
-            </div>
-            <div class="msng-contact" data-id="dr-reyes" data-name="Dr. Reyes" data-icon="bi-person-fill" data-color="#8b5cf6" onclick="selectContact(this)">
-                <div class="msng-avatar" style="background:#f5f3ff;color:#8b5cf6;"><i class="bi bi-person-fill"></i></div>
-                <div class="msng-contact-info">
-                    <div class="msng-contact-name">Dr. Reyes</div>
-                    <div class="msng-contact-preview" id="preview-dr-reyes">Cardiologist</div>
-                </div>
-            </div>
-            <div class="msng-contact" data-id="dr-cruz" data-name="Dr. Cruz" data-icon="bi-person-fill" data-color="#f59e0b" onclick="selectContact(this)">
-                <div class="msng-avatar" style="background:#fffbeb;color:#f59e0b;"><i class="bi bi-person-fill"></i></div>
-                <div class="msng-contact-info">
-                    <div class="msng-contact-name">Dr. Cruz</div>
-                    <div class="msng-contact-preview" id="preview-dr-cruz">Pediatrician</div>
-                </div>
-            </div>
-            <div class="msng-contact" data-id="dr-garcia" data-name="Dr. Garcia" data-icon="bi-person-fill" data-color="#ef4444" onclick="selectContact(this)">
-                <div class="msng-avatar" style="background:#fff1f2;color:#ef4444;"><i class="bi bi-person-fill"></i></div>
-                <div class="msng-contact-info">
-                    <div class="msng-contact-name">Dr. Garcia</div>
-                    <div class="msng-contact-preview" id="preview-dr-garcia">Dermatologist</div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -50,21 +67,23 @@
     <div class="msng-convo" id="msng-convo">
         <div class="msng-convo-header">
             <button class="msng-back-btn d-none" id="msng-back-btn" onclick="showSidebar()"><i class="bi bi-arrow-left"></i></button>
-            <div class="msng-avatar msng-avatar-sm" id="msng-convo-avatar" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-hospital"></i></div>
+            <div class="msng-avatar msng-avatar-sm" id="msng-convo-avatar"
+                 style="background:<?= $_first['color'] ?>18;color:<?= $_first['color'] ?>;"><i class="bi <?= $_first['icon'] ?>"></i></div>
             <div>
-                <div class="msng-convo-name" id="msng-convo-name">Clinic Support</div>
+                <div class="msng-convo-name" id="msng-convo-name"><?= htmlspecialchars($_first['name']) ?></div>
                 <div class="msng-convo-status"><span class="msng-dot"></span> Active</div>
             </div>
         </div>
         <div class="msng-messages" id="chat-messages"></div>
         <div class="msng-input-row">
-            <input type="text" id="chat-input" class="msng-input" placeholder="Aa" onkeydown="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="chat-input" class="msng-input" placeholder="Aa"
+                   onkeydown="if(event.key==='Enter') sendMessage()">
             <button class="msng-send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
         </div>
     </div>
 </div>
 
-<!-- Floating Chat Button -->
+<!-- FAB -->
 <button class="chat-fab" id="chat-fab" onclick="openChat()" title="Messages">
     <i class="bi bi-chat-dots-fill"></i>
     <span class="chat-fab-dot d-none" id="chat-fab-dot"></span>
@@ -72,57 +91,56 @@
 
 <script>
 (function () {
-    const CHAT_KEY = 'oabsc_chat_messages';
-    let currentContact = { id: 'clinic', name: 'Clinic Support', icon: 'bi-hospital', color: '#3b82f6' };
+    const CHAT_KEY = 'oabsc_chat_<?= session('user_id') ?? '0' ?>';
+    let currentContact = {
+        id:    '<?= $_first['id'] ?>',
+        name:  '<?= htmlspecialchars($_first['name'], ENT_QUOTES) ?>',
+        icon:  '<?= $_first['icon'] ?>',
+        color: '<?= $_first['color'] ?>'
+    };
 
     function getMessages() {
         try { return JSON.parse(localStorage.getItem(CHAT_KEY) || '{}'); } catch(e) { return {}; }
     }
-    function saveMessages(data) { localStorage.setItem(CHAT_KEY, JSON.stringify(data)); }
+    function saveMessages(d) { localStorage.setItem(CHAT_KEY, JSON.stringify(d)); }
+    function getContactMessages() { return getMessages()[currentContact.id] || []; }
 
-    function getContactMessages() {
-        return (getMessages()[currentContact.id] || []);
-    }
     function addMessage(msg) {
-        const all = getMessages();
+        var all = getMessages();
         if (!all[currentContact.id]) all[currentContact.id] = [];
         all[currentContact.id].push(msg);
         saveMessages(all);
-        updatePreview(currentContact.id, msg.text);
+        var el = document.getElementById('preview-' + currentContact.id);
+        if (el) el.textContent = msg.text.length > 28 ? msg.text.slice(0,28)+'...' : msg.text;
     }
 
-    function updatePreview(id, text) {
-        const el = document.getElementById('preview-' + id);
-        if (el) el.textContent = text.length > 28 ? text.slice(0, 28) + '...' : text;
-    }
-
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
     function nowTime() {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     }
 
     function renderMessages() {
-        const container = document.getElementById('chat-messages');
-        const msgs = getContactMessages();
-        if (msgs.length === 0) {
-            container.innerHTML = '<div class="msng-empty"><i class="bi bi-chat-left"></i><div>No messages yet</div></div>';
+        var container = document.getElementById('chat-messages');
+        var msgs = getContactMessages();
+        if (!msgs.length) {
+            container.innerHTML = '<div class="msng-empty"><i class="bi bi-chat-left"></i><div>No messages yet</div><div style="font-size:0.72rem;margin-top:4px;color:#cbd5e1;">Send a message to ' + escHtml(currentContact.name) + '</div></div>';
             return;
         }
-        let html = '';
+        var html = '';
         msgs.forEach(function(m, i) {
-            const isMe = m.from === 'me';
-            const showAvatar = !isMe && (i === msgs.length - 1 || msgs[i+1].from === 'me');
+            var isMe = m.from === 'me';
+            var showAv = !isMe && (i === msgs.length-1 || msgs[i+1].from === 'me');
             html += '<div class="msng-row ' + (isMe ? 'msng-row-me' : 'msng-row-them') + '">';
             if (!isMe) {
-                html += showAvatar
-                    ? '<div class="msng-bubble-avatar" style="background:#f1f5f9;color:' + currentContact.color + ';"><i class="bi ' + currentContact.icon + '"></i></div>'
+                html += showAv
+                    ? '<div class="msng-bubble-avatar" style="background:' + currentContact.color + '18;color:' + currentContact.color + ';"><i class="bi ' + currentContact.icon + '"></i></div>'
                     : '<div class="msng-bubble-avatar-spacer"></div>';
             }
             html += '<div class="msng-bubble-wrap">';
             html += '<div class="msng-bubble ' + (isMe ? 'msng-bubble-me' : 'msng-bubble-them') + '">' + escHtml(m.text) + '</div>';
-            if (isMe && i === msgs.length - 1) {
+            if (isMe && i === msgs.length-1) {
                 html += '<div class="msng-sent"><i class="bi bi-check2"></i> Sent ' + m.time + '</div>';
             }
             html += '</div></div>';
@@ -132,8 +150,8 @@
     }
 
     window.sendMessage = function () {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
+        var input = document.getElementById('chat-input');
+        var text = input.value.trim();
         if (!text) return;
         addMessage({ from: 'me', text: text, time: nowTime() });
         input.value = '';
@@ -154,21 +172,14 @@
     };
 
     window.selectContact = function (el) {
-        currentContact = {
-            id:    el.dataset.id,
-            name:  el.dataset.name,
-            icon:  el.dataset.icon,
-            color: el.dataset.color
-        };
+        currentContact = { id: el.dataset.id, name: el.dataset.name, icon: el.dataset.icon, color: el.dataset.color };
         document.querySelectorAll('.msng-contact').forEach(function(c){ c.classList.remove('active'); });
         el.classList.add('active');
-
         document.getElementById('msng-convo-name').textContent = currentContact.name;
         var av = document.getElementById('msng-convo-avatar');
-        av.style.background = currentContact.color + '22';
+        av.style.background = currentContact.color + '18';
         av.style.color = currentContact.color;
         av.querySelector('i').className = 'bi ' + currentContact.icon;
-
         if (window.innerWidth < 540) {
             document.getElementById('msng-sidebar').style.display = 'none';
             document.getElementById('msng-convo').style.display = 'flex';
@@ -259,7 +270,7 @@
         display: flex; flex-direction: column; gap: 3px;
         background: #f8fafc;
     }
-    .msng-empty { text-align: center; color: #cbd5e1; font-size: 0.82rem; margin: auto; }
+    .msng-empty { text-align: center; color: #cbd5e1; font-size: 0.82rem; margin: auto; padding: 1rem; }
     .msng-empty i { font-size: 2rem; display: block; margin-bottom: 6px; }
     .msng-row { display: flex; align-items: flex-end; gap: 6px; margin-bottom: 2px; }
     .msng-row-me { flex-direction: row-reverse; }
