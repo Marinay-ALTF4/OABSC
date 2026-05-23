@@ -294,5 +294,6 @@ $roleColors = [
         font-size:0.65rem;font-weight:700;color:white;
     }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

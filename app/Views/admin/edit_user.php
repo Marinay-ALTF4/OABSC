@@ -234,5 +234,6 @@ function togglePw(id, btn) {
     .au-error { font-size: 0.78rem; color: #ef4444; margin-top: 4px; }
     .au-hint  { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

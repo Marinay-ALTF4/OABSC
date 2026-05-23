@@ -374,5 +374,6 @@ document.querySelectorAll('.perm-toggle-input').forEach(input => {
     .perm-toast.success { background:#10b981; }
     .perm-toast.error   { background:#ef4444; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

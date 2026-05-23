@@ -219,5 +219,6 @@
     }
     .doc-search-input:focus { border-color: #2e7d32; background: #fff; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>
