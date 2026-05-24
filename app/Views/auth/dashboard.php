@@ -554,7 +554,7 @@ $name = session('user_name') ?? 'User';
     </div>
 
     <div class="section-label mb-3">Quick Access</div>
-    <div class="row g-3 justify-content-center">
+    <div class="row g-2 g-lg-3 justify-content-center">
         <div class="col-md-4">
             <div class="action-card">
                 <div class="action-icon bg-blue-soft"><i class="bi bi-calendar2-plus"></i></div>
@@ -645,21 +645,35 @@ $name = session('user_name') ?? 'User';
         overflow-x: hidden;
     }
 
+    .client-container {
+        max-width: 1180px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 18px 22px 28px;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+        .client-container {
+            padding: 14px 14px 20px;
+        }
+    }
+
     /* Client Page */
     .client-page {
-        max-width: 1100px;
+        max-width: 1040px;
         margin: 0 auto;
-        padding: 28px;
+        padding: 30px;
     }
     @media (max-width: 768px) {
-        .client-page { padding: 16px; }
+        .client-page { padding: 18px; }
         .cl-banner { flex-direction: column; align-items: flex-start; gap: 1rem; }
         .cl-banner-right { align-items: flex-start; }
     }
 
     /* Welcome Banner */
     .cl-banner {
-        background: white; border-radius: 20px; padding: 2rem 2.5rem;
+        background: white; border-radius: 18px; padding: 1.5rem 1.75rem;
         display: flex; justify-content: space-between; align-items: center;
         border: 1px solid #e8eaf6; box-shadow: 0 4px 20px rgba(99,102,241,0.07);
         overflow: hidden; position: relative; margin-bottom: 1.5rem;
@@ -680,25 +694,25 @@ $name = session('user_name') ?? 'User';
         padding: 6px 14px; border-radius: 20px;
         display: flex; align-items: center; gap: 5px;
     }
-    .cl-section-label { font-size: 0.72rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.2px; }
+    .cl-section-label { font-size: 0.7rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.2px; }
     .cl-card {
-        background: white; border-radius: 20px; padding: 1.75rem;
+        background: white; border-radius: 16px; padding: 1.25rem;
         border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05);
         position: relative; overflow: hidden;
         display: flex; flex-direction: column; gap: 10px;
         height: 100%; transition: transform 0.2s, box-shadow 0.2s;
     }
     .cl-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
-    .cl-card-icon-wrap { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .cl-card-icon-wrap { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
     .cl-icon-blue   { background: #dbeafe; color: #2563eb; }
     .cl-icon-green  { background: #d1fae5; color: #059669; }
     .cl-icon-purple { background: #ede9fe; color: #7c3aed; }
-    .cl-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .cl-card-desc  { font-size: 0.82rem; color: #64748b; line-height: 1.55; flex: 1; }
+    .cl-card-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+    .cl-card-desc  { font-size: 0.8rem; color: #64748b; line-height: 1.5; flex: 1; }
     .cl-card-btn {
         display: inline-flex; align-items: center; gap: 4px;
-        font-size: 0.82rem; font-weight: 700; padding: 0.6rem 1.1rem;
-        border-radius: 12px; border: none; cursor: pointer;
+        font-size: 0.78rem; font-weight: 700; padding: 0.55rem 1rem;
+        border-radius: 10px; border: none; cursor: pointer;
         text-decoration: none; transition: all 0.2s; width: fit-content;
     }
     .cl-btn-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
@@ -709,15 +723,15 @@ $name = session('user_name') ?? 'User';
     .cl-deco-blue { background: #2563eb; } .cl-deco-green { background: #059669; } .cl-deco-purple { background: #7c3aed; }
     .cl-mark-all { font-size: 0.78rem; font-weight: 600; color: #6366f1; background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 4px; }
     .cl-mark-all:hover { text-decoration: underline; }
-    .cl-notif-panel { background: white; border-radius: 20px; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; min-height: 100px; }
+    .cl-notif-panel { background: white; border-radius: 16px; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; min-height: 100px; }
     .cl-notif-body { padding: 0.5rem 0; }
     .cl-notif-empty { padding: 3rem; text-align: center; color: #94a3b8; }
     .cl-notif-empty i { font-size: 2.5rem; color: #c7d2fe; display: block; margin-bottom: 0.5rem; }
 
     /* ΓöÇΓöÇ Welcome Banner ΓöÇΓöÇ */
     .welcome-banner {
-        border-radius: 20px;
-        padding: 28px 32px;
+        border-radius: 18px;
+        padding: 22px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -757,7 +771,7 @@ $name = session('user_name') ?? 'User';
     }
     .welcome-name {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.55rem;
+        font-size: 1.45rem;
         font-weight: 800;
         color: #0f172a;
         margin: 0 0 5px;
@@ -766,18 +780,18 @@ $name = session('user_name') ?? 'User';
     }
     .welcome-sub {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.875rem;
+        font-size: 0.84rem;
         color: #64748b;
         margin: 0;
         font-weight: 400;
     }
     .welcome-date {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 500;
         color: #475569;
         background: rgba(255,255,255,0.8);
-        padding: 8px 18px;
+        padding: 7px 16px;
         border-radius: 20px;
         white-space: nowrap;
         backdrop-filter: blur(6px);
@@ -788,10 +802,10 @@ $name = session('user_name') ?? 'User';
    
     .section-label {
         font-family: 'DM Sans', sans-serif;
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.8px;
+        letter-spacing: 1.6px;
         color: #64748b;
     }
 
@@ -839,8 +853,8 @@ $name = session('user_name') ?? 'User';
 
     .action-card {
         background: #ffffff;
-        border-radius: 18px;
-        padding: 24px 22px;
+        border-radius: 16px;
+        padding: 18px 18px;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
         border: 1px solid #dbe4ef;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -854,47 +868,47 @@ $name = session('user_name') ?? 'User';
         border-color: #c6d4e4;
     }
     .action-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 13px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
-        margin-bottom: 14px;
+        font-size: 1.05rem;
+        margin-bottom: 12px;
     }
     .action-tag {
         font-family: 'DM Sans', sans-serif;
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1.4px;
         color: #94a3b8;
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
     .action-title {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 7px;
+        margin-bottom: 5px;
         letter-spacing: -0.2px;
     }
     .action-desc {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.83rem;
+        font-size: 0.8rem;
         color: #64748b;
         flex: 1;
-        margin-bottom: 18px;
-        line-height: 1.6;
+        margin-bottom: 14px;
+        line-height: 1.5;
         font-weight: 400;
     }
     .action-btn {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.78rem;
         font-weight: 600;
-        padding: 8px 20px;
-        border-radius: 10px;
+        padding: 7px 16px;
+        border-radius: 9px;
         border: none;
         cursor: pointer;
         align-self: flex-start;
@@ -957,9 +971,9 @@ $name = session('user_name') ?? 'User';
     .notif-panel-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .notif-panel-header {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+        padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9;
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.82rem; font-weight: 600; color: #475569;
+        font-size: 0.8rem; font-weight: 600; color: #475569;
     }
     .notif-mark-all {
         background: none; border: none; color: #3b82f6;
@@ -969,7 +983,7 @@ $name = session('user_name') ?? 'User';
     .notif-mark-all:hover { text-decoration: underline; }
     .notif-item {
         display: flex; align-items: flex-start; gap: 0.85rem;
-        padding: 0.9rem 1.25rem; border-bottom: 1px solid #f8fafc;
+        padding: 0.8rem 1rem; border-bottom: 1px solid #f8fafc;
         cursor: pointer; transition: background 0.15s;
     }
     .notif-item:last-child { border-bottom: none; }
