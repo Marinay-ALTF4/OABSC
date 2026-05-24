@@ -554,7 +554,7 @@ $name = session('user_name') ?? 'User';
     </div>
 
     <div class="section-label mb-3">Quick Access</div>
-    <div class="row g-3 justify-content-center">
+    <div class="row g-2 g-lg-3 justify-content-center">
         <div class="col-md-4">
             <div class="action-card">
                 <div class="action-icon bg-blue-soft"><i class="bi bi-calendar2-plus"></i></div>
@@ -626,334 +626,8 @@ $name = session('user_name') ?? 'User';
     }
 </script>
 
-<!-- ── Chat Widget ── -->
-<div id="chat-widget" class="chat-widget d-none">
-    <div class="chat-header">
-        <div class="d-flex align-items-center gap-2">
-            <div class="chat-avatar-sm"><i class="bi bi-hospital"></i></div>
-            <div>
-                <div class="chat-header-name">Clinic Support</div>
-                <div class="chat-header-status"><span class="chat-online-dot"></span> Online</div>
-            </div>
-        </div>
-        <div class="d-flex gap-2 align-items-center">
-            <button class="chat-header-btn" onclick="switchContact()" title="Switch contact"><i class="bi bi-people"></i></button>
-            <button class="chat-header-btn" onclick="closeChat()" title="Close"><i class="bi bi-x-lg"></i></button>
-        </div>
-    </div>
+<?php echo view('layouts/_chat_widget'); ?>
 
-    <!-- Contact Switcher -->
-    <div id="chat-contacts" class="chat-contacts d-none">
-        <div class="chat-contacts-title">Select a contact</div>
-        <div class="chat-contact-item active" onclick="selectContact('clinic','Clinic Support','bi-hospital','#3b82f6')">
-            <div class="chat-contact-avatar" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-hospital"></i></div>
-            <div><div class="chat-contact-name">Clinic Support</div><div class="chat-contact-sub">General inquiries</div></div>
-        </div>
-        <div class="chat-contact-item" onclick="selectContact('dr-santos','Dr. Santos','bi-person-fill','#10b981')">
-            <div class="chat-contact-avatar" style="background:#f0fdf4;color:#10b981;"><i class="bi bi-person-fill"></i></div>
-            <div><div class="chat-contact-name">Dr. Santos</div><div class="chat-contact-sub">General Practitioner</div></div>
-        </div>
-        <div class="chat-contact-item" onclick="selectContact('dr-reyes','Dr. Reyes','bi-person-fill','#8b5cf6')">
-            <div class="chat-contact-avatar" style="background:#f5f3ff;color:#8b5cf6;"><i class="bi bi-person-fill"></i></div>
-            <div><div class="chat-contact-name">Dr. Reyes</div><div class="chat-contact-sub">Cardiologist</div></div>
-        </div>
-        <div class="chat-contact-item" onclick="selectContact('dr-cruz','Dr. Cruz','bi-person-fill','#f59e0b')">
-            <div class="chat-contact-avatar" style="background:#fffbeb;color:#f59e0b;"><i class="bi bi-person-fill"></i></div>
-            <div><div class="chat-contact-name">Dr. Cruz</div><div class="chat-contact-sub">Pediatrician</div></div>
-        </div>
-        <div class="chat-contact-item" onclick="selectContact('dr-garcia','Dr. Garcia','bi-person-fill','#ef4444')">
-            <div class="chat-contact-avatar" style="background:#fff1f2;color:#ef4444;"><i class="bi bi-person-fill"></i></div>
-            <div><div class="chat-contact-name">Dr. Garcia</div><div class="chat-contact-sub">Dermatologist</div></div>
-        </div>
-    </div>
-
-    <div id="chat-messages" class="chat-messages">
-        <!-- messages rendered by JS -->
-    </div>
-
-    <div class="chat-input-row">
-        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()">
-        <button class="chat-send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
-    </div>
-</div>
-
-<!-- Floating Chat Button -->
-<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Chat with clinic">
-    <i class="bi bi-chat-dots-fill"></i>
-    <span class="chat-fab-dot d-none" id="chat-fab-dot"></span>
-</button>
-
-<script>
-(function () {
-    const CHAT_KEY = 'oabsc_chat_messages';
-    let currentContact = { id: 'clinic', name: 'Clinic Support', icon: 'bi-hospital', color: '#3b82f6' };
-
-    const autoReplies = {
-        clinic: [
-            "Thank you for reaching out! How can we help you today?",
-            "Our clinic hours are Monday to Saturday, 8:00 AM – 5:00 PM.",
-            "For urgent concerns, please call us at (02) 8123-4567.",
-            "We'll get back to you as soon as possible. Is there anything else?",
-        ],
-        'dr-santos': [
-            "Hello! This is Dr. Santos' office. How can I assist you?",
-            "Please bring your previous lab results to your next visit.",
-            "Your prescription is ready for pick-up at the clinic.",
-        ],
-        'dr-reyes': [
-            "Hi! Dr. Reyes' office here. What can we help you with?",
-            "Please avoid strenuous activity before your cardiology check-up.",
-            "Your ECG results are ready. Please schedule a follow-up.",
-        ],
-        'dr-cruz': [
-            "Hello! Dr. Cruz's clinic here. How may I help?",
-            "Please bring your child's vaccination record to the next visit.",
-            "The doctor recommends a follow-up in 2 weeks.",
-        ],
-        'dr-garcia': [
-            "Hi! Dr. Garcia's office. What can we do for you?",
-            "Please avoid sun exposure 24 hours before your skin procedure.",
-            "Your dermatology results are ready for review.",
-        ],
-    };
-
-    function getMessages() {
-        try { return JSON.parse(localStorage.getItem(CHAT_KEY) || '{}'); } catch(e) { return {}; }
-    }
-    function saveMessages(data) { localStorage.setItem(CHAT_KEY, JSON.stringify(data)); }
-
-    function getContactMessages() {
-        const all = getMessages();
-        return all[currentContact.id] || [];
-    }
-    function addMessage(msg) {
-        const all = getMessages();
-        if (!all[currentContact.id]) all[currentContact.id] = [];
-        all[currentContact.id].push(msg);
-        saveMessages(all);
-    }
-
-    function renderMessages() {
-        const container = document.getElementById('chat-messages');
-        const msgs = getContactMessages();
-
-        if (msgs.length === 0) {
-            container.innerHTML = `
-            <div class="chat-empty">
-                <i class="bi bi-chat-left-dots" style="font-size:2rem;opacity:0.25;display:block;margin-bottom:8px;"></i>
-                <div>No messages yet.</div>
-                <div style="font-size:0.75rem;margin-top:4px;">Send a message to start the conversation.</div>
-            </div>`;
-            return;
-        }
-
-        container.innerHTML = msgs.map(m => {
-            if (m.from === 'me') {
-                return `<div class="chat-bubble-row chat-bubble-right">
-                    <div class="chat-bubble chat-bubble-me">${escHtml(m.text)}</div>
-                    <div class="chat-time">${m.time}</div>
-                </div>`;
-            } else {
-                return `<div class="chat-bubble-row chat-bubble-left">
-                    <div class="chat-avatar-xs" style="background:#f1f5f9;color:${currentContact.color};">
-                        <i class="bi ${currentContact.icon}"></i>
-                    </div>
-                    <div>
-                        <div class="chat-bubble chat-bubble-them">${escHtml(m.text)}</div>
-                        <div class="chat-time">${m.time}</div>
-                    </div>
-                </div>`;
-            }
-        }).join('');
-
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function nowTime() {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    window.sendMessage = function () {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-
-        addMessage({ from: 'me', text, time: nowTime() });
-        input.value = '';
-        renderMessages();
-
-        // Auto-reply after delay
-        const replies = autoReplies[currentContact.id] || autoReplies.clinic;
-        const reply = replies[Math.floor(Math.random() * replies.length)];
-        setTimeout(() => {
-            addMessage({ from: 'them', text: reply, time: nowTime() });
-            renderMessages();
-            document.getElementById('chat-fab-dot').classList.remove('d-none');
-        }, 1200);
-    };
-
-    window.openChat = function () {
-        document.getElementById('chat-widget').classList.remove('d-none');
-        document.getElementById('chat-fab').classList.add('d-none');
-        document.getElementById('chat-contacts').classList.add('d-none');
-        document.getElementById('chat-fab-dot').classList.add('d-none');
-        renderMessages();
-        setTimeout(() => document.getElementById('chat-input').focus(), 100);
-    };
-
-    window.closeChat = function () {
-        document.getElementById('chat-widget').classList.add('d-none');
-        document.getElementById('chat-fab').classList.remove('d-none');
-    };
-
-    window.switchContact = function () {
-        const panel = document.getElementById('chat-contacts');
-        panel.classList.toggle('d-none');
-    };
-
-    window.selectContact = function (id, name, icon, color) {
-        currentContact = { id, name, icon, color };
-
-        // Update header
-        document.querySelector('.chat-header-name').textContent = name;
-        document.querySelector('.chat-avatar-sm i').className = `bi ${icon}`;
-        document.querySelector('.chat-avatar-sm').style.background = color + '22';
-        document.querySelector('.chat-avatar-sm').style.color = color;
-
-        // Highlight active
-        document.querySelectorAll('.chat-contact-item').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-
-        document.getElementById('chat-contacts').classList.add('d-none');
-        renderMessages();
-    };
-})();
-</script>
-
-<style>
-    /* ── Chat FAB ── */
-    .chat-fab {
-        position: fixed; bottom: 28px; right: 28px;
-        width: 54px; height: 54px; border-radius: 50%;
-        background: linear-gradient(135deg, #6d28d9, #4f46e5);
-        color: white; border: none; font-size: 1.3rem;
-        box-shadow: 0 6px 20px rgba(109,40,217,0.4);
-        cursor: pointer; z-index: 1050;
-        display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .chat-fab:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(109,40,217,0.5); }
-    .chat-fab-dot {
-        position: absolute; top: 6px; right: 6px;
-        width: 10px; height: 10px; border-radius: 50%;
-        background: #ef4444; border: 2px solid white;
-    }
-
-    /* ── Chat Widget ── */
-    .chat-widget {
-        position: fixed; bottom: 28px; right: 28px;
-        width: 360px; max-height: 540px;
-        background: white; border-radius: 20px;
-        box-shadow: 0 16px 48px rgba(15,23,42,0.18);
-        border: 1px solid #e2e8f0;
-        display: flex; flex-direction: column;
-        z-index: 1050; overflow: hidden;
-    }
-
-    /* Header */
-    .chat-header {
-        background: linear-gradient(135deg, #6d28d9, #4f46e5);
-        color: white; padding: 0.85rem 1rem;
-        display: flex; justify-content: space-between; align-items: center;
-        flex-shrink: 0;
-    }
-    .chat-avatar-sm {
-        width: 36px; height: 36px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1rem; background: rgba(255,255,255,0.2); color: white;
-        transition: all 0.2s;
-    }
-    .chat-header-name { font-size: 0.88rem; font-weight: 700; }
-    .chat-header-status { font-size: 0.72rem; opacity: 0.85; display: flex; align-items: center; gap: 4px; }
-    .chat-online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; }
-    .chat-header-btn {
-        background: rgba(255,255,255,0.15); border: none; color: white;
-        width: 28px; height: 28px; border-radius: 8px; font-size: 0.8rem;
-        display: flex; align-items: center; justify-content: center; cursor: pointer;
-        transition: background 0.15s;
-    }
-    .chat-header-btn:hover { background: rgba(255,255,255,0.28); }
-
-    /* Contacts */
-    .chat-contacts {
-        border-bottom: 1px solid #f1f5f9; background: #fafafa; flex-shrink: 0;
-    }
-    .chat-contacts-title {
-        font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.8px; color: #94a3b8; padding: 0.6rem 1rem 0.3rem;
-    }
-    .chat-contact-item {
-        display: flex; align-items: center; gap: 0.75rem;
-        padding: 0.6rem 1rem; cursor: pointer; transition: background 0.15s;
-    }
-    .chat-contact-item:hover, .chat-contact-item.active { background: #f0f7ff; }
-    .chat-contact-avatar {
-        width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
-    }
-    .chat-contact-name { font-size: 0.83rem; font-weight: 600; color: #0f172a; }
-    .chat-contact-sub  { font-size: 0.72rem; color: #94a3b8; }
-
-    /* Messages */
-    .chat-messages {
-        flex: 1; overflow-y: auto; padding: 1rem;
-        display: flex; flex-direction: column; gap: 0.5rem;
-        min-height: 200px;
-    }
-    .chat-empty { text-align: center; color: #94a3b8; font-size: 0.82rem; margin: auto; padding: 2rem 0; }
-    .chat-bubble-row { display: flex; align-items: flex-end; gap: 6px; }
-    .chat-bubble-right { flex-direction: row-reverse; }
-    .chat-bubble-left  { flex-direction: row; }
-    .chat-bubble {
-        max-width: 220px; padding: 0.55rem 0.85rem;
-        border-radius: 14px; font-size: 0.83rem; line-height: 1.45; word-break: break-word;
-    }
-    .chat-bubble-me   { background: linear-gradient(135deg,#6d28d9,#4f46e5); color: white; border-bottom-right-radius: 4px; }
-    .chat-bubble-them { background: #f1f5f9; color: #0f172a; border-bottom-left-radius: 4px; }
-    .chat-time { font-size: 0.68rem; color: #94a3b8; margin-top: 2px; padding: 0 4px; }
-    .chat-avatar-xs {
-        width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
-    }
-
-    /* Input */
-    .chat-input-row {
-        display: flex; gap: 8px; padding: 0.75rem 1rem;
-        border-top: 1px solid #f1f5f9; flex-shrink: 0;
-    }
-    .chat-input {
-        flex: 1; border: 1px solid #e2e8f0; border-radius: 10px;
-        padding: 0.5rem 0.85rem; font-size: 0.83rem; outline: none;
-        transition: border-color 0.15s;
-    }
-    .chat-input:focus { border-color: #6d28d9; }
-    .chat-send-btn {
-        background: linear-gradient(135deg,#6d28d9,#4f46e5); color: white;
-        border: none; border-radius: 10px; width: 38px; height: 38px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.9rem; cursor: pointer; transition: opacity 0.15s;
-    }
-    .chat-send-btn:hover { opacity: 0.88; }
-
-    @media (max-width: 480px) {
-        .chat-widget { width: calc(100vw - 24px); right: 12px; bottom: 12px; }
-        .chat-fab    { right: 16px; bottom: 16px; }
-    }
-</style>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
@@ -971,21 +645,35 @@ $name = session('user_name') ?? 'User';
         overflow-x: hidden;
     }
 
+    .client-container {
+        max-width: 1180px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 18px 22px 28px;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+        .client-container {
+            padding: 14px 14px 20px;
+        }
+    }
+
     /* Client Page */
     .client-page {
-        max-width: 1100px;
+        max-width: 1040px;
         margin: 0 auto;
-        padding: 28px;
+        padding: 30px;
     }
     @media (max-width: 768px) {
-        .client-page { padding: 16px; }
+        .client-page { padding: 18px; }
         .cl-banner { flex-direction: column; align-items: flex-start; gap: 1rem; }
         .cl-banner-right { align-items: flex-start; }
     }
 
     /* Welcome Banner */
     .cl-banner {
-        background: white; border-radius: 20px; padding: 2rem 2.5rem;
+        background: white; border-radius: 18px; padding: 1.5rem 1.75rem;
         display: flex; justify-content: space-between; align-items: center;
         border: 1px solid #e8eaf6; box-shadow: 0 4px 20px rgba(99,102,241,0.07);
         overflow: hidden; position: relative; margin-bottom: 1.5rem;
@@ -1006,25 +694,25 @@ $name = session('user_name') ?? 'User';
         padding: 6px 14px; border-radius: 20px;
         display: flex; align-items: center; gap: 5px;
     }
-    .cl-section-label { font-size: 0.72rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.2px; }
+    .cl-section-label { font-size: 0.7rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.2px; }
     .cl-card {
-        background: white; border-radius: 20px; padding: 1.75rem;
+        background: white; border-radius: 16px; padding: 1.25rem;
         border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05);
         position: relative; overflow: hidden;
         display: flex; flex-direction: column; gap: 10px;
         height: 100%; transition: transform 0.2s, box-shadow 0.2s;
     }
     .cl-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
-    .cl-card-icon-wrap { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .cl-card-icon-wrap { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
     .cl-icon-blue   { background: #dbeafe; color: #2563eb; }
     .cl-icon-green  { background: #d1fae5; color: #059669; }
     .cl-icon-purple { background: #ede9fe; color: #7c3aed; }
-    .cl-card-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .cl-card-desc  { font-size: 0.82rem; color: #64748b; line-height: 1.55; flex: 1; }
+    .cl-card-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+    .cl-card-desc  { font-size: 0.8rem; color: #64748b; line-height: 1.5; flex: 1; }
     .cl-card-btn {
         display: inline-flex; align-items: center; gap: 4px;
-        font-size: 0.82rem; font-weight: 700; padding: 0.6rem 1.1rem;
-        border-radius: 12px; border: none; cursor: pointer;
+        font-size: 0.78rem; font-weight: 700; padding: 0.55rem 1rem;
+        border-radius: 10px; border: none; cursor: pointer;
         text-decoration: none; transition: all 0.2s; width: fit-content;
     }
     .cl-btn-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
@@ -1035,15 +723,15 @@ $name = session('user_name') ?? 'User';
     .cl-deco-blue { background: #2563eb; } .cl-deco-green { background: #059669; } .cl-deco-purple { background: #7c3aed; }
     .cl-mark-all { font-size: 0.78rem; font-weight: 600; color: #6366f1; background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 4px; }
     .cl-mark-all:hover { text-decoration: underline; }
-    .cl-notif-panel { background: white; border-radius: 20px; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; min-height: 100px; }
+    .cl-notif-panel { background: white; border-radius: 16px; border: 1px solid #e8eaf6; box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; min-height: 100px; }
     .cl-notif-body { padding: 0.5rem 0; }
     .cl-notif-empty { padding: 3rem; text-align: center; color: #94a3b8; }
     .cl-notif-empty i { font-size: 2.5rem; color: #c7d2fe; display: block; margin-bottom: 0.5rem; }
 
-    /* ── Welcome Banner ── */
+    /* ΓöÇΓöÇ Welcome Banner ΓöÇΓöÇ */
     .welcome-banner {
-        border-radius: 20px;
-        padding: 28px 32px;
+        border-radius: 18px;
+        padding: 22px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1083,7 +771,7 @@ $name = session('user_name') ?? 'User';
     }
     .welcome-name {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.55rem;
+        font-size: 1.45rem;
         font-weight: 800;
         color: #0f172a;
         margin: 0 0 5px;
@@ -1092,18 +780,18 @@ $name = session('user_name') ?? 'User';
     }
     .welcome-sub {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.875rem;
+        font-size: 0.84rem;
         color: #64748b;
         margin: 0;
         font-weight: 400;
     }
     .welcome-date {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 500;
         color: #475569;
         background: rgba(255,255,255,0.8);
-        padding: 8px 18px;
+        padding: 7px 16px;
         border-radius: 20px;
         white-space: nowrap;
         backdrop-filter: blur(6px);
@@ -1114,10 +802,10 @@ $name = session('user_name') ?? 'User';
    
     .section-label {
         font-family: 'DM Sans', sans-serif;
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.8px;
+        letter-spacing: 1.6px;
         color: #64748b;
     }
 
@@ -1165,8 +853,8 @@ $name = session('user_name') ?? 'User';
 
     .action-card {
         background: #ffffff;
-        border-radius: 18px;
-        padding: 24px 22px;
+        border-radius: 16px;
+        padding: 18px 18px;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
         border: 1px solid #dbe4ef;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1180,47 +868,47 @@ $name = session('user_name') ?? 'User';
         border-color: #c6d4e4;
     }
     .action-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 13px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
-        margin-bottom: 14px;
+        font-size: 1.05rem;
+        margin-bottom: 12px;
     }
     .action-tag {
         font-family: 'DM Sans', sans-serif;
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1.4px;
         color: #94a3b8;
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
     .action-title {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 7px;
+        margin-bottom: 5px;
         letter-spacing: -0.2px;
     }
     .action-desc {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.83rem;
+        font-size: 0.8rem;
         color: #64748b;
         flex: 1;
-        margin-bottom: 18px;
-        line-height: 1.6;
+        margin-bottom: 14px;
+        line-height: 1.5;
         font-weight: 400;
     }
     .action-btn {
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.78rem;
         font-weight: 600;
-        padding: 8px 20px;
-        border-radius: 10px;
+        padding: 7px 16px;
+        border-radius: 9px;
         border: none;
         cursor: pointer;
         align-self: flex-start;
@@ -1265,7 +953,7 @@ $name = session('user_name') ?? 'User';
     .bg-orange-soft { background: #fff0e0; color: #d97706; }
     .bg-slate-soft  { background: #e2e8f0; color: #334155; }
 
-    /* ── Notifications Panel ── */
+    /* ΓöÇΓöÇ Notifications Panel ΓöÇΓöÇ */
     .notif-panel {
         background: white; border-radius: 18px;
         border: 1px solid #e2e8f0;
@@ -1283,9 +971,9 @@ $name = session('user_name') ?? 'User';
     .notif-panel-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .notif-panel-header {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+        padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9;
         font-family: 'DM Sans', sans-serif;
-        font-size: 0.82rem; font-weight: 600; color: #475569;
+        font-size: 0.8rem; font-weight: 600; color: #475569;
     }
     .notif-mark-all {
         background: none; border: none; color: #3b82f6;
@@ -1295,7 +983,7 @@ $name = session('user_name') ?? 'User';
     .notif-mark-all:hover { text-decoration: underline; }
     .notif-item {
         display: flex; align-items: flex-start; gap: 0.85rem;
-        padding: 0.9rem 1.25rem; border-bottom: 1px solid #f8fafc;
+        padding: 0.8rem 1rem; border-bottom: 1px solid #f8fafc;
         cursor: pointer; transition: background 0.15s;
     }
     .notif-item:last-child { border-bottom: none; }
@@ -1323,9 +1011,9 @@ $name = session('user_name') ?? 'User';
         font-family: 'DM Sans', sans-serif;
         font-size: 0.72rem; color: #94a3b8;
     }
-    /* ══════════════════════════════════════
-       ADMIN — Steel Blue/Teal Theme
-    ══════════════════════════════════════ */
+    /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+       ADMIN ΓÇö Steel Blue/Teal Theme
+    ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
     .adm-wrapper {
         background: #dce6ef;
         border-radius: 24px;
@@ -1381,7 +1069,7 @@ $name = session('user_name') ?? 'User';
     .adm-btn-outline:hover:not(:disabled) { background:#e2ebf4; border-color:#a9bfd4 !important; }
     .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
 
-    /* ── Assistant Admin Compact List ── */
+    /* ΓöÇΓöÇ Assistant Admin Compact List ΓöÇΓöÇ */
     .aa-list-panel {
         background: white; border-radius: 16px; border: 1px solid #e2e8f0;
         box-shadow: 0 2px 8px rgba(15,23,42,0.06); overflow: hidden;
@@ -1412,7 +1100,7 @@ $name = session('user_name') ?? 'User';
         color: #94a3b8; padding: 2px 7px; border-radius: 999px;
     }
 
-    /* ── Availability Schedule Widget ── */
+    /* ΓöÇΓöÇ Availability Schedule Widget ΓöÇΓöÇ */
     .aa-sched-header {
         display: grid; grid-template-columns: 1fr repeat(6, 60px);
         padding: 0.6rem 1rem; background: #f8fafc;
@@ -1443,9 +1131,9 @@ $name = session('user_name') ?? 'User';
     .aa-on  { background: #d1fae5; color: #065f46; }
     .aa-off { background: #f1f5f9; color: #94a3b8; }
 
-    /* ══════════════════════════════════════
-       SECRETARY — Redesigned Green Theme
-    ══════════════════════════════════════ */
+    /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+       SECRETARY ΓÇö Redesigned Green Theme
+    ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
     .sec2-wrapper {
         background: #f4f9f4;
         border-radius: 20px;

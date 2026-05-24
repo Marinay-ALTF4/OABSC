@@ -262,5 +262,6 @@ $name = session('user_name') ?? 'User';
     .pl-action-restore { background: #d1fae5; color: #065f46; }
     .pl-action-restore:hover { background: #a7f3d0; color: #064e3b; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

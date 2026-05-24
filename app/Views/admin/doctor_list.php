@@ -122,5 +122,6 @@
         white-space: nowrap;
     }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

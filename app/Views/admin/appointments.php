@@ -331,5 +331,6 @@ document.querySelectorAll('.section-tab').forEach(function(btn) {
     .tab-badge-green { background: #d1fae5; color: #065f46; }
     .tab-badge-gray  { background: #f1f5f9; color: #475569; }
 </style>
+<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>
