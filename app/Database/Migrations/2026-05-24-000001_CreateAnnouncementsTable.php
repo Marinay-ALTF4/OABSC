@@ -26,9 +26,6 @@ class CreateAnnouncementsTable extends Migration
                 'body' => [
                     'type' => 'TEXT',
                 ],
-                'content' => [
-                    'type' => 'TEXT',
-                ],
                 'type' => [
                     'type'       => 'VARCHAR',
                     'constraint' => 50,
@@ -61,37 +58,22 @@ class CreateAnnouncementsTable extends Migration
                     ],
                 ]);
             }
-            // Check if column body exists, if not add it
-            if (! $db->fieldExists('body', 'announcements')) {
+            if ($db->fieldExists('content', 'announcements') && ! $db->fieldExists('body', 'announcements')) {
                 $this->forge->addColumn('announcements', [
                     'body' => [
                         'type' => 'TEXT',
+                        'null' => true,
+                        'after' => 'title',
                     ],
                 ]);
+                $db->query('UPDATE announcements SET body = content WHERE body IS NULL OR body = ""');
             }
-        }
-
-        // 2. Add announcement_id column to notifications table if it doesn't exist
-        if (! $db->fieldExists('announcement_id', 'notifications')) {
-            $this->forge->addColumn('notifications', [
-                'announcement_id' => [
-                    'type'       => 'INT',
-                    'constraint' => 11,
-                    'unsigned'   => true,
-                    'null'       => true,
-                    'default'    => null,
-                ],
-            ]);
         }
     }
 
     public function down()
     {
         $db = \Config\Database::connect();
-        
-        if ($db->fieldExists('announcement_id', 'notifications')) {
-            $this->forge->dropColumn('notifications', 'announcement_id');
-        }
 
         $this->forge->dropTable('announcements', true);
     }

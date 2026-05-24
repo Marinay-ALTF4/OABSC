@@ -11,14 +11,14 @@ class CreateSecureUserStorageSchema extends Migration
         $db = \Config\Database::connect();
 
         $this->addUsersSecurityColumns($db);
-        $this->createUserCredentialsTable($db);
+        $this->createUserAuthTable($db);
         $this->createRbacTables($db);
         $this->createAuthSessionsTable($db);
         $this->createLoginEventsTable($db);
 
         $this->seedDefaultRoles($db);
         $this->backfillUsersPublicId($db);
-        $this->backfillUserCredentials($db);
+        $this->backfillUserAuth($db);
         $this->backfillUserRoles($db);
     }
 
@@ -32,7 +32,7 @@ class CreateSecureUserStorageSchema extends Migration
         $this->forge->dropTable('user_roles', true);
         $this->forge->dropTable('permissions', true);
         $this->forge->dropTable('roles', true);
-        $this->forge->dropTable('user_credentials', true);
+        $this->forge->dropTable('user_auth', true);
 
         $columns = [];
         foreach (['public_id', 'username', 'status', 'is_email_verified', 'failed_login_count', 'lock_until', 'last_login_at', 'password_changed_at'] as $column) {
@@ -122,9 +122,9 @@ class CreateSecureUserStorageSchema extends Migration
         $this->createIndexIfMissing($db, 'users', 'idx_users_last_login', 'INDEX', '(last_login_at)');
     }
 
-    private function createUserCredentialsTable($db): void
+    private function createUserAuthTable($db): void
     {
-        if ($db->tableExists('user_credentials')) {
+        if ($db->tableExists('user_auth')) {
             return;
         }
 
@@ -138,39 +138,59 @@ class CreateSecureUserStorageSchema extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
             ],
-            'hash_algo' => [
+            'role_password' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 20,
-                'default'    => 'argon2id',
+                'constraint' => 255,
+                'null'       => true,
             ],
-            'hash_params' => [
-                'type' => 'TEXT',
-                'null' => false,
+            'mfa_code_hash' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
             ],
-            'pepper_version' => [
+            'mfa_expires_at' => [
+                'type' => 'INT',
+                'null' => true,
+            ],
+            'failed_login_count' => [
+                'type'       => 'SMALLINT',
+                'constraint' => 5,
+                'unsigned'   => true,
+                'default'    => 0,
+            ],
+            'cancel_attempts' => [
                 'type'       => 'TINYINT',
                 'constraint' => 3,
                 'unsigned'   => true,
-                'default'    => 1,
+                'default'    => 0,
             ],
-            'must_rotate' => [
+            'cancel_reset_at' => [
+                'type'    => 'DATETIME',
+                'null'    => true,
+                'default' => null,
+            ],
+            'lock_until' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'last_login_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'password_changed_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'is_email_verified' => [
                 'type'       => 'TINYINT',
                 'constraint' => 1,
                 'default'    => 0,
-            ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
-            'updated_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
             ],
         ]);
 
         $this->forge->addKey('user_id', true);
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('user_credentials', true);
+        $this->forge->createTable('user_auth', true);
     }
 
     private function createRbacTables($db): void
@@ -239,7 +259,6 @@ class CreateSecureUserStorageSchema extends Migration
                 ],
             ]);
             $this->forge->addKey(['user_id', 'role_id'], true);
-            $this->forge->addKey(['role_id', 'user_id'], false, false, 'idx_ur_role_user');
             $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
             $this->forge->addForeignKey('role_id', 'roles', 'id', 'CASCADE', 'CASCADE');
             $this->forge->createTable('user_roles', true);
@@ -284,17 +303,17 @@ class CreateSecureUserStorageSchema extends Migration
                 'unsigned'   => true,
             ],
             'refresh_token_hash' => [
-                'type'       => 'BINARY',
-                'constraint' => 32,
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
             ],
             'device_fingerprint_hash' => [
-                'type'       => 'BINARY',
-                'constraint' => 32,
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
                 'null'       => true,
             ],
             'ip_hash' => [
-                'type'       => 'BINARY',
-                'constraint' => 32,
+                'type'       => 'VARCHAR',
+                'constraint' => 64,
                 'null'       => true,
             ],
             'ip_address' => [
@@ -303,9 +322,8 @@ class CreateSecureUserStorageSchema extends Migration
                 'null'       => true,
             ],
             'user_agent' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-                'null'       => true,
+                'type' => 'TEXT',
+                'null' => true,
             ],
             'issued_at' => [
                 'type' => 'DATETIME',
@@ -317,7 +335,7 @@ class CreateSecureUserStorageSchema extends Migration
             ],
             'expires_at' => [
                 'type' => 'DATETIME',
-                'null' => false,
+                'null' => true,
             ],
             'revoked_at' => [
                 'type' => 'DATETIME',
@@ -331,12 +349,9 @@ class CreateSecureUserStorageSchema extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addKey(['user_id', 'revoked_at', 'expires_at'], false, false, 'idx_as_user_active');
-        $this->forge->addKey('expires_at', false, false, 'idx_as_expires');
+        $this->forge->addKey('user_id');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('auth_sessions', true);
-
-        $this->createIndexIfMissing($db, 'auth_sessions', 'uq_as_refresh_hash', 'UNIQUE', '(refresh_token_hash)');
     }
 
     private function createLoginEventsTable($db): void
@@ -358,14 +373,9 @@ class CreateSecureUserStorageSchema extends Migration
                 'unsigned'   => true,
                 'null'       => true,
             ],
-            'email_attempted' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 191,
-                'null'       => true,
-            ],
             'event_type' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 30,
+                'constraint' => 50,
             ],
             'reason_code' => [
                 'type'       => 'VARCHAR',
@@ -373,8 +383,8 @@ class CreateSecureUserStorageSchema extends Migration
                 'null'       => true,
             ],
             'ip_hash' => [
-                'type'       => 'BINARY',
-                'constraint' => 32,
+                'type'       => 'VARCHAR',
+                'constraint' => 64,
                 'null'       => true,
             ],
             'ip_address' => [
@@ -383,9 +393,8 @@ class CreateSecureUserStorageSchema extends Migration
                 'null'       => true,
             ],
             'user_agent' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-                'null'       => true,
+                'type' => 'TEXT',
+                'null' => true,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -394,26 +403,26 @@ class CreateSecureUserStorageSchema extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addKey(['user_id', 'created_at'], false, false, 'idx_le_user_created');
-        $this->forge->addKey(['ip_hash', 'created_at'], false, false, 'idx_le_ip_created');
-        $this->forge->addKey(['event_type', 'created_at'], false, false, 'idx_le_event_created');
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'SET NULL', 'CASCADE');
+        $this->forge->addKey('user_id');
+        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('login_events', true);
     }
 
     private function seedDefaultRoles($db): void
     {
-        $roles = [
-            ['name' => 'admin', 'description' => 'Primary administrator'],
+        if (! $db->tableExists('roles')) {
+            return;
+        }
+
+        $defaults = [
+            ['name' => 'admin', 'description' => 'Administrator'],
             ['name' => 'assistant_admin', 'description' => 'Assistant administrator'],
-            ['name' => 'secretary', 'description' => 'Clinic secretary'],
-            ['name' => 'doctor', 'description' => 'Medical practitioner'],
-            ['name' => 'client', 'description' => 'Patient/client user'],
-            ['name' => 'assistant_secretary', 'description' => 'Assistant secretary'],
+            ['name' => 'doctor', 'description' => 'Doctor'],
+            ['name' => 'client', 'description' => 'Client'],
         ];
 
-        foreach ($roles as $role) {
-            $exists = $db->table('roles')->where('name', $role['name'])->get()->getRowArray();
+        foreach ($defaults as $role) {
+            $exists = $db->table('roles')->where('name', $role['name'])->countAllResults() > 0;
             if (! $exists) {
                 $db->table('roles')->insert($role);
             }
@@ -426,60 +435,78 @@ class CreateSecureUserStorageSchema extends Migration
             return;
         }
 
-        $users = $db->table('users')->select('id, public_id')->get()->getResultArray();
-        foreach ($users as $user) {
-            if (empty($user['public_id'])) {
-                $db->table('users')->where('id', (int) $user['id'])->update([
-                    'public_id' => $this->uuidV4(),
-                ]);
-            }
+        $rows = $db->table('users')->select('id')->where('public_id IS NULL', null, false)->get()->getResultArray();
+        foreach ($rows as $row) {
+            $db->table('users')->where('id', (int) $row['id'])->update(['public_id' => $this->uuidV4()]);
         }
     }
 
-    private function backfillUserCredentials($db): void
+    private function backfillUserAuth($db): void
     {
-        if (! $db->tableExists('user_credentials') || ! $db->fieldExists('password_hash', 'users')) {
+        if (! $db->tableExists('user_auth') || ! $db->fieldExists('password_hash', 'users')) {
             return;
         }
 
         $db->query(
-            "INSERT INTO user_credentials (user_id, password_hash, hash_algo, hash_params, pepper_version, must_rotate, created_at, updated_at)
-             SELECT u.id, u.password_hash, 'legacy', '{}', 1, 0, u.created_at, u.updated_at
-             FROM users u
-             LEFT JOIN user_credentials uc ON uc.user_id = u.id
-             WHERE uc.user_id IS NULL AND u.password_hash IS NOT NULL AND u.password_hash <> ''"
+            "INSERT INTO user_auth (user_id, password_hash, hash_algo, hash_params, pepper_version, must_rotate, created_at, updated_at)\n" .
+            "SELECT u.id, u.password_hash, 'argon2id', '{}', 1, 0, u.created_at, u.updated_at\n" .
+            "FROM users u\n" .
+            "LEFT JOIN user_auth ua ON ua.user_id = u.id\n" .
+            "WHERE ua.user_id IS NULL AND u.password_hash IS NOT NULL AND u.password_hash <> ''"
         );
     }
 
     private function backfillUserRoles($db): void
     {
-        if (! $db->tableExists('user_roles') || ! $db->tableExists('roles') || ! $db->fieldExists('role', 'users')) {
+        if (! $db->tableExists('user_roles') || ! $db->tableExists('roles')) {
             return;
         }
 
-        $db->query(
-            "INSERT INTO user_roles (user_id, role_id, assigned_at)
-             SELECT u.id, r.id, NOW()
-             FROM users u
-             INNER JOIN roles r ON r.name = u.role
-             LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role_id = r.id
-             WHERE ur.user_id IS NULL AND u.role IS NOT NULL AND u.role <> ''"
-        );
+        $roles = $db->table('roles')->select('id, name')->get()->getResultArray();
+        $roleMap = [];
+        foreach ($roles as $role) {
+            $roleMap[$role['name']] = (int) $role['id'];
+        }
+
+        if (empty($roleMap)) {
+            return;
+        }
+
+        $users = $db->table('users')->select('id, role')->get()->getResultArray();
+        foreach ($users as $user) {
+            $roleName = (string) ($user['role'] ?? '');
+            if (! isset($roleMap[$roleName])) {
+                continue;
+            }
+
+            $exists = $db->table('user_roles')
+                ->where('user_id', (int) $user['id'])
+                ->where('role_id', $roleMap[$roleName])
+                ->countAllResults() > 0;
+
+            if (! $exists) {
+                $db->table('user_roles')->insert([
+                    'user_id' => (int) $user['id'],
+                    'role_id' => $roleMap[$roleName],
+                    'assigned_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
     }
 
     private function createIndexIfMissing($db, string $table, string $indexName, string $indexType, string $columns): void
     {
-        if (! $db->tableExists($table)) {
+        $exists = $db->query("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName])->getResultArray();
+        if (! empty($exists)) {
             return;
         }
 
-        $exists = $db->query("SHOW INDEX FROM {$table} WHERE Key_name = " . $db->escape($indexName))->getRowArray();
-        if ($exists) {
-            return;
-        }
+        $columnList = trim($columns, '()');
+        $sql = strtoupper($indexType) === 'UNIQUE'
+            ? "ALTER TABLE `{$table}` ADD UNIQUE INDEX `{$indexName}` ({$columnList})"
+            : "ALTER TABLE `{$table}` ADD INDEX `{$indexName}` ({$columnList})";
 
-        $prefix = strtoupper($indexType) === 'UNIQUE' ? 'CREATE UNIQUE INDEX' : 'CREATE INDEX';
-        $db->query("{$prefix} {$indexName} ON {$table} {$columns}");
+        $db->query($sql);
     }
 
     private function uuidV4(): string

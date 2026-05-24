@@ -272,7 +272,12 @@ class DoctorAppointments extends BaseController
 
         $userModel = new UserModel();
         $patients = $userModel->where('role', 'client')->findAll();
-        usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
+        usort($patients, function (array $a, array $b): int {
+            $nameA = (string) ($a['name'] ?? $a['username'] ?? '');
+            $nameB = (string) ($b['name'] ?? $b['username'] ?? '');
+
+            return strcmp($nameA, $nameB);
+        });
 
         usort($notes, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
 
@@ -344,7 +349,12 @@ class DoctorAppointments extends BaseController
 
         $userModel = new UserModel();
         $patients = $userModel->where('role', 'client')->findAll();
-        usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
+        usort($patients, function (array $a, array $b): int {
+            $nameA = (string) ($a['name'] ?? $a['username'] ?? '');
+            $nameB = (string) ($b['name'] ?? $b['username'] ?? '');
+
+            return strcmp($nameA, $nameB);
+        });
 
         usort($prescriptions, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
 

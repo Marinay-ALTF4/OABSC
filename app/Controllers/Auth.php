@@ -47,12 +47,22 @@ class Auth extends BaseController
 
         // Use prepared statement to fetch user securely
         $user = $db->query(
-            'SELECT id, name, email, phone, role, password_hash,
-                    failed_login_count, lock_until, last_login_at, deleted_at
-             FROM users
-             WHERE (email = ? OR phone = ?)
-               AND deleted_at IS NULL
-             LIMIT 1',
+                        'SELECT u.id,
+                                        COALESCE(up.name, u.username, "") AS name,
+                                        u.email,
+                                        COALESCE(up.phone, "") AS phone,
+                                        u.role,
+                                        ua.password_hash,
+                                        ua.failed_login_count,
+                                        ua.lock_until,
+                                        ua.last_login_at,
+                                        u.deleted_at
+                         FROM users u
+                         LEFT JOIN user_profiles up ON up.user_id = u.id
+                         LEFT JOIN user_auth ua ON ua.user_id = u.id
+                         WHERE (u.email = ? OR up.phone = ?)
+                             AND u.deleted_at IS NULL
+                         LIMIT 1',
             [$identifier, $identifier]
         )->getRowArray();
 
@@ -83,7 +93,7 @@ class Auth extends BaseController
 
             // Prepared statement update
             $db->query(
-                'UPDATE users SET failed_login_count = ?, lock_until = ? WHERE id = ?',
+                'UPDATE user_auth SET failed_login_count = ?, lock_until = ? WHERE user_id = ?',
                 [$failCount, $lockUntil, $userId]
             );
 
@@ -93,7 +103,7 @@ class Auth extends BaseController
 
         // Successful login — reset lockout fields + update last_login_at
         $db->query(
-            'UPDATE users SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE id = ?',
+            'UPDATE user_auth SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE user_id = ?',
             [date('Y-m-d H:i:s'), $userId]
         );
 
@@ -252,8 +262,20 @@ class Auth extends BaseController
             ]);
         }
 
-        $userModel = new UserModel();
-        $user      = $userModel->where('email', $email)->first();
+        $db = \Config\Database::connect();
+        $user      = $db->query(
+            'SELECT u.id,
+                    COALESCE(up.name, u.username, "") AS name,
+                    u.email,
+                    u.role,
+                    ua.password_hash
+             FROM users u
+             LEFT JOIN user_profiles up ON up.user_id = u.id
+             LEFT JOIN user_auth ua ON ua.user_id = u.id
+             WHERE u.email = ?
+             LIMIT 1',
+            [$email]
+        )->getRowArray();
 
         if (! $user || ! password_verify($password, $user['password_hash'] ?? '')) {
             return $this->response->setJSON([
@@ -437,11 +459,11 @@ class Auth extends BaseController
 
             $userModel = new UserModel();
             $userId = $userModel->insert([
-                'name'          => $pendingRegistration['name'] ?? '',
-                'email'         => $pendingRegistration['email'] ?? '',
-                'phone'         => $pendingRegistration['phone'] ?? '',
-                'password_hash' => $pendingRegistration['password_hash'] ?? '',
-                'role'          => $pendingRegistration['role'] ?? 'client',
+                'email'      => $pendingRegistration['email'] ?? '',
+                'role'       => $pendingRegistration['role'] ?? 'client',
+                'status'     => 'active',
+                'public_id'  => bin2hex(random_bytes(16)),
+                'username'   => null,
             ]);
 
             if (! $userId) {
@@ -450,6 +472,28 @@ class Auth extends BaseController
                     '_form' => $errors['email'] ?? 'Unable to create account right now. Please try again.',
                 ]);
             }
+
+            $db = \Config\Database::connect();
+            $db->table('user_profiles')->insert([
+                'user_id' => (int) $userId,
+                'name'    => $pendingRegistration['name'] ?? '',
+                'phone'   => $pendingRegistration['phone'] ?? null,
+            ]);
+
+            $db->table('user_auth')->insert([
+                'user_id'            => (int) $userId,
+                'password_hash'      => $pendingRegistration['password_hash'] ?? '',
+                'role_password'      => null,
+                'mfa_code_hash'      => null,
+                'mfa_expires_at'     => null,
+                'failed_login_count'  => 0,
+                'cancel_attempts'    => 0,
+                'cancel_reset_at'    => null,
+                'lock_until'         => null,
+                'last_login_at'      => null,
+                'password_changed_at'=> null,
+                'is_email_verified'   => 1,
+            ]);
 
             // Apply deny overrides if this role has disabled features
             applyDenyOverridesForNewUser((int) $userId, $pendingRegistration['role'] ?? 'client');

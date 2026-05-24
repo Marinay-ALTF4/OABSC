@@ -9,7 +9,7 @@ class NotificationModel extends Model
     protected $table         = 'notifications';
     protected $primaryKey    = 'id';
     protected $returnType    = 'array';
-    protected $allowedFields = ['user_id', 'title', 'body', 'type', 'is_read', 'announcement_id'];
+    protected $allowedFields = ['user_id', 'title', 'body', 'type', 'is_read'];
     protected $useTimestamps = true;
 
     public function getUnread(int $userId): array

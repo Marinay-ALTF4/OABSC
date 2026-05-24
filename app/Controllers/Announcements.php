@@ -25,12 +25,6 @@ class Announcements extends BaseController
             )->getResultArray();
         }
 
-        foreach ($announcements as &$a) {
-            if (! isset($a['body'])) {
-                $a['body'] = $a['content'] ?? '';
-            }
-        }
-
         return view('admin/announcements', ['announcements' => $announcements]);
     }
 
@@ -54,9 +48,9 @@ class Announcements extends BaseController
         $db = \Config\Database::connect();
         $now = date('Y-m-d H:i:s');
         $db->query(
-            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by, created_at, updated_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id'), $now, $now]
+            "INSERT INTO announcements (title, body, type, target_dashboard, created_by, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [$title, $body, $type, $targetDashboard, (int) session('user_id'), $now, $now]
         );
         $announcementId = $db->insertID();
 
@@ -74,14 +68,20 @@ class Announcements extends BaseController
 
         $notifModel = new \App\Models\NotificationModel();
         foreach ($users as $user) {
-            $notifModel->save([
+            $notificationId = $notifModel->insert([
                 'user_id'         => (int) $user['id'],
                 'title'           => 'New Announcement: ' . $title,
                 'body'            => $body,
                 'type'            => 'announcement',
-                'announcement_id' => $announcementId,
                 'is_read'         => 0,
-            ]);
+            ], true);
+
+            if ($notificationId) {
+                $db->table('notification_announcement_links')->insert([
+                    'notification_id' => (int) $notificationId,
+                    'announcement_id' => (int) $announcementId,
+                ]);
+            }
         }
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement posted successfully.');
@@ -95,7 +95,10 @@ class Announcements extends BaseController
         if ($db->tableExists('announcements')) {
             $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
         }
-        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
+        $db->query(
+            'DELETE n FROM notifications n INNER JOIN notification_announcement_links l ON l.notification_id = n.id WHERE l.announcement_id = ?',
+            [$id]
+        );
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement deleted.');
     }

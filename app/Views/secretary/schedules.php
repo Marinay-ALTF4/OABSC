@@ -18,7 +18,7 @@
                         <div style="width:48px;height:48px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#2e7d32;"><i class="bi bi-person-circle"></i></div>
                     <?php endif; ?>
                     <div>
-                        <div style="font-weight:700;color:#1b3a1e;">Dr. <?= esc($d['name']) ?></div>
+                        <div style="font-weight:700;color:#1b3a1e;">Dr. <?= esc($d['name'] ?? $d['username'] ?? 'Unknown') ?></div>
                         <div style="font-size:0.78rem;color:#6aaa70;"><?= esc($d['specialization'] ?? 'General') ?></div>
                     </div>
                 </div>

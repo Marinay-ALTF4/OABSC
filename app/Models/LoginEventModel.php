@@ -146,10 +146,11 @@ class LoginEventModel extends Model
     {
         $db = \Config\Database::connect();
         return $db->query(
-            'SELECT u.id, u.name, u.email, u.role, u.last_login_at,
+                        'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, u.role, u.last_login_at,
                     s.issued_at, s.expires_at, s.user_agent
              FROM auth_sessions s
              INNER JOIN users u ON u.id = s.user_id
+                         LEFT JOIN user_profiles up ON up.user_id = u.id
              WHERE s.revoked_at IS NULL
                AND s.expires_at > NOW()
              ORDER BY s.issued_at DESC

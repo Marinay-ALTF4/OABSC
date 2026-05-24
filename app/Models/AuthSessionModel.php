@@ -98,10 +98,11 @@ class AuthSessionModel extends Model
     {
         $db = \Config\Database::connect();
         return $db->query(
-            'SELECT s.id, s.user_id, u.name, u.email, u.role,
+                        'SELECT s.id, s.user_id, COALESCE(up.name, u.username, "") AS name, u.email, u.role,
                     s.user_agent, s.issued_at, s.expires_at
              FROM auth_sessions s
              INNER JOIN users u ON u.id = s.user_id
+                         LEFT JOIN user_profiles up ON up.user_id = u.id
              WHERE s.revoked_at IS NULL
                AND s.expires_at > NOW()
              ORDER BY s.issued_at DESC
@@ -143,10 +144,11 @@ class AuthSessionModel extends Model
     {
         $db = \Config\Database::connect();
         return $db->query(
-            'SELECT s.id, s.user_id, u.name, u.email, u.role,
+            'SELECT s.id, s.user_id, COALESCE(up.name, u.username, "") AS name, u.email, u.role,
                     s.user_agent, s.ip_address, s.issued_at, s.last_active_at, s.expires_at, s.revoked_at, s.revoke_reason
              FROM auth_sessions s
              INNER JOIN users u ON u.id = s.user_id
+             LEFT JOIN user_profiles up ON up.user_id = u.id
              ORDER BY s.issued_at DESC
              LIMIT ?',
             [$limit]

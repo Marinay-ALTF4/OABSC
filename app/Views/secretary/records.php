@@ -21,7 +21,7 @@
                     <?php foreach ($patients as $i => $p): ?>
                     <tr>
                         <td><?= $i + 1 ?></td>
-                        <td><?= esc($p['name']) ?></td>
+                        <td><?= esc($p['name'] ?? $p['username'] ?? '—') ?></td>
                         <td><?= esc($p['email']) ?></td>
                         <td><?= esc($p['phone'] ?? '—') ?></td>
                         <td><?= esc(date('M j, Y', strtotime($p['created_at']))) ?></td>

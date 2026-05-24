@@ -42,16 +42,23 @@ class Secretary extends BaseController
     {
         if ($r = $this->checkAccess()) return $r;
 
-        $model = new UserModel();
         $search = $this->request->getGet('search');
-        $query = $model->where('role', 'client')->where('deleted_at IS NULL');
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('users u')
+            ->select('u.id, COALESCE(up.name, u.username, "") AS name, u.email, up.phone, u.created_at')
+            ->join('user_profiles up', 'up.user_id = u.id', 'left')
+            ->where('u.role', 'client')
+            ->where('u.deleted_at IS NULL', null, false);
+
         if ($search) {
-            $query = $query->groupStart()
-                           ->like('name', $search)
-                           ->orLike('email', $search)
-                           ->groupEnd();
+            $builder->groupStart()
+                ->like('up.name', $search)
+                ->orLike('u.email', $search)
+                ->groupEnd();
         }
-        $patients = $query->findAll();
+
+        $patients = $builder->orderBy('u.created_at', 'DESC')->get()->getResultArray();
 
         return view('secretary/records', ['patients' => $patients, 'search' => $search]);
     }
@@ -108,8 +115,17 @@ class Secretary extends BaseController
     {
         if ($r = $this->checkAccess()) return $r;
 
-        $model = new UserModel();
-        $doctors = $model->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
+        $db = \Config\Database::connect();
+        $doctors = $db->query(
+            'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, up.phone, up.profile_photo, dp.specialization, dp.experience, dp.degree
+             FROM users u
+             LEFT JOIN user_profiles up ON up.user_id = u.id
+             LEFT JOIN doctor_profiles dp ON dp.user_id = u.id
+             WHERE u.role = ?
+               AND u.deleted_at IS NULL
+             ORDER BY COALESCE(up.name, u.username, "") ASC',
+            ['doctor']
+        )->getResultArray();
 
         return view('secretary/schedules', ['doctors' => $doctors]);
     }

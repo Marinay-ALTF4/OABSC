@@ -16,16 +16,13 @@ class Admin extends BaseController
         $announcements = [];
         if ($db->tableExists('announcements')) {
             $announcements = $db->query(
-                "SELECT * FROM announcements 
-                 ORDER BY created_at DESC 
-                 LIMIT 50"
+                'SELECT a.*, COALESCE(up.name, u.username, "") AS created_by_name
+                 FROM announcements a
+                 LEFT JOIN users u ON u.id = a.created_by
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
+                 ORDER BY a.created_at DESC
+                 LIMIT 50'
             )->getResultArray();
-        }
-
-        foreach ($announcements as &$a) {
-            if (! isset($a['body'])) {
-                $a['body'] = $a['content'] ?? '';
-            }
         }
 
         return view('admin/announcements', ['announcements' => $announcements]);
@@ -48,9 +45,9 @@ class Admin extends BaseController
         $db = \Config\Database::connect();
         $now = date('Y-m-d H:i:s');
         $db->query(
-            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by, created_at, updated_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id'), $now, $now]
+            "INSERT INTO announcements (title, body, type, target_dashboard, created_by, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [$title, $body, $type, $targetDashboard, (int) session('user_id'), $now, $now]
         );
         $announcementId = $db->insertID();
 
@@ -68,14 +65,20 @@ class Admin extends BaseController
 
         $notifModel = new \App\Models\NotificationModel();
         foreach ($users as $user) {
-            $notifModel->save([
+            $notificationId = $notifModel->insert([
                 'user_id'         => (int) $user['id'],
                 'title'           => 'New Announcement: ' . $title,
                 'body'            => $body,
                 'type'            => 'announcement',
-                'announcement_id' => $announcementId,
                 'is_read'         => 0,
-            ]);
+            ], true);
+
+            if ($notificationId) {
+                $db->table('notification_announcement_links')->insert([
+                    'notification_id' => (int) $notificationId,
+                    'announcement_id' => (int) $announcementId,
+                ]);
+            }
         }
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement posted successfully.');
@@ -90,7 +93,10 @@ class Admin extends BaseController
         if ($db->tableExists('announcements')) {
             $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
         }
-        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
+        $db->query(
+            'DELETE n FROM notifications n INNER JOIN notification_announcement_links l ON l.notification_id = n.id WHERE l.announcement_id = ?',
+            [$id]
+        );
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement deleted.');
     }
@@ -103,9 +109,10 @@ class Admin extends BaseController
         $db = \Config\Database::connect();
 
         $all = $db->query(
-            'SELECT a.*, COALESCE(u.name, "—") as patient_name
-             FROM appointments a
-             LEFT JOIN users u ON u.id = a.user_id
+              'SELECT a.*, COALESCE(up.name, u.username, "—") as patient_name
+               FROM appointments a
+               LEFT JOIN users u ON u.id = a.user_id
+               LEFT JOIN user_profiles up ON up.user_id = u.id
              ORDER BY a.appointment_date DESC'
         )->getResultArray();
 

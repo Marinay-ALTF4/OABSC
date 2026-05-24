@@ -65,8 +65,11 @@ class Appointments extends BaseController
         // Use raw query to bypass encryption hooks for display fields
         $db = \Config\Database::connect();
         $rawDoctors = $db->query(
-            "SELECT id, name, specialization, experience, degree, bio, phone, profile_photo
-             FROM users WHERE role = 'doctor' AND deleted_at IS NULL"
+              "SELECT u.id, COALESCE(up.name, u.username, '') AS name, dp.specialization, dp.experience, dp.degree, up.bio, up.phone, up.profile_photo
+               FROM users u
+               LEFT JOIN user_profiles up ON up.user_id = u.id
+               LEFT JOIN doctor_profiles dp ON dp.user_id = u.id
+               WHERE u.role = 'doctor' AND u.deleted_at IS NULL"
         )->getResultArray();
 
         $doctorProfiles = [];
@@ -136,7 +139,15 @@ class Appointments extends BaseController
         $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
         if ($doctorNamePost) {
             $nameOnly   = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
-            $doctorUser = (new UserModel())->where('role', 'doctor')->where('name', $nameOnly)->first();
+            $doctorUser = Database::connect()->query(
+                'SELECT u.id
+                 FROM users u
+                 INNER JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.role = ?
+                   AND up.name = ?
+                 LIMIT 1',
+                ['doctor', $nameOnly]
+            )->getRowArray();
             if ($doctorUser) {
                 $scheduleModel = new \App\Models\DoctorScheduleModel();
                 $schedules     = $scheduleModel->getScheduleByDoctor((int) $doctorUser['id']);
@@ -185,8 +196,15 @@ class Appointments extends BaseController
 
             // Save doctor_id - strip "Dr. " prefix to find by name
             $nameOnly    = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
-            $userModel   = new \App\Models\UserModel();
-            $doctorUser  = $userModel->where('role', 'doctor')->where('name', $nameOnly)->first();
+                        $doctorUser  = Database::connect()->query(
+                                'SELECT u.id
+                                 FROM users u
+                                 INNER JOIN user_profiles up ON up.user_id = u.id
+                                 WHERE u.role = ?
+                                     AND up.name = ?
+                                 LIMIT 1',
+                                ['doctor', $nameOnly]
+                        )->getRowArray();
             if ($doctorUser) {
                 $insertData['doctor_id'] = $doctorUser['id'];
             }

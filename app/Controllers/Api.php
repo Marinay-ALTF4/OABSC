@@ -387,8 +387,9 @@ class Api extends BaseController
         }
 
         $model = new AppointmentModel();
-        $query = $model->select('appointments.*, users.name as patient_name')
-                       ->join('users', 'users.id = appointments.' . $ownerCol, 'left');
+        $query = $model->select('appointments.*, COALESCE(user_profiles.name, "") as patient_name')
+                   ->join('users', 'users.id = appointments.' . $ownerCol, 'left')
+                   ->join('user_profiles', 'user_profiles.user_id = users.id', 'left');
 
         if ($role === 'doctor') {
             $query->where('doctor_id', (int) $userId);
@@ -465,8 +466,15 @@ class Api extends BaseController
         } else {
             // Resolve doctor_id from name if not provided
             $nameOnly   = preg_replace('/^Dr\.\s*/i', '', (string) $doctorName);
-            $userModel  = new UserModel();
-            $doctorUser = $userModel->where('role', 'doctor')->where('name', $nameOnly)->first();
+                        $doctorUser = \Config\Database::connect()->query(
+                                'SELECT u.id
+                                 FROM users u
+                                 INNER JOIN user_profiles up ON up.user_id = u.id
+                                 WHERE u.role = ?
+                                     AND up.name = ?
+                                 LIMIT 1',
+                                ['doctor', $nameOnly]
+                        )->getRowArray();
             if ($doctorUser) {
                 $insertData['doctor_id'] = $doctorUser['id'];
             }
@@ -894,8 +902,15 @@ class Api extends BaseController
             $model->insert($json);
             
             // Send notification to the patient
-            $userModel = new \App\Models\UserModel();
-            $patient = $userModel->where('name', $json['patient_name'])->where('role', 'client')->first();
+                        $patient = \Config\Database::connect()->query(
+                                'SELECT u.id
+                                 FROM users u
+                                 INNER JOIN user_profiles up ON up.user_id = u.id
+                                 WHERE u.role = ?
+                                     AND up.name = ?
+                                 LIMIT 1',
+                                ['client', (string) $json['patient_name']]
+                        )->getRowArray();
             if ($patient) {
                 $notifModel = new \App\Models\NotificationModel();
                 $notifModel->send(
@@ -1196,9 +1211,10 @@ class Api extends BaseController
         $ownerCol = $this->ownerColumn() ?? 'user_id';
 
         $rows = $db->query(
-            "SELECT a.*, COALESCE(u.name, '—') AS patient_name
-             FROM appointments a
-             LEFT JOIN users u ON u.id = a.{$ownerCol}
+              "SELECT a.*, COALESCE(up.name, u.username, '—') AS patient_name
+               FROM appointments a
+               LEFT JOIN users u ON u.id = a.{$ownerCol}
+               LEFT JOIN user_profiles up ON up.user_id = u.id
              ORDER BY a.appointment_date DESC
              LIMIT 200"
         )->getResultArray();
@@ -1361,9 +1377,10 @@ class Api extends BaseController
         $rows = [];
         if ($db->tableExists('announcements')) {
             $rows = $db->query(
-                'SELECT a.*, u.name AS created_by_name
+                'SELECT a.*, COALESCE(up.name, u.username, "") AS created_by_name
                  FROM announcements a
                  LEFT JOIN users u ON u.id = a.created_by
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
                  ORDER BY a.created_at DESC
                  LIMIT 50'
             )->getResultArray();
@@ -1396,9 +1413,9 @@ class Api extends BaseController
         $db = \Config\Database::connect();
         $now = date('Y-m-d H:i:s');
         $db->query(
-            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by, created_at, updated_at) 
-             VALUES (?, ?, ?, 'info', ?, ?, ?, ?)",
-            [$title, $content, $content, $targetDashboard, $userId, $now, $now]
+            "INSERT INTO announcements (title, body, type, target_dashboard, created_by, created_at, updated_at) 
+             VALUES (?, ?, 'info', ?, ?, ?, ?)",
+            [$title, $content, $targetDashboard, $userId, $now, $now]
         );
         $announcementId = $db->insertID();
 
@@ -1416,14 +1433,20 @@ class Api extends BaseController
 
             $users = $builder->findAll();
             foreach ($users as $u) {
-                $notifModel->save([
+                $notificationId = $notifModel->insert([
                     'user_id'         => (int) $u['id'],
                     'title'           => 'New Announcement: ' . $title,
                     'body'            => $content,
                     'type'            => 'announcement',
-                    'announcement_id' => $announcementId,
                     'is_read'         => 0,
-                ]);
+                ], true);
+
+                if ($notificationId) {
+                    $db->table('notification_announcement_links')->insert([
+                        'notification_id' => (int) $notificationId,
+                        'announcement_id' => (int) $announcementId,
+                    ]);
+                }
             }
         } catch (\Throwable $e) {
             log_message('error', 'Failed to notify users on announcement: ' . $e->getMessage());
@@ -1442,7 +1465,10 @@ class Api extends BaseController
         if ($db->tableExists('announcements')) {
             $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
         }
-        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
+        $db->query(
+            'DELETE n FROM notifications n INNER JOIN notification_announcement_links l ON l.notification_id = n.id WHERE l.announcement_id = ?',
+            [$id]
+        );
         return $this->respond(['success' => true, 'message' => 'Announcement deleted.']);
     }
 
