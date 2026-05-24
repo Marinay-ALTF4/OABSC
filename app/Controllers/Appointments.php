@@ -61,16 +61,38 @@ class Appointments extends BaseController
         $doctorUsers  = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
         $doctorOptions = array_map(fn($d) => 'Dr. ' . $d['name'], $doctorUsers);
         $scheduleModel = new \App\Models\DoctorScheduleModel();
+
+        // Use raw query to bypass encryption hooks for display fields
+        $db = \Config\Database::connect();
+        $rawDoctors = $db->query(
+            "SELECT id, name, specialization, experience, degree, bio, phone, profile_photo
+             FROM users WHERE role = 'doctor' AND deleted_at IS NULL"
+        )->getResultArray();
+
         $doctorProfiles = [];
-        foreach ($doctorUsers as $d) {
+        foreach ($rawDoctors as $d) {
             $schedules = $scheduleModel->getScheduleByDoctor((int) $d['id']);
+
+            // Strip enc: prefix if decryption failed
+            $spec = $d['specialization'] ?? '';
+            $exp  = $d['experience'] ?? '';
+            $deg  = $d['degree'] ?? '';
+            $bio  = $d['bio'] ?? '';
+            $phone = $d['phone'] ?? '';
+
+            if (str_starts_with((string)$spec, 'enc:')) $spec = 'Specialist';
+            if (str_starts_with((string)$exp,  'enc:')) $exp  = 'N/A';
+            if (str_starts_with((string)$deg,  'enc:')) $deg  = 'MD';
+            if (str_starts_with((string)$bio,  'enc:')) $bio  = 'Experienced medical professional.';
+            if (str_starts_with((string)$phone,'enc:')) $phone = null;
+
             $doctorProfiles['Dr. ' . $d['name']] = [
                 'avatar'    => ! empty($d['profile_photo']) ? base_url($d['profile_photo']) : null,
-                'spec'      => $d['specialization'] ?? 'Specialist',
-                'exp'       => $d['experience'] ?? 'N/A',
-                'degree'    => $d['degree'] ?? 'MD',
-                'bio'       => $d['bio'] ?? 'Experienced medical professional.',
-                'phone'     => $d['phone'] ?? null,
+                'spec'      => $spec ?: 'Specialist',
+                'exp'       => $exp  ?: 'N/A',
+                'degree'    => $deg  ?: 'MD',
+                'bio'       => $bio  ?: 'Experienced medical professional.',
+                'phone'     => $phone,
                 'schedules' => $schedules,
             ];
         }

@@ -107,9 +107,15 @@ $name = session('user_name') ?? 'User';
                                             </button>
                                         </form>
                                     <?php else: ?>
+                                        <?php if (($user['role'] ?? '') !== 'client'): ?>
                                         <a href="<?= site_url('/admin/patients/edit/' . (int) ($user['id'] ?? 0)) ?>" class="pl-action-btn pl-action-edit">
                                             <i class="bi bi-pencil me-1"></i>Edit
                                         </a>
+                                        <?php else: ?>
+                                        <span class="pl-action-btn" style="opacity:0.4;cursor:not-allowed;" title="Client accounts are protected — cannot be edited by admin">
+                                            <i class="bi bi-lock me-1"></i>Protected
+                                        </span>
+                                        <?php endif; ?>
                                         <form action="<?= site_url('/admin/patients/delete/' . (int) ($user['id'] ?? 0)) ?>" method="post" class="d-inline">
                                             <?= csrf_field() ?>
                                             <button type="submit" class="pl-action-btn pl-action-delete"

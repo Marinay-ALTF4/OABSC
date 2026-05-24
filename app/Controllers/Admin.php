@@ -472,6 +472,11 @@ class Admin extends BaseController
             return redirect()->to('/admin/patients/list')->with('error', 'User not found.');
         }
 
+        // Restrict editing client accounts for privacy
+        if (($user['role'] ?? '') === 'client') {
+            return redirect()->to('/admin/patients/list')->with('error', 'Client accounts cannot be edited by admin to protect user privacy.');
+        }
+
         if ($this->request->is('post')) {
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
@@ -510,11 +515,28 @@ class Admin extends BaseController
             try {
                 $updated = $userModel->update($id, $updateData);
 
+                // Audit log — record what changed (old vs new values)
+                $changes = [];
+                if (($user['name'] ?? '') !== ($updateData['name'] ?? '')) {
+                    $changes[] = 'name: "' . ($user['name'] ?? '') . '" → "' . ($updateData['name'] ?? '') . '"';
+                }
+                if (($user['email'] ?? '') !== ($updateData['email'] ?? '')) {
+                    $changes[] = 'email: "' . ($user['email'] ?? '') . '" → "' . ($updateData['email'] ?? '') . '"';
+                }
+                if (($user['role'] ?? '') !== ($updateData['role'] ?? '')) {
+                    $changes[] = 'role: "' . ($user['role'] ?? '') . '" → "' . ($updateData['role'] ?? '') . '"';
+                }
+                if (isset($updateData['password_hash'])) {
+                    $changes[] = 'password: changed';
+                }
+
+                $changeLog = ! empty($changes) ? implode(', ', $changes) : 'no_changes';
+
                 (new LoginEventModel())->log(
                     LoginEventModel::EVENT_ACCOUNT_MODIFIED,
                     (int) $id,
                     $updateData['email'] ?? null,
-                    'user_edited:' . $id
+                    'user_edited:' . $id . ' | by_admin:' . session('user_id') . ' | changes:' . $changeLog
                 );
 
                 if (! $db->transStatus()) {
