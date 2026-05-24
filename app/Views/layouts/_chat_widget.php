@@ -26,12 +26,21 @@ if (in_array($_chat_role, ['admin', 'assistant_admin'])) {
     ];
 } else {
     // client / patient
+    $db = \Config\Database::connect();
+    $patient_id = (int) session('user_id');
+    $has_assigned_doctor = $db->query("
+        SELECT 1 FROM appointments 
+        WHERE user_id = ? AND doctor_id IS NOT NULL AND doctor_id > 0 
+        LIMIT 1
+    ", [$patient_id])->getRow();
+
     $_contacts = [
-        ['id'=>'c_admin',     'name'=>'Admin',         'icon'=>'bi-shield-fill',      'color'=>'#3b82f6', 'sub'=>'Administrator'],
         ['id'=>'c_secretary', 'name'=>'Secretary',     'icon'=>'bi-person-badge-fill','color'=>'#10b981', 'sub'=>'Front desk'],
-        ['id'=>'c_doctor',    'name'=>'Doctors',       'icon'=>'bi-heart-pulse-fill', 'color'=>'#8b5cf6', 'sub'=>'Medical staff'],
-        ['id'=>'c_clinic',    'name'=>'Clinic Support','icon'=>'bi-hospital-fill',    'color'=>'#ef4444', 'sub'=>'General inquiries'],
     ];
+
+    if ($has_assigned_doctor) {
+        $_contacts[] = ['id'=>'c_doctor',    'name'=>'Doctors',       'icon'=>'bi-heart-pulse-fill', 'color'=>'#8b5cf6', 'sub'=>'Medical staff'];
+    }
 }
 $_first = $_contacts[0];
 ?>
@@ -112,6 +121,9 @@ $_first = $_contacts[0];
 
     function getConvoKey(targetId) {
         let targetRole = targetId.replace('c_', '');
+        if (myRole === 'admin' && targetRole === 'clinic') {
+            return 'client_clinic';
+        }
         return [myRole, contactRoleToSystemRole(targetRole)].sort().join('_');
     }
 
@@ -120,12 +132,36 @@ $_first = $_contacts[0];
         return role;
     }
 
+    function isAuthorizedConvo(targetId) {
+        let targetRole = targetId.replace('c_', '');
+        if (myRole === 'client') {
+            // Patients can only message secretary, clinic support, or doctor (if they have assigned doctor)
+            if (targetRole === 'secretary' || targetRole === 'clinic') return true;
+            if (targetRole === 'doctor') {
+                return !!document.querySelector('.msng-contact[data-id="c_doctor"]');
+            }
+            return false;
+        }
+        if (myRole === 'secretary') {
+            return ['admin', 'doctor', 'patient', 'client'].includes(targetRole);
+        }
+        if (myRole === 'doctor') {
+            return ['admin', 'secretary', 'patient', 'client'].includes(targetRole);
+        }
+        if (myRole === 'admin') {
+            return true;
+        }
+        return false;
+    }
+
     function getContactMessages() {
+        if (!isAuthorizedConvo(currentContact.id)) return [];
         let key = getConvoKey(currentContact.id);
         return getSharedMessages()[key] || [];
     }
 
     function addMessage(text) {
+        if (!isAuthorizedConvo(currentContact.id)) return;
         let key = getConvoKey(currentContact.id);
         let all = getSharedMessages();
         if (!all[key]) all[key] = [];
@@ -147,6 +183,10 @@ $_first = $_contacts[0];
 
     function renderMessages() {
         var container = document.getElementById('chat-messages');
+        if (!isAuthorizedConvo(currentContact.id)) {
+            container.innerHTML = '<div class="msng-empty"><i class="bi bi-shield-slash"></i><div>Unauthorized conversation</div></div>';
+            return;
+        }
         var msgs = getContactMessages();
         if (!msgs.length) {
             container.innerHTML = '<div class="msng-empty"><i class="bi bi-chat-left"></i><div>No messages yet</div><div style="font-size:0.72rem;margin-top:4px;color:#cbd5e1;">Send a message to ' + escHtml(currentContact.name) + '</div></div>';
@@ -176,6 +216,7 @@ $_first = $_contacts[0];
     function refreshPreviews() {
         document.querySelectorAll('.msng-contact').forEach(function(el) {
             var contactId = el.dataset.id;
+            if (!isAuthorizedConvo(contactId)) return;
             var contactRole = contactId.replace('c_', '');
             var key = [myRole, contactRoleToSystemRole(contactRole)].sort().join('_');
             var msgs = getSharedMessages()[key] || [];
@@ -217,6 +258,9 @@ $_first = $_contacts[0];
     };
 
     window.selectContact = function (el) {
+        if (!isAuthorizedConvo(el.dataset.id)) {
+            return;
+        }
         currentContact = { id: el.dataset.id, name: el.dataset.name, icon: el.dataset.icon, color: el.dataset.color };
         document.querySelectorAll('.msng-contact').forEach(function(c){ c.classList.remove('active'); });
         el.classList.add('active');
