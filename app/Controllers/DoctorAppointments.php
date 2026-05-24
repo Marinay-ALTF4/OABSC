@@ -26,7 +26,7 @@ class DoctorAppointments extends BaseController
         $allAppts = $model->findAll();
 
         $appointments = array_filter($allAppts, function ($appt) use ($doctorName, $doctorId) {
-            return ($appt['doctor_name'] === $doctorName) ||
+            return (($appt['doctor_name'] ?? '') === $doctorName) ||
                    ((int) ($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
         });
         $appointments = array_values($appointments);
@@ -172,7 +172,7 @@ class DoctorAppointments extends BaseController
 
         $allAppts = $model->findAll();
         $doctorAppts = array_values(array_filter($allAppts, function (array $appt) use ($doctorName, $doctorId): bool {
-            return ($appt['doctor_name'] === $doctorName) || ((int) ($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
+            return (($appt['doctor_name'] ?? '') === $doctorName) || ((int) ($appt['doctor_id'] ?? 0) === $doctorId && $doctorId > 0);
         }));
 
         if ($patientId > 0) {
@@ -451,7 +451,7 @@ class DoctorAppointments extends BaseController
         // Make sure this appointment belongs to this doctor
         $doctorName = 'Dr. ' . session('user_name');
         $doctorId   = (int) session('user_id');
-        if ($appt['doctor_name'] !== $doctorName && ($appt['doctor_id'] ?? 0) !== $doctorId) {
+        if (($appt['doctor_name'] ?? '') !== $doctorName && ($appt['doctor_id'] ?? 0) !== $doctorId) {
             return redirect()->back()->with('error', 'Unauthorized.');
         }
 

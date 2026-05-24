@@ -65,11 +65,7 @@ class UserModel extends Model
             foreach ($data['data'] as $index => $row) {
                 $data['data'][$index] = $crypt->decryptFields($row, $this->sensitiveFields);
             }
-
-            return $data;
-        }
-
-        if (is_array($data['data'])) {
+        } elseif (is_array($data['data'])) {
             $data['data'] = $crypt->decryptFields($data['data'], $this->sensitiveFields);
         }
 

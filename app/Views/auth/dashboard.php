@@ -575,11 +575,11 @@ $name = session('user_name') ?? 'User';
         </div>
         <div class="col-md-4">
             <div class="action-card">
-                <div class="action-icon bg-purple-soft"><i class="bi bi-chat-dots"></i></div>
-                <div class="action-tag">Messaging</div>
-                <div class="action-title">Chat with Clinic</div>
-                <div class="action-desc">Ask questions or send a message to your doctor or clinic staff before your visit.</div>
-                <button class="action-btn btn-outline" onclick="openChat()" style="border-color:#c4b5fd!important;color:#6d28d9;background:#f5f3ff;">Open Chat</button>
+                <div class="action-icon bg-teal-soft"><i class="bi bi-robot"></i></div>
+                <div class="action-tag">Clinic Assistant</div>
+                <div class="action-title">Chat with Assistant</div>
+                <div class="action-desc">Ask questions or get support from our clinic virtual assistant chatbot.</div>
+                <button class="action-btn btn-outline" onclick="openChatbot()" style="border-color:#99f6e4!important;color:#0f766e;background:#f0fdfa;">Open Assistant</button>
             </div>
         </div>
     </div>

@@ -77,7 +77,7 @@ class Home extends BaseController
 
             $allAppts = $model->findAll();
             $myAppts  = array_filter($allAppts, fn($a) =>
-                $a['doctor_name'] === $doctorName || (int)($a['doctor_id'] ?? 0) === $doctorId
+                ($a['doctor_name'] ?? '') === $doctorName || (int)($a['doctor_id'] ?? 0) === $doctorId
             );
 
             $data['doc_today']        = count(array_filter($myAppts, fn($a) => $a['appointment_date'] === $today));

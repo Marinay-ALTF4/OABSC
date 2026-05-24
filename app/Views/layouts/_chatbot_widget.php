@@ -10,10 +10,11 @@ $chatbotData = [];
 if ($userRole === 'client') {
     // 1. Appointments for Patient
     $appts = $db->query("
-        SELECT doctor_name, appointment_date, appointment_time, status 
-        FROM appointments 
-        WHERE user_id = ? AND archived_at IS NULL
-        ORDER BY appointment_date ASC, appointment_time ASC
+        SELECT COALESCE(up.name, 'Unknown Doctor') as doctor_name, a.appointment_date, a.appointment_time, a.status 
+        FROM appointments a
+        LEFT JOIN user_profiles up ON up.user_id = a.doctor_id
+        WHERE a.user_id = ? AND a.archived_at IS NULL
+        ORDER BY a.appointment_date ASC, a.appointment_time ASC
     ", [$userId])->getResultArray();
     $chatbotData['appointments'] = $appts;
 
@@ -28,9 +29,10 @@ if ($userRole === 'client') {
 } elseif ($userRole === 'doctor') {
     // Patients count/lookup
     $patients = $db->query("
-        SELECT id, name, email 
-        FROM users 
-        WHERE role = 'client' AND status = 'active' AND deleted_at IS NULL
+        SELECT u.id, up.name, u.email 
+        FROM users u
+        LEFT JOIN user_profiles up ON up.user_id = u.id
+        WHERE u.role = 'client' AND u.status = 'active' AND u.deleted_at IS NULL
     ")->getResultArray();
     $chatbotData['patients'] = $patients;
 } elseif ($userRole === 'secretary') {
@@ -334,6 +336,18 @@ if ($userRole === 'client') {
         } else {
             botWin.classList.add('d-none');
         }
+    };
+
+    window.openChatbot = function() {
+        const botWin = document.getElementById('chatbot-widget');
+        const chatWin = document.getElementById('chat-widget');
+        
+        isBotOpen = true;
+        if (chatWin && !chatWin.classList.contains('d-none')) {
+            closeChat();
+        }
+        botWin.classList.remove('d-none');
+        document.getElementById('bot-input').focus();
     };
 
     // Listen to peer-to-peer chat opening to close chatbot
