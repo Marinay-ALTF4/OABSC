@@ -20,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _otpController = TextEditingController();
@@ -48,6 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _otpController.dispose();
@@ -80,6 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       final r = await _api.post('register/send-code', {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim().toLowerCase(),
+        'phone': _phoneController.text.trim(),
         'password': _passwordController.text,
         'password_confirm': _confirmPasswordController.text,
       });
@@ -158,6 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       final r = await _api.post('register/send-code', {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim().toLowerCase(),
+        'phone': _phoneController.text.trim(),
         'password': _passwordController.text,
         'password_confirm': _confirmPasswordController.text,
       });
@@ -328,6 +332,25 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
           _buildHelpText(
             'We will send a 6-digit verification code to this email before creating the account.',
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Phone number field
+          _buildFieldLabel('Phone Number'),
+          const SizedBox(height: AppSpacing.xs),
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              hintText: 'e.g. 09XX-XXX-XXXX',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) return 'Please enter your phone number';
+              if (!RegExp(r'^(\+63|0)[0-9\s\-\(\)]{9,12}$').hasMatch(value)) {
+                return 'Enter a valid Philippine phone number';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: AppSpacing.lg),
 

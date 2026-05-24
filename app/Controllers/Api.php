@@ -151,12 +151,14 @@ class Api extends BaseController
         $json = $request->getJSON(true);
         $name             = $json['name']             ?? $request->getPost('name');
         $email            = $json['email']            ?? $request->getPost('email');
+        $phone            = $json['phone']            ?? $request->getPost('phone') ?? '';
         $password         = $json['password']         ?? $request->getPost('password');
         $passwordConfirm  = $json['password_confirm'] ?? $request->getPost('password_confirm');
 
         $this->request->setGlobal('post', [
             'name'             => $name,
             'email'            => $email,
+            'phone'            => $phone,
             'password'         => $password,
             'password_confirm' => $passwordConfirm,
         ]);
@@ -164,6 +166,7 @@ class Api extends BaseController
         $rules = [
             'name'             => 'required|min_length[3]|regex_match[/^[\p{L}\s]+$/u]',
             'email'            => 'required|valid_email|is_unique[users.email]',
+            'phone'            => 'required|regex_match[/^(\+63|0)[0-9\s\-\(\)]{9,12}$/]',
             'password'         => 'required|min_length[8]',
             'password_confirm' => 'required|matches[password]',
         ];
@@ -172,7 +175,10 @@ class Api extends BaseController
             'email' => [
                 'is_unique'   => 'This email is already taken.',
                 'valid_email' => 'Please enter a valid email address.',
-            ]
+            ],
+            'phone' => [
+                'regex_match' => 'Please enter a valid Philippine phone number (e.g., 09XX-XXX-XXXX).',
+            ],
         ];
 
         if (! $this->validate($rules, $messages)) {
@@ -206,7 +212,7 @@ class Api extends BaseController
                 $db->query('DELETE FROM pending_registrations WHERE email = ?', [$email]);
                 $db->query(
                     'INSERT INTO pending_registrations (name, email, phone, password_hash, verification_code, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
-                    [trim((string) $name), strtolower(trim((string) $email)), '', password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
+                    [trim((string) $name), strtolower(trim((string) $email)), trim((string) $phone), password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
                 );
 
                 return $this->respond([
@@ -227,7 +233,7 @@ class Api extends BaseController
         // Insert new pending registration
         $db->query(
             'INSERT INTO pending_registrations (name, email, phone, password_hash, verification_code, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
-            [trim((string) $name), strtolower(trim((string) $email)), '', password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
+            [trim((string) $name), strtolower(trim((string) $email)), trim((string) $phone), password_hash((string) $password, PASSWORD_DEFAULT), password_hash((string) $code, PASSWORD_DEFAULT), $expiresAt]
         );
 
         return $this->respond([
