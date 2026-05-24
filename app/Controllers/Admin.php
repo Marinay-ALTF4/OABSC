@@ -452,8 +452,13 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $userModel = new UserModel();
-        $users = $userModel->withDeleted()->orderBy('id', 'DESC')->findAll();
+        $db = \Config\Database::connect();
+        $users = $db->query(
+            'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, u.role, u.deleted_at, u.created_at
+             FROM users u
+             LEFT JOIN user_profiles up ON up.user_id = u.id
+             ORDER BY u.id DESC'
+        )->getResultArray();
 
         return view('admin/patients_list', [
             'users' => $users,
@@ -548,11 +553,6 @@ class Admin extends BaseController
 
         if (! $user) {
             return redirect()->to('/admin/patients/list')->with('error', 'User not found.');
-        }
-
-        // Restrict editing client accounts for privacy
-        if (($user['role'] ?? '') === 'client') {
-            return redirect()->to('/admin/patients/list')->with('error', 'Client accounts cannot be edited by admin to protect user privacy.');
         }
 
         if ($this->request->is('post')) {
