@@ -94,7 +94,7 @@ $_first = $_contacts[0];
 </div>
 
 <!-- FAB -->
-<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Messages">
+<button class="chat-fab d-none" id="chat-fab" onclick="openChat()" title="Messages" style="display: none !important;">
     <i class="bi bi-chat-dots-fill"></i>
     <span class="chat-fab-dot d-none" id="chat-fab-dot"></span>
 </button>
@@ -406,3 +406,5 @@ $_first = $_contacts[0];
         .chat-fab { right: 16px; bottom: 16px; }
     }
 </style>
+
+<?php echo view('layouts/_chatbot_widget'); ?>
