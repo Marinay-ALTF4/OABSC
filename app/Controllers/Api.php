@@ -1651,7 +1651,7 @@ class Api extends BaseController
 
     public function adminTogglePermission()
     {
-        $json = $this->request->getJSON();
+        $json = $this->httpRequest()->getJSON(true);
         if (!$json) {
             return $this->fail('Invalid JSON');
         }
@@ -1680,7 +1680,7 @@ class Api extends BaseController
 
     public function adminAddPermission()
     {
-        $json = $this->request->getJSON();
+        $json = $this->httpRequest()->getJSON(true);
         if (!$json) {
             return $this->fail('Invalid JSON');
         }
