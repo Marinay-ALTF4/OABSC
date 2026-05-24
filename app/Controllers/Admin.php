@@ -343,12 +343,18 @@ class Admin extends BaseController
             return $access;
         }
 
-        $userModel = new UserModel();
-        $users = $userModel->withDeleted()->where('role', 'client')->orderBy('id', 'DESC')->findAll();
+        $db = \Config\Database::connect();
+        $users = $db->query(
+            'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, up.phone, u.deleted_at, u.created_at
+             FROM users u
+             LEFT JOIN user_profiles up ON up.user_id = u.id
+             WHERE u.role = ?
+             ORDER BY u.id DESC',
+            ['client']
+        )->getResultArray();
 
         // Attach appointment count per patient
         $apptModel = new \App\Models\AppointmentModel();
-        $db = \Config\Database::connect();
         $ownerCol = $db->fieldExists('client_id', 'appointments') ? 'client_id' : 'user_id';
 
         foreach ($users as &$user) {
