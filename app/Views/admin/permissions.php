@@ -1,4 +1,9 @@
 <?php
+/** @var array $roles */
+/** @var array $permissions */
+/** @var array $mapping */
+/** @var array $roleCounts */
+
 $role = session('user_role') ?? 'guest';
 $name = session('user_name') ?? 'User';
 
@@ -159,9 +164,14 @@ foreach ($roles as $r) {
                             ?>
                             <div class="perm-row">
                                 <div class="perm-row-info">
-                                    <div class="perm-code"><?= esc($perm['code']) ?></div>
-                                    <?php if ($perm['description']): ?>
-                                        <div class="perm-desc"><?= esc($perm['description']) ?></div>
+                                    <?php $displayName = $perm['display_name'] ?? ucwords(str_replace('_', ' ', $perm['code'])); ?>
+                                    <div class="perm-code"><?= esc($displayName) ?></div>
+                                    <?php
+                                        $permDesc = trim((string) ($perm['description'] ?? ''));
+                                        // Only show description when it's non-empty and not the same as the display name
+                                        if ($permDesc !== '' && strcasecmp($permDesc, $displayName) !== 0):
+                                    ?>
+                                        <div class="perm-desc"><?= esc($permDesc) ?></div>
                                     <?php endif; ?>
                                 </div>
                                 <div class="perm-row-toggle">
@@ -173,7 +183,7 @@ foreach ($roles as $r) {
                                             data-role-id="<?= $roleId ?>"
                                             data-perm-id="<?= $perm['id'] ?>"
                                             data-role-name="<?= esc($roleName) ?>"
-                                            data-perm-code="<?= esc($perm['code']) ?>"
+                                            data-perm-code="<?= esc($perm['display_name'] ?? ucwords(str_replace('_', ' ', $perm['code']))) ?>"
                                             <?= $hasPermission ? 'checked' : '' ?>
                                         >
                                         <span class="perm-slider"></span>
