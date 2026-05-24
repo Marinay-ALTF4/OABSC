@@ -185,55 +185,19 @@ class Admin extends BaseController
         $arModel    = new \App\Models\AccessRequestModel();
         $userModel  = new UserModel();
 
-        $roleTabs = [
-            'assistant_admin'     => 'Assistant Admin',
-            'secretary'           => 'Secretary',
-            'doctor'              => 'Doctor',
-            'client'              => 'Client / Patient',
-        ];
-
         $pending = $arModel->where('status', 'pending')->orderBy('id', 'DESC')->findAll();
         $all     = $arModel->orderBy('id', 'DESC')->limit(100)->findAll();
-
-        $pendingByRole = [];
-        $historyByRole = [];
-        foreach (array_keys($roleTabs) as $roleKey) {
-            $pendingByRole[$roleKey] = [];
-            $historyByRole[$roleKey] = [];
-        }
 
         // Attach user info to all requests
         foreach ($all as &$req) {
             $u = $userModel->find($req['user_id']);
             $req['user_name']  = $u['name']  ?? '—';
             $req['user_email'] = $u['email'] ?? '—';
-            $reqRole = $req['requested_role'] ?? 'client';
-            if (! isset($historyByRole[$reqRole])) {
-                $historyByRole[$reqRole] = [];
-            }
-            $historyByRole[$reqRole][] = $req;
-        }
-
-        foreach ($pending as $req) {
-            $reqRole = $req['requested_role'] ?? 'client';
-            if (! isset($pendingByRole[$reqRole])) {
-                $pendingByRole[$reqRole] = [];
-            }
-            $pendingByRole[$reqRole][] = $req;
-        }
-
-        $activeRole = (string) $this->request->getGet('role');
-        if (! isset($roleTabs[$activeRole])) {
-            $activeRole = array_key_first($roleTabs) ?: 'client';
         }
 
         return view('admin/access_requests', [
-            'pending'        => $pending,
-            'all'            => $all,
-            'pendingByRole'  => $pendingByRole,
-            'historyByRole'  => $historyByRole,
-            'roleTabs'       => $roleTabs,
-            'activeRole'     => $activeRole,
+            'pending' => $pending,
+            'all'     => $all,
         ]);
     }
 

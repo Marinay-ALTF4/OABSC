@@ -122,6 +122,5 @@
         border-radius: 999px; white-space: nowrap; margin-left: auto; flex-shrink: 0;
     }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

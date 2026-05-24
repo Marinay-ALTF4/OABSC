@@ -465,6 +465,5 @@ function openSchedModal(name, spec, color, initials, sched, availCount, phone) {
 }
 </script>
 
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

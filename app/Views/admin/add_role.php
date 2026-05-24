@@ -187,6 +187,5 @@ function togglePw(id, btn) {
     .au-pw-toggle:hover { color: #475569; }
     .au-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

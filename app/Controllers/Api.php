@@ -1626,33 +1626,12 @@ class Api extends BaseController
         $db = \Config\Database::connect();
 
         $roles = $db->query('SELECT * FROM roles ORDER BY id ASC')->getResultArray();
-        $rawPermissions = $db->query('SELECT * FROM permissions ORDER BY code ASC')->getResultArray();
-
-        // Normalize permission codes to human-friendly labels (no underscores)
-        // and deduplicate by code if the DB contains duplicates.
-        $permissions = [];
-        $seenCodes = [];
-        foreach ($rawPermissions as $p) {
-            $code = $p['code'] ?? '';
-            if ($code === '' || in_array($code, $seenCodes, true)) {
-                continue;
-            }
-            $seenCodes[] = $code;
-            $label = preg_replace('/\s+/', ' ', trim(str_replace('_', ' ', $code)));
-            $label = ucwords($label);
-            $p['display_name'] = $label;
-            $permissions[] = $p;
-        }
-
+        $permissions = $db->query('SELECT * FROM permissions ORDER BY code ASC')->getResultArray();
+        
         $rolePerms = $db->query('SELECT role_id, permission_id FROM role_permissions')->getResultArray();
         $mapping = [];
         foreach ($rolePerms as $rp) {
-            $rid = $rp['role_id'];
-            $pid = $rp['permission_id'];
-            $mapping[$rid] = $mapping[$rid] ?? [];
-            if (! in_array($pid, $mapping[$rid], true)) {
-                $mapping[$rid][] = $pid;
-            }
+            $mapping[$rp['role_id']][] = $rp['permission_id'];
         }
 
         $userModel = new \App\Models\UserModel();
@@ -1672,7 +1651,7 @@ class Api extends BaseController
 
     public function adminTogglePermission()
     {
-        $json = $this->httpRequest()->getJSON(true);
+        $json = $this->request->getJSON();
         if (!$json) {
             return $this->fail('Invalid JSON');
         }
@@ -1701,7 +1680,7 @@ class Api extends BaseController
 
     public function adminAddPermission()
     {
-        $json = $this->httpRequest()->getJSON(true);
+        $json = $this->request->getJSON();
         if (!$json) {
             return $this->fail('Invalid JSON');
         }

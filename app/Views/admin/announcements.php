@@ -174,6 +174,5 @@ body { background: #edf2f7; font-family: 'Inter', system-ui, sans-serif; }
     padding: 2px 8px; border-radius: 999px; letter-spacing: 0.5px;
 }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

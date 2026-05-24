@@ -333,6 +333,5 @@ $name = session('user_name') ?? 'User';
     .adm-btn-outline:hover { background:#e2ebf4; }
     .adm-btn-disabled { background:#f1f5f9; color:#8aa0b3; cursor:not-allowed; border:1px solid #d2dde8 !important; }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

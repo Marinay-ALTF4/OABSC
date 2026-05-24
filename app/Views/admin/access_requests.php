@@ -3,23 +3,6 @@ use App\Libraries\PermissionManager;
 $role = session('user_role') ?? 'guest';
 $name = session('user_name') ?? 'User';
 
-$roleTabs = $roleTabs ?? [
-    'assistant_admin'     => 'Assistant Admin',
-    'secretary'           => 'Secretary',
-    'doctor'              => 'Doctor',
-    'client'              => 'Client / Patient',
-];
-$activeRole = $activeRole ?? array_key_first($roleTabs) ?: 'assistant_admin';
-$pendingByRole = $pendingByRole ?? [];
-$historyByRole = $historyByRole ?? [];
-
-$roleTabMeta = [
-    'assistant_admin' => ['icon' => 'bi-person-badge', 'color' => '#1e40af', 'bg' => '#dbeafe'],
-    'secretary'       => ['icon' => 'bi-person-workspace', 'color' => '#065f46', 'bg' => '#d1fae5'],
-    'doctor'          => ['icon' => 'bi-heart-pulse', 'color' => '#7c3aed', 'bg' => '#ede9fe'],
-    'client'          => ['icon' => 'bi-person-heart', 'color' => '#b45309', 'bg' => '#fef3c7'],
-];
-
 // Role color map
 $roleColors = [
     'client'              => ['bg' => '#fef3c7', 'color' => '#92400e'],
@@ -28,7 +11,6 @@ $roleColors = [
     'assistant_admin'     => ['bg' => '#dbeafe', 'color' => '#1e40af'],
     'assistant_secretary' => ['bg' => '#cffafe', 'color' => '#0e7490'],
 ];
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,110 +45,86 @@ $roleColors = [
                     </div>
                 <?php endif; ?>
 
-                <div class="role-tabs-wrap mb-4">
-                    <ul class="role-tabs" id="requestTabs">
-                        <?php $first = true; foreach ($roleTabs as $tabRole => $tabLabel):
-                            $tabCount = count($pendingByRole[$tabRole] ?? []);
-                            $meta = $roleTabMeta[$tabRole] ?? ['icon' => 'bi-person-circle', 'color' => '#475569', 'bg' => '#f1f5f9'];
-                        ?>
-                        <li>
-                            <button class="role-tab <?= ($first && empty($activeRole)) || $tabRole === $activeRole ? 'active' : '' ?>"
-                                    data-target="role-panel-<?= esc($tabRole) ?>"
-                                    data-role="<?= esc($tabRole) ?>"
-                                    style="--tab-color:<?= $meta['color'] ?>;--tab-bg:<?= $meta['bg'] ?>;">
-                                <i class="bi <?= esc($meta['icon']) ?> me-2"></i>
-                                <?= esc($tabLabel) ?>
-                                <span class="role-tab-count"><?= (int) $tabCount ?></span>
-                            </button>
-                        </li>
-                        <?php $first = false; endforeach; ?>
-                    </ul>
+                <!-- ── Pending Requests ── -->
+                <div class="adm-section-label mb-3">
+                    Pending Requests
+                    <?php if (! empty($pending)): ?>
+                        <span class="pending-count-badge"><?= count($pending) ?></span>
+                    <?php endif; ?>
                 </div>
 
-                <?php foreach ($roleTabs as $panelRole => $panelLabel):
-                    $activePending = $pendingByRole[$panelRole] ?? [];
-                    $activeHistory  = $historyByRole[$panelRole] ?? [];
-                    $isPanelActive  = $panelRole === $activeRole;
-                ?>
-                <div id="role-panel-<?= esc($panelRole) ?>" class="role-panel<?= $isPanelActive ? '' : ' d-none' ?>">
-                    <div class="adm-section-label mb-3">
-                        <?= esc($panelLabel) ?> Pending Requests
-                        <?php if (! empty($activePending)): ?>
-                            <span class="pending-count-badge"><?= count($activePending) ?></span>
-                        <?php endif; ?>
+                <?php if (empty($pending)): ?>
+                    <div class="empty-pending mb-4">
+                        <i class="bi bi-inbox"></i>
+                        <span>No pending access requests.</span>
                     </div>
-
-                    <?php if (empty($activePending)): ?>
-                        <div class="empty-pending mb-4">
-                            <i class="bi bi-inbox"></i>
-                            <span>No pending access requests for <?= esc(strtolower($panelLabel)) ?>.</span>
-                        </div>
-                    <?php else: ?>
-                        <div class="row g-3 mb-5">
-                            <?php foreach ($activePending as $req):
-                                $userModel  = new \App\Models\UserModel();
-                                $requester  = $userModel->find($req['user_id']);
-                                $permCode   = $req['permission_code'] ?? $req['resource'];
-                                $permLabel  = PermissionManager::$definitions[$permCode]['label'] ?? $permCode;
-                                $reqRole    = $req['requested_role'] ?? 'user';
-                                $roleStyle  = $roleColors[$reqRole] ?? ['bg' => '#f1f5f9', 'color' => '#475569'];
-                                $initials   = strtoupper(substr($requester['name'] ?? 'U', 0, 2));
-                            ?>
-                            <div class="col-12 col-md-6">
-                                <div class="req-card">
-                                    <div class="req-card-top">
-                                        <div class="req-avatar"><?= $initials ?></div>
-                                        <div class="req-user-info">
-                                            <div class="req-user-name"><?= esc($requester['name'] ?? '—') ?></div>
-                                            <div class="req-user-email"><?= esc($requester['email'] ?? '—') ?></div>
-                                        </div>
-                                        <?php $roleLabel = str_replace('_', ' ', ucfirst($reqRole)); ?>
-                                        <span class="req-role-badge" style="background:<?= $roleStyle['bg'] ?>;color:<?= $roleStyle['color'] ?>;">
-                                            <?= esc($roleLabel) ?>
-                                        </span>
+                <?php else: ?>
+                    <div class="row g-3 mb-5">
+                        <?php foreach ($pending as $req):
+                            $userModel  = new \App\Models\UserModel();
+                            $requester  = $userModel->find($req['user_id']);
+                            $permCode   = $req['permission_code'] ?? $req['resource'];
+                            $permLabel  = PermissionManager::$definitions[$permCode]['label'] ?? $permCode;
+                            $reqRole    = $req['requested_role'] ?? 'user';
+                            $roleStyle  = $roleColors[$reqRole] ?? ['bg' => '#f1f5f9', 'color' => '#475569'];
+                            $initials   = strtoupper(substr($requester['name'] ?? 'U', 0, 2));
+                        ?>
+                        <div class="col-12 col-md-6">
+                            <div class="req-card">
+                                <div class="req-card-top">
+                                    <div class="req-avatar"><?= $initials ?></div>
+                                    <div class="req-user-info">
+                                        <div class="req-user-name"><?= esc($requester['name'] ?? '—') ?></div>
+                                        <div class="req-user-email"><?= esc($requester['email'] ?? '—') ?></div>
                                     </div>
+                                    <span class="req-role-badge" style="background:<?= $roleStyle['bg'] ?>;color:<?= $roleStyle['color'] ?>;">
+                                        <?= esc(str_replace('_', ' ', ucfirst($reqRole))) ?>
+                                    </span>
+                                </div>
 
-                                    <div class="req-perm-row">
-                                        <i class="bi bi-lock-fill req-perm-icon"></i>
-                                        <div>
-                                            <div class="req-perm-label">Requesting access to:</div>
-                                            <div class="req-perm-name"><?= esc($permLabel) ?></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="req-time">
-                                        <i class="bi bi-clock me-1"></i>
-                                        <?= esc(date('M j, Y g:i A', strtotime($req['created_at'] ?? 'now'))) ?>
-                                    </div>
-
-                                    <div class="req-actions">
-                                        <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="id" value="<?= $req['id'] ?>">
-                                            <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="req-btn req-btn-approve">
-                                                <i class="bi bi-check-lg me-1"></i>Approve
-                                            </button>
-                                        </form>
-                                        <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="id" value="<?= $req['id'] ?>">
-                                            <input type="hidden" name="action" value="deny">
-                                            <button type="submit" class="req-btn req-btn-deny">
-                                                <i class="bi bi-x-lg me-1"></i>Deny
-                                            </button>
-                                        </form>
+                                <div class="req-perm-row">
+                                    <i class="bi bi-lock-fill req-perm-icon"></i>
+                                    <div>
+                                        <div class="req-perm-label">Requesting access to:</div>
+                                        <div class="req-perm-name"><?= esc($permLabel) ?></div>
+                                        <div class="req-perm-code"><?= esc($permCode) ?></div>
                                     </div>
                                 </div>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
 
-                    <div class="adm-section-label mb-3"><?= esc($panelLabel) ?> Request History</div>
-                    <div class="pl-card">
-                        <div class="table-responsive">
-                            <table class="table pl-table align-middle mb-0">
+                                <div class="req-time">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <?= esc(date('M j, Y g:i A', strtotime($req['created_at'] ?? 'now'))) ?>
+                                </div>
+
+                                <div class="req-actions">
+                                    <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="id" value="<?= $req['id'] ?>">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="req-btn req-btn-approve">
+                                            <i class="bi bi-check-lg me-1"></i>Approve
+                                        </button>
+                                    </form>
+                                    <form action="<?= site_url('/access-request/approve') ?>" method="post" class="d-inline">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="id" value="<?= $req['id'] ?>">
+                                        <input type="hidden" name="action" value="deny">
+                                        <button type="submit" class="req-btn req-btn-deny">
+                                            <i class="bi bi-x-lg me-1"></i>Deny
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- ── Request History ── -->
+                <div class="adm-section-label mb-3">Request History</div>
+                <div class="pl-card">
+                    <div class="table-responsive">
+                        <table class="table pl-table align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -178,10 +136,10 @@ $roleColors = [
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($activeHistory)): ?>
+                                <?php if (empty($all)): ?>
                                     <tr><td colspan="6" class="text-center text-muted py-4">No requests found.</td></tr>
                                 <?php else: ?>
-                                    <?php foreach ($activeHistory as $i => $r):
+                                    <?php foreach ($all as $i => $r):
                                         $permCode  = $r['permission_code'] ?? $r['resource'];
                                         $permLabel = PermissionManager::$definitions[$permCode]['label'] ?? $permCode;
                                         $reqRole   = $r['requested_role'] ?? '—';
@@ -204,13 +162,13 @@ $roleColors = [
                                             </div>
                                         </td>
                                         <td>
-                                            <?php $roleLabel = str_replace('_', ' ', ucfirst($reqRole)); ?>
                                             <span class="req-role-badge" style="background:<?= $roleStyle['bg'] ?>;color:<?= $roleStyle['color'] ?>;">
-                                                <?= esc($roleLabel) ?>
+                                                <?= esc(str_replace('_', ' ', ucfirst($reqRole))) ?>
                                             </span>
                                         </td>
                                         <td>
                                             <div class="pl-name" style="font-size:0.82rem;"><?= esc($permLabel) ?></div>
+                                            <div class="pl-email" style="font-size:0.72rem;"><?= esc($permCode) ?></div>
                                         </td>
                                         <td class="pl-date"><?= esc(date('M j, Y', strtotime($r['created_at'] ?? 'now'))) ?></td>
                                         <td>
@@ -224,9 +182,7 @@ $roleColors = [
                             </tbody>
                         </table>
                     </div>
-                    </div>
                 </div>
-                <?php endforeach; ?>
 
             </div>
         </div>
@@ -234,17 +190,6 @@ $roleColors = [
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.querySelectorAll('.role-tab').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.role-tab').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.role-panel').forEach(p => p.classList.add('d-none'));
-        this.classList.add('active');
-        const panel = document.getElementById(this.dataset.target);
-        if (panel) panel.classList.remove('d-none');
-    });
-});
-</script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { background: #edf2f7; font-family: 'Inter', sans-serif; }
@@ -278,64 +223,6 @@ document.querySelectorAll('.role-tab').forEach(btn => {
     .adm-section-label { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#5a7288;display:flex;align-items:center;gap:8px; }
     .pending-count-badge { background:#ef4444;color:white;font-size:0.65rem;font-weight:700;padding:1px 7px;border-radius:999px; }
 
-    .role-tabs-wrap { margin-bottom: 0.9rem; }
-    .role-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding-left: 0;
-        margin-bottom: 0;
-        list-style: none;
-    }
-    .role-tabs li { margin: 0; }
-    .role-tab {
-        --tab-color: #475569;
-        --tab-bg: #f8fafc;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.6rem 0.9rem;
-        min-height: 46px;
-        border-radius: 14px;
-        border: 1px solid #dbe3ee;
-        background: rgba(255,255,255,0.92);
-        color: #475569;
-        font-weight: 700;
-        font-size: 0.84rem;
-        box-shadow: 0 2px 10px rgba(15,23,42,0.05);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
-    }
-    .role-tab i { font-size: 0.92rem; }
-    .role-tab:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(15,23,42,0.09);
-        background: #fff;
-        color: #0f172a;
-    }
-    .role-tab.active {
-        background: linear-gradient(180deg, var(--tab-bg), #ffffff 68%);
-        border-color: color-mix(in srgb, var(--tab-color) 25%, #dbe3ee);
-        color: var(--tab-color);
-        box-shadow: inset 0 -3px 0 0 var(--tab-color), 0 4px 16px rgba(15,23,42,0.08);
-    }
-    .role-tab-count {
-        min-width: 24px;
-        height: 24px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #eef2ff;
-        color: #334155;
-        font-size: 0.72rem;
-        font-weight: 800;
-        padding: 0 7px;
-    }
-    .role-tab.active .role-tab-count {
-        background: var(--tab-color);
-        color: #fff;
-    }
-
     /* Empty state */
     .empty-pending {
         background:white;border-radius:14px;border:1px solid #e2e8f0;
@@ -348,37 +235,37 @@ document.querySelectorAll('.role-tab').forEach(btn => {
     .req-card {
         background:white;border-radius:18px;border:1px solid #e2e8f0;
         box-shadow:0 2px 8px rgba(15,23,42,0.06);
-        padding:0.95rem 1rem;transition:box-shadow 0.15s;
+        padding:1.25rem;transition:box-shadow 0.15s;
     }
     .req-card:hover { box-shadow:0 6px 20px rgba(15,23,42,0.1); }
-    .req-card-top { display:flex;align-items:center;gap:0.6rem;margin-bottom:0.7rem; }
+    .req-card-top { display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem; }
     .req-avatar {
-        width:36px;height:36px;border-radius:50%;flex-shrink:0;
+        width:42px;height:42px;border-radius:50%;flex-shrink:0;
         background:linear-gradient(135deg,#3b556e,#2e445a);
         display:flex;align-items:center;justify-content:center;
-        font-size:0.72rem;font-weight:700;color:white;
+        font-size:0.8rem;font-weight:700;color:white;
     }
     .req-user-info { flex:1;min-width:0; }
-    .req-user-name  { font-size:0.82rem;font-weight:700;color:#0f172a;line-height:1.15; }
-    .req-user-email { font-size:0.72rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-    .req-role-badge { font-size:0.64rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0; }
+    .req-user-name  { font-size:0.88rem;font-weight:700;color:#0f172a; }
+    .req-user-email { font-size:0.75rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .req-role-badge { font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0; }
 
     .req-perm-row {
         display:flex;align-items:flex-start;gap:0.75rem;
         background:#f8fafc;border-radius:12px;padding:0.75rem 1rem;
-        margin-bottom:0.6rem;
+        margin-bottom:0.75rem;
     }
-    .req-perm-icon { font-size:1rem;color:#f59e0b;margin-top:1px;flex-shrink:0; }
-    .req-perm-label { font-size:0.68rem;color:#94a3b8;font-weight:500;margin-bottom:1px; }
-    .req-perm-name  { font-size:0.82rem;font-weight:700;color:#0f172a;line-height:1.2; }
+    .req-perm-icon { font-size:1.1rem;color:#f59e0b;margin-top:2px;flex-shrink:0; }
+    .req-perm-label { font-size:0.72rem;color:#94a3b8;font-weight:500;margin-bottom:2px; }
+    .req-perm-name  { font-size:0.88rem;font-weight:700;color:#0f172a; }
     .req-perm-code  { font-size:0.72rem;color:#64748b;font-family:monospace; }
 
-    .req-time { font-size:0.72rem;color:#94a3b8;margin-bottom:0.75rem; }
+    .req-time { font-size:0.75rem;color:#94a3b8;margin-bottom:1rem; }
 
-    .req-actions { display:flex;gap:7px; }
+    .req-actions { display:flex;gap:8px; }
     .req-btn {
-        font-size:0.74rem;font-weight:600;padding:5px 12px;
-        border-radius:8px;border:none;cursor:pointer;
+        font-size:0.78rem;font-weight:600;padding:6px 16px;
+        border-radius:9px;border:none;cursor:pointer;
         display:inline-flex;align-items:center;transition:all 0.15s;
     }
     .req-btn-approve { background:#d1fae5;color:#065f46; }
@@ -407,6 +294,5 @@ document.querySelectorAll('.role-tab').forEach(btn => {
         font-size:0.65rem;font-weight:700;color:white;
     }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>

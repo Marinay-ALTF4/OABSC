@@ -248,6 +248,5 @@
         padding: 1px 6px; border-radius: 999px; margin-left: 5px;
     }
 </style>
-<?php echo view('layouts/_chat_widget'); ?>
 </body>
 </html>
