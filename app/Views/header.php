@@ -8,6 +8,13 @@ if ($role === 'assistant_admin') {
 $isDashboardPage = url_is('dashboard');
 $isPatientsPage = url_is('admin/patients*');
 
+if (! function_exists('notif_badge_text')) {
+    function notif_badge_text(int $count): string
+    {
+        return $count > 99 ? '99+' : (string) $count;
+    }
+}
+
 // Load notifications for the current user on every page (frontend-only, no controller change needed)
 if (empty($notifications) && session()->get('isLoggedIn')) {
     $notifModel    = new \App\Models\NotificationModel();
@@ -43,7 +50,7 @@ $unread_notif_count  = $unread_notif_count ?? 0;
             <div class="position-relative" id="notif-bell-wrap">
                 <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
                     <i class="bi bi-bell"></i>
-                    <span class="notif-dot <?= $unread_notif_count > 0 ? '' : 'd-none' ?>" id="notif-dot"></span>
+                    <span class="notif-badge <?= $unread_notif_count > 0 ? '' : 'd-none' ?>" id="notif-badge"><?= esc(notif_badge_text((int) $unread_notif_count)) ?></span>
                 </button>
                 <div class="notif-dropdown d-none" id="notif-dropdown">
                     <div class="notif-dropdown-header">
@@ -163,10 +170,23 @@ $unread_notif_count  = $unread_notif_count ?? 0;
         transition: all 0.15s;
     }
     .notif-bell-btn:hover { background: #e2e8f0; color: #1e3a8a; }
-    .notif-dot {
-        position: absolute; top: 5px; right: 5px;
-        width: 8px; height: 8px; border-radius: 50%;
-        background: #ef4444; border: 2px solid white;
+    .notif-badge {
+        position: absolute;
+        top: -6px;
+        right: -7px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        border: 2px solid #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .notif-dropdown {
         position: absolute; right: 0; top: calc(100% + 8px);
@@ -313,6 +333,7 @@ $unread_notif_count  = $unread_notif_count ?? 0;
         color: #64748b;
         margin-top: 2px;
         line-height: 1.4;
+        line-clamp: 2;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -392,10 +413,18 @@ $unread_notif_count  = $unread_notif_count ?? 0;
 
     function renderAll() {
         const unreadCount = getUnreadCount();
+        const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
-        // Bell dot
-        const dot = document.getElementById('notif-dot');
-        if (dot) { unreadCount > 0 ? dot.classList.remove('d-none') : dot.classList.add('d-none'); }
+        // Bell badge
+        const badge = document.getElementById('notif-badge');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.classList.remove('d-none');
+                badge.textContent = badgeText;
+            } else {
+                badge.classList.add('d-none');
+            }
+        }
 
         const html = defaultNotifs.length
             ? defaultNotifs.map(n => renderNotifItem(n)).join('')

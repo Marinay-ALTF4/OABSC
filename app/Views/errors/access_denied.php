@@ -14,15 +14,17 @@ if (empty($fromUri) || $fromUri === '/') {
     $fromUri = '/' . ltrim($fromUri, '/');
 }
 
-// Find which permission this URI maps to
+// Find which permission this URI maps to.
+// Prefer the most specific route so "/appointments/my" does not get captured by "/appointments".
 $deniedPermCode  = null;
 $deniedPermLabel = null;
+$bestMatchLength  = -1;
 foreach (PermissionManager::$definitions as $code => $def) {
     foreach ($def['routes'] as $route) {
-        if (str_starts_with($fromUri, $route)) {
-            $deniedPermCode  = $code;
-            $deniedPermLabel = $def['label'];
-            break 2;
+        if (str_starts_with($fromUri, $route) && strlen($route) > $bestMatchLength) {
+            $deniedPermCode   = $code;
+            $deniedPermLabel  = $def['label'];
+            $bestMatchLength  = strlen($route);
         }
     }
 }
