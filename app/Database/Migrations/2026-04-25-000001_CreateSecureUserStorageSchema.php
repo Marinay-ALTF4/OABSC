@@ -297,12 +297,21 @@ class CreateSecureUserStorageSchema extends Migration
                 'constraint' => 32,
                 'null'       => true,
             ],
+            'ip_address' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 45,
+                'null'       => true,
+            ],
             'user_agent' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
                 'null'       => true,
             ],
             'issued_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'last_active_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
             ],
@@ -366,6 +375,11 @@ class CreateSecureUserStorageSchema extends Migration
             'ip_hash' => [
                 'type'       => 'BINARY',
                 'constraint' => 32,
+                'null'       => true,
+            ],
+            'ip_address' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 45,
                 'null'       => true,
             ],
             'user_agent' => [

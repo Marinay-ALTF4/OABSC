@@ -8,6 +8,46 @@ $name = session('user_name') ?? 'User';
 /** @var int $suspicious */
 /** @var array $sessions */
 /** @var array $events */
+/** @var int $activeCount */
+
+if (!function_exists('parseUserAgent')) {
+    function parseUserAgent(string $ua): array {
+        $browser = 'Unknown';
+        $os = 'Unknown';
+        $icon = 'bi-laptop';
+
+        // Parse OS
+        if (stripos($ua, 'windows') !== false) {
+            $os = 'Windows';
+            $icon = 'bi-windows';
+        } elseif (stripos($ua, 'macintosh') !== false || stripos($ua, 'mac os x') !== false) {
+            $os = 'macOS';
+            $icon = 'bi-apple';
+        } elseif (stripos($ua, 'iphone') !== false) {
+            $os = 'iPhone';
+            $icon = 'bi-phone';
+        } elseif (stripos($ua, 'android') !== false) {
+            $os = 'Android';
+            $icon = 'bi-android';
+        } elseif (stripos($ua, 'linux') !== false) {
+            $os = 'Linux';
+            $icon = 'bi-ubuntu';
+        }
+
+        // Parse Browser
+        if (stripos($ua, 'firefox') !== false) {
+            $browser = 'Firefox';
+        } elseif (stripos($ua, 'chrome') !== false && stripos($ua, 'edg') === false) {
+            $browser = 'Chrome';
+        } elseif (stripos($ua, 'safari') !== false && stripos($ua, 'chrome') === false) {
+            $browser = 'Safari';
+        } elseif (stripos($ua, 'edg') !== false) {
+            $browser = 'Edge';
+        }
+
+        return ['browser' => $browser, 'os' => $os, 'icon' => $icon];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,7 +103,7 @@ $name = session('user_name') ?? 'User';
     <div class="col-6 col-md-3">
         <div class="audit-stat-card">
             <div class="audit-stat-icon" style="background:#d1fae5;color:#065f46;"><i class="bi bi-people"></i></div>
-            <div class="audit-stat-val"><?= esc((string) count($sessions)) ?></div>
+            <div class="audit-stat-val"><?= esc((string) $activeCount) ?></div>
             <div class="audit-stat-lbl">Active Sessions (8h)</div>
         </div>
     </div>
@@ -71,24 +111,81 @@ $name = session('user_name') ?? 'User';
 
 <!-- Active Sessions -->
 <div class="audit-panel mb-4">
-    <div class="audit-panel-header"><i class="bi bi-person-check me-2"></i>Active Sessions (last 8 hours)</div>
+    <div class="audit-panel-header"><i class="bi bi-person-check me-2"></i>User Sessions & Activity Logs</div>
     <?php if (empty($sessions)): ?>
-        <div class="text-muted small p-3">No active sessions.</div>
+        <div class="text-muted small p-3">No sessions recorded.</div>
     <?php else: ?>
+    <div style="overflow-x:auto;">
     <table class="audit-table">
-        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Last Login</th></tr></thead>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Location / IP</th>
+                <th>Device & Browser</th>
+                <th>Login Time</th>
+                <th>Status</th>
+                <th>Time Active</th>
+            </tr>
+        </thead>
         <tbody>
             <?php foreach ($sessions as $i => $s): ?>
+            <?php
+                $uaInfo = parseUserAgent($s['user_agent'] ?? '');
+                $loginTime = strtotime($s['issued_at']);
+                $isActive = is_null($s['revoked_at']) && strtotime((string)$s['expires_at']) > time();
+                
+                if ($isActive) {
+                    $lastActive = $s['last_active_at'] ? strtotime($s['last_active_at']) : time();
+                    $diffSecs = max(0, $lastActive - $loginTime);
+                    $duration = round($diffSecs / 60);
+                    $statusHtml = '<span class="status-badge badge-active"><span class="pulse-dot"></span>Active now</span>';
+                    $durationText = $duration . ' min' . ($duration == 1 ? '' : 's');
+                } else {
+                    $lastActive = $s['revoked_at'] ? strtotime($s['revoked_at']) : ($s['last_active_at'] ? strtotime($s['last_active_at']) : strtotime($s['expires_at']));
+                    $diffSecs = max(0, $lastActive - $loginTime);
+                    $duration = round($diffSecs / 60);
+                    
+                    if (!is_null($s['revoked_at'])) {
+                        $statusHtml = '<span class="status-badge badge-revoked">Logged out</span>';
+                    } else {
+                        $statusHtml = '<span class="status-badge badge-expired">Expired</span>';
+                    }
+                    $durationText = $duration . ' min' . ($duration == 1 ? '' : 's');
+                }
+                
+                $ipAddress = $s['ip_address'] ?? 'Unknown';
+                if ($ipAddress === '::1') {
+                    $ipAddress = 'Localhost (::1)';
+                }
+            ?>
             <tr>
-                <td><?= $i + 1 ?></td>
-                <td><?= esc($s['name']) ?></td>
-                <td><?= esc($s['email']) ?></td>
+                <td>
+                    <div style="font-weight:600;color:#0f172a;"><?= esc($s['name']) ?></div>
+                    <div style="font-size:0.75rem;color:#64748b;"><?= esc($s['email']) ?></div>
+                </td>
                 <td><span class="role-badge"><?= esc($s['role']) ?></span></td>
-                <td><?= esc($s['last_login_at'] ?? '—') ?></td>
+                <td>
+                    <div style="font-weight:500;color:#334155;"><i class="bi bi-geo-alt me-1 text-muted"></i><?= esc($ipAddress) ?></div>
+                </td>
+                <td>
+                    <div class="device-info text-nowrap">
+                        <i class="bi <?= esc($uaInfo['icon']) ?> me-1"></i>
+                        <span><?= esc($uaInfo['os']) ?> · <?= esc($uaInfo['browser']) ?></span>
+                    </div>
+                </td>
+                <td>
+                    <div style="color:#475569;" class="text-nowrap"><?= esc($s['issued_at']) ?></div>
+                </td>
+                <td><?= $statusHtml ?></td>
+                <td>
+                    <div style="font-weight:600;color:#0f172a;"><?= esc($durationText) ?></div>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
     <?php endif; ?>
 </div>
 
@@ -196,6 +293,54 @@ $name = session('user_name') ?? 'User';
     .badge-warning { background:#fef3c7; color:#d97706; }
     .badge-info    { background:#dbeafe; color:#1e40af; }
     .role-badge { padding:2px 8px; border-radius:999px; font-size:0.7rem; font-weight:600; background:#e0f2fe; color:#0369a1; }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .badge-active {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .badge-revoked {
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+    .badge-expired {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse-animation 1.5s infinite;
+    }
+    @keyframes pulse-animation {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .device-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #334155;
+    }
+    .device-info i {
+        font-size: 1.1rem;
+        color: #64748b;
+    }
 </style>
 
             </div><!-- end adm-wrapper -->

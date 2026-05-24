@@ -20,19 +20,26 @@ class AuditLog extends BaseController
         if ($r = $this->ensureAdminAccess()) return $r;
 
         $logModel = new LoginEventModel();
+        $sessionModel = new \App\Models\AuthSessionModel();
 
         $events   = $logModel->getRecentEvents(200);
         $summary  = $logModel->getAuditSummary();
-        $sessions = $logModel->getActiveSessions();
+        
+        $sessions = $sessionModel->getRecentSessions(50);
+        $activeCount = count(array_filter($sessions, function ($s) {
+            return is_null($s['revoked_at']) && strtotime((string)$s['expires_at']) > time();
+        }));
+
         $failed24 = $logModel->getFailedLoginsLast24h();
         $suspicious = $logModel->getSuspiciousCount();
 
         return view('admin/audit_log', [
-            'events'     => $events,
-            'summary'    => $summary,
-            'sessions'   => $sessions,
-            'failed24'   => $failed24,
-            'suspicious' => $suspicious,
+            'events'      => $events,
+            'summary'     => $summary,
+            'sessions'    => $sessions,
+            'activeCount' => $activeCount,
+            'failed24'    => $failed24,
+            'suspicious'  => $suspicious,
         ]);
     }
 }

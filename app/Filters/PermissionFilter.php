@@ -41,12 +41,18 @@ class PermissionFilter implements FilterInterface
             return redirect()->to('/login');
         }
 
-        $role = session('user_role');
-
-        // Admin always passes — no restrictions
-        if ($role === 'admin') {
-            return;
+        // Update last_active_at for the current active session
+        $token = session('auth_session_token');
+        if ($token) {
+            $tokenHash = hex2bin(hash('sha256', $token));
+            $db = \Config\Database::connect();
+            $db->query(
+                'UPDATE auth_sessions SET last_active_at = NOW() WHERE refresh_token_hash = ?',
+                [$tokenHash]
+            );
         }
+
+        $role = session('user_role');
 
         // Normalize URI
         $uri      = '/' . ltrim($request->getUri()->getPath(), '/');
@@ -56,6 +62,61 @@ class PermissionFilter implements FilterInterface
             $uri = substr($uri, strlen($basePath));
         }
         $uri = '/' . ltrim($uri, '/');
+
+        // Log module access for GET requests
+        if ($request->getMethod() === 'get') {
+            $moduleLogs = [
+                '/admin/permissions'    => 'Permissions Module',
+                '/admin/audit-log'      => 'Security Audit Log',
+                '/admin/audit-reports'  => 'Audit Reports',
+                '/admin/reports'        => 'Audit Reports',
+                '/admin/appointments'   => 'Appointments Management',
+                '/admin/patients'       => 'Patients Management',
+                '/admin/doctors'        => 'Doctors Management',
+                '/admin/announcements'  => 'Announcements Module',
+                '/admin/settings'       => 'Settings Module',
+                '/doctor/appointments'  => 'Doctor Appointments',
+                '/doctor/queue'         => 'Doctor Queue',
+                '/doctor/records'       => 'Patient Records',
+                '/doctor/notes'         => 'Doctor Notes',
+                '/doctor/prescriptions' => 'Doctor Prescriptions',
+                '/doctor/schedule'      => 'Doctor Schedule',
+                '/secretary/appointments' => 'Secretary Appointments',
+                '/secretary/queue'        => 'Secretary Queue',
+                '/secretary/records'      => 'Patient Records',
+                '/secretary/register'     => 'Patient Registration',
+                '/secretary/schedules'    => 'Secretary Schedules',
+                '/secretary/approvals'    => 'Secretary Approvals',
+                '/appointments/new'       => 'Book Appointment',
+                '/appointments/my'        => 'My Appointments',
+                '/profile'                => 'Profile Module',
+            ];
+
+            foreach ($moduleLogs as $prefix => $moduleName) {
+                if ($uri === $prefix || str_starts_with($uri, $prefix . '/')) {
+                    $userId = session('user_id');
+                    if ($userId) {
+                        $logModel = new \App\Models\LoginEventModel();
+                        $db = \Config\Database::connect();
+                        $recent = $db->query(
+                            'SELECT id FROM login_events 
+                             WHERE user_id = ? AND event_type = ? AND reason_code = ? AND created_at >= ?',
+                            [$userId, 'module_access', 'Opened ' . $moduleName, date('Y-m-d H:i:s', time() - 5)]
+                        )->getRow();
+                        
+                        if (!$recent) {
+                            $logModel->log('module_access', (int)$userId, null, 'Opened ' . $moduleName);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Admin always passes — no restrictions
+        if ($role === 'admin') {
+            return;
+        }
 
         // ── Admin panel routes ──
         if (str_starts_with($uri, '/admin/')) {

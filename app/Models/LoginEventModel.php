@@ -12,9 +12,18 @@ class LoginEventModel extends Model
     protected $returnType    = 'array';
     protected $allowedFields = [
         'user_id', 'email_attempted', 'event_type',
-        'reason_code', 'ip_hash', 'user_agent', 'created_at',
+        'reason_code', 'ip_hash', 'ip_address', 'user_agent', 'created_at',
     ];
     protected $useTimestamps  = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $db = \Config\Database::connect();
+        if (! $db->fieldExists('ip_address', 'login_events')) {
+            $db->query('ALTER TABLE login_events ADD COLUMN ip_address VARCHAR(45) NULL AFTER ip_hash');
+        }
+    }
     
     protected $beforeInsert = ['encryptLogFields'];
     protected $afterFind    = ['decryptLogFields'];
@@ -91,6 +100,7 @@ class LoginEventModel extends Model
             'event_type'       => $eventType,
             'reason_code'      => $reasonCode,
             'ip_hash'          => hex2bin(hash('sha256', $ipAddress)),
+            'ip_address'       => $ipAddress,
             'user_agent'       => substr($userAgent, 0, 255),
             'created_at'       => date('Y-m-d H:i:s'),
         ]);

@@ -13,9 +13,21 @@ class AuthSessionModel extends Model
 
     protected $allowedFields = [
         'user_id', 'refresh_token_hash', 'device_fingerprint_hash',
-        'ip_hash', 'user_agent', 'issued_at', 'expires_at',
+        'ip_hash', 'ip_address', 'user_agent', 'issued_at', 'last_active_at', 'expires_at',
         'revoked_at', 'revoke_reason',
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+        $db = \Config\Database::connect();
+        if (! $db->fieldExists('ip_address', 'auth_sessions')) {
+            $db->query('ALTER TABLE auth_sessions ADD COLUMN ip_address VARCHAR(45) NULL AFTER ip_hash');
+        }
+        if (! $db->fieldExists('last_active_at', 'auth_sessions')) {
+            $db->query('ALTER TABLE auth_sessions ADD COLUMN last_active_at DATETIME NULL AFTER issued_at');
+        }
+    }
 
     /**
      * Create a new session record on login.
@@ -44,9 +56,9 @@ class AuthSessionModel extends Model
         $db = \Config\Database::connect();
         $db->query(
             'INSERT INTO auth_sessions
-             (user_id, refresh_token_hash, device_fingerprint_hash, ip_hash, user_agent, issued_at, expires_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [$userId, $tokenHash, $fingerprint, $ipHash, substr($ua, 0, 255), $now, $expires]
+             (user_id, refresh_token_hash, device_fingerprint_hash, ip_hash, ip_address, user_agent, issued_at, last_active_at, expires_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [$userId, $tokenHash, $fingerprint, $ipHash, $ip, substr($ua, 0, 255), $now, $now, $expires]
         );
 
         return $token;
@@ -123,5 +135,21 @@ class AuthSessionModel extends Model
             'active'  => $active,
             'revoked' => $revoked,
         ];
+    }
+    /**
+     * Get recent sessions (both active and revoked)
+     */
+    public function getRecentSessions(int $limit = 50): array
+    {
+        $db = \Config\Database::connect();
+        return $db->query(
+            'SELECT s.id, s.user_id, u.name, u.email, u.role,
+                    s.user_agent, s.ip_address, s.issued_at, s.last_active_at, s.expires_at, s.revoked_at, s.revoke_reason
+             FROM auth_sessions s
+             INNER JOIN users u ON u.id = s.user_id
+             ORDER BY s.issued_at DESC
+             LIMIT ?',
+            [$limit]
+        )->getResultArray();
     }
 }
