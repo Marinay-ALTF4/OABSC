@@ -270,21 +270,8 @@ class DoctorAppointments extends BaseController
         $doctorId = (int) session('user_id');
         $notes = $this->loadDoctorNotes($doctorId);
 
-        $appointments = $this->loadDoctorAppointments('all');
-        $patients = [];
-        foreach ($appointments as $appt) {
-            $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
-            if ($clientId <= 0) {
-                continue;
-            }
-            if (! isset($patients[$clientId])) {
-                $patients[$clientId] = [
-                    'id' => $clientId,
-                    'name' => $appt['patient_name'] ?? 'Unknown',
-                ];
-            }
-        }
-        $patients = array_values($patients);
+        $userModel = new UserModel();
+        $patients = $userModel->where('role', 'client')->findAll();
         usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
 
         usort($notes, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
@@ -331,6 +318,19 @@ class DoctorAppointments extends BaseController
         ];
 
         $this->saveDoctorNotes($doctorId, $notes);
+
+        // Notify the specific patient
+        if ($patientId > 0) {
+            $notifModel = new \App\Models\NotificationModel();
+            $doctorName = 'Dr. ' . session('user_name');
+            $notifModel->send(
+                $patientId,
+                'New Consultation Note',
+                "{$doctorName} has added a consultation note for you: \"{$title}\".",
+                'info'
+            );
+        }
+
         return redirect()->to('/doctor/notes')->with('success', 'Note saved successfully.');
     }
 
@@ -342,21 +342,8 @@ class DoctorAppointments extends BaseController
         $doctorId = (int) session('user_id');
         $prescriptions = $this->loadDoctorPrescriptions($doctorId);
 
-        $appointments = $this->loadDoctorAppointments('all');
-        $patients = [];
-        foreach ($appointments as $appt) {
-            $clientId = (int) ($appt['client_id'] ?? $appt['user_id'] ?? 0);
-            if ($clientId <= 0) {
-                continue;
-            }
-            if (! isset($patients[$clientId])) {
-                $patients[$clientId] = [
-                    'id' => $clientId,
-                    'name' => $appt['patient_name'] ?? 'Unknown',
-                ];
-            }
-        }
-        $patients = array_values($patients);
+        $userModel = new UserModel();
+        $patients = $userModel->where('role', 'client')->findAll();
         usort($patients, fn($a, $b) => strcmp((string) $a['name'], (string) $b['name']));
 
         usort($prescriptions, fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
@@ -409,6 +396,26 @@ class DoctorAppointments extends BaseController
         ];
 
         $this->saveDoctorPrescriptions($doctorId, $prescriptions);
+
+        // Notify the specific patient
+        if ($patientId > 0) {
+            $notifModel = new \App\Models\NotificationModel();
+            $doctorName = 'Dr. ' . session('user_name');
+            $msg = "{$doctorName} has added a prescription for you: \"{$medicine}\"\n"
+                 . "• Dosage: {$dosage}\n"
+                 . "• Frequency: {$frequency}\n"
+                 . "• Duration: {$duration}";
+            if ($instructions !== '') {
+                $msg .= "\n• Instructions: {$instructions}";
+            }
+            $notifModel->send(
+                $patientId,
+                'New Prescription Added',
+                $msg,
+                'info'
+            );
+        }
+
         return redirect()->to('/doctor/prescriptions')->with('success', 'Prescription saved successfully.');
     }
 
