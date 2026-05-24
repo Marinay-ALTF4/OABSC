@@ -77,8 +77,9 @@ $roleColors = [
                                         <div class="req-user-name"><?= esc($requester['name'] ?? '—') ?></div>
                                         <div class="req-user-email"><?= esc($requester['email'] ?? '—') ?></div>
                                     </div>
+                                    <?php $roleLabel = str_replace('_', ' ', ucfirst($reqRole)); ?>
                                     <span class="req-role-badge" style="background:<?= $roleStyle['bg'] ?>;color:<?= $roleStyle['color'] ?>;">
-                                        <?= esc(str_replace('_', ' ', ucfirst($reqRole))) ?>
+                                        <?= esc($roleLabel) ?>
                                     </span>
                                 </div>
 
@@ -87,7 +88,6 @@ $roleColors = [
                                     <div>
                                         <div class="req-perm-label">Requesting access to:</div>
                                         <div class="req-perm-name"><?= esc($permLabel) ?></div>
-                                        <div class="req-perm-code"><?= esc($permCode) ?></div>
                                     </div>
                                 </div>
 
@@ -162,13 +162,14 @@ $roleColors = [
                                             </div>
                                         </td>
                                         <td>
+                                            <?php $roleLabel = str_replace('_', ' ', ucfirst($reqRole)); ?>
                                             <span class="req-role-badge" style="background:<?= $roleStyle['bg'] ?>;color:<?= $roleStyle['color'] ?>;">
-                                                <?= esc(str_replace('_', ' ', ucfirst($reqRole))) ?>
+                                                <?= esc($roleLabel) ?>
                                             </span>
                                         </td>
                                         <td>
                                             <div class="pl-name" style="font-size:0.82rem;"><?= esc($permLabel) ?></div>
-                                            <div class="pl-email" style="font-size:0.72rem;"><?= esc($permCode) ?></div>
+                                            <!-- raw permission code intentionally hidden from UI -->
                                         </td>
                                         <td class="pl-date"><?= esc(date('M j, Y', strtotime($r['created_at'] ?? 'now'))) ?></td>
                                         <td>
