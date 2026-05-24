@@ -1388,11 +1388,11 @@ class Api extends BaseController
         }
 
         $db = \Config\Database::connect();
-
+        $now = date('Y-m-d H:i:s');
         $db->query(
-            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by) 
-             VALUES (?, ?, ?, 'info', ?, ?)",
-            [$title, $content, $content, $targetDashboard, $userId]
+            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by, created_at, updated_at) 
+             VALUES (?, ?, ?, 'info', ?, ?, ?, ?)",
+            [$title, $content, $content, $targetDashboard, $userId, $now, $now]
         );
         $announcementId = $db->insertID();
 

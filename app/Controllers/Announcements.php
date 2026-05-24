@@ -52,11 +52,11 @@ class Announcements extends BaseController
         }
 
         $db = \Config\Database::connect();
-
+        $now = date('Y-m-d H:i:s');
         $db->query(
-            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by) 
-             VALUES (?, ?, ?, ?, ?, ?)",
-            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id')]
+            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id'), $now, $now]
         );
         $announcementId = $db->insertID();
 

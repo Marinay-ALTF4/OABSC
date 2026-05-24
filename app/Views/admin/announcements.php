@@ -56,7 +56,7 @@ $name = session('user_name') ?? 'User';
                                         <div class="ann-title"><?= esc($a['title']) ?></div>
                                         <div class="ann-body"><?= nl2br(esc($a['body'])) ?></div>
                                         <div class="ann-meta">
-                                            <i class="bi bi-clock me-1"></i><?= esc(date('M j, Y g:i A', strtotime($a['created_at']))) ?>
+                                            <i class="bi bi-clock me-1"></i><?= esc(!empty($a['created_at']) ? date('M j, Y g:i A', strtotime($a['created_at'])) : date('M j, Y g:i A')) ?>
                                             &nbsp;·&nbsp;
                                             <span class="ann-badge"><?= esc(ucfirst($a['type'] ?? 'info')) ?></span>
                                             <?php

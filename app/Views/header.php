@@ -385,7 +385,7 @@ $unread_notif_count  = $unread_notif_count ?? 0;
             'bg'    => $style['bg'],
             'title' => $n['title'],
             'body'  => $n['body'],
-            'time'  => date('M j, g:i A', strtotime($n['created_at'])),
+            'time'  => !empty($n['created_at']) ? date('M j, g:i A', strtotime($n['created_at'])) : date('M j, g:i A'),
             'read'  => (bool) $n['is_read'],
         ];
     }, $notifications ?? []), JSON_UNESCAPED_UNICODE) ?>;
