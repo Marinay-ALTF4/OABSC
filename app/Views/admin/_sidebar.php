@@ -16,14 +16,19 @@ if (! function_exists('adm_nav_active')) {
 }
 
 // Build a helper: returns nav item HTML, disabled if no permission
-function navItem(string $url, string $icon, string $label, string $key, string $active, bool $hasPermission = true): string {
+function navItem(string $url, string $icon, string $label, string $key, string $active, bool $hasPermission = true, ?int $badge = null): string {
     $activeClass   = adm_nav_active($key, $active);
     $disabledClass = ! $hasPermission ? ' nav-disabled' : '';
     $disabledAttr  = ! $hasPermission ? ' tabindex="-1" aria-disabled="true" title="You don\'t have permission to access this page"' : '';
     $href          = $hasPermission ? $url : '#';
 
+    $badgeHtml = '';
+    if (! is_null($badge) && (int) $badge > 0) {
+        $badgeHtml = ' <span class="nav-badge">' . (int) $badge . '</span>';
+    }
+
     return '<a href="' . $href . '" class="adm-nav-item' . $activeClass . $disabledClass . '"' . $disabledAttr . '>'
-         . '<i class="bi ' . $icon . '"></i> ' . $label
+         . '<i class="bi ' . $icon . '"></i> ' . $label . $badgeHtml
          . (! $hasPermission ? ' <i class="bi bi-lock-fill ms-auto" style="font-size:0.7rem;opacity:0.5;"></i>' : '')
          . '</a>';
 }
@@ -53,13 +58,25 @@ function navItem(string $url, string $icon, string $label, string $key, string $
 
     <?= navItem(site_url('/admin/appointments'),    'bi-calendar-event',        'Appointments',    'appointments', $active, $isAdmin || PermissionManager::can('view_appointments')) ?>
     <?= navItem(site_url('/admin/doctor-schedules'),'bi-calendar2-check',       'Doctor Schedules','schedules',    $active, $isAdmin || PermissionManager::can('view_doctors')) ?>
-    <?= navItem(site_url('/admin/access-requests'), 'bi-check-circle',          'Access Requests', 'access',       $active, $isAdmin || PermissionManager::can('access_requests')) ?>
+    <?php
+        // Show pending requests count as a red badge on the Access Requests nav item
+        $pendingCount = 0;
+        try {
+            $arModel = new \App\Models\AccessRequestModel();
+            $pendingCount = (int) $arModel->where('status', 'pending')->countAllResults();
+        } catch (\Throwable $e) {
+            // if model missing or DB error, silently ignore and show no badge
+            $pendingCount = 0;
+        }
+    ?>
+    <?= navItem(site_url('/admin/access-requests'), 'bi-check-circle', 'Access Requests', 'access', $active, $isAdmin || PermissionManager::can('access_requests'), $pendingCount) ?>
     <?= navItem(site_url('/admin/announcements'),   'bi-megaphone',             'Announcements',   'announcements',$active, $isAdmin || PermissionManager::can('announcements')) ?>
     <?= navItem(site_url('/admin/audit-log'),       'bi-clock-history',         'System Audit Log','audit_log',    $active, $isAdmin || PermissionManager::can('view_audit_log')) ?>
     <?= navItem(site_url('/admin/audit-reports'),   'bi-file-earmark-bar-graph','Audit Reports',   'audit_reports',$active, $isAdmin || PermissionManager::can('view_reports')) ?>
 </div>
 
 <style>
+    .adm-nav-item { position: relative; }
     .adm-nav-item.nav-disabled {
         color: #94a3b8 !important;
         cursor: not-allowed;
@@ -68,5 +85,20 @@ function navItem(string $url, string $icon, string $label, string $key, string $
     }
     .adm-nav-item.nav-disabled:hover {
         background: none !important;
+    }
+    .nav-badge {
+        position: absolute;
+        top: 6px;
+        right: 12px;
+        display: inline-block;
+        background: #ef4444;
+        color: #fff;
+        font-weight: 700;
+        padding: 0.12rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        line-height: 1;
+        min-width: 18px;
+        text-align: center;
     }
 </style>
