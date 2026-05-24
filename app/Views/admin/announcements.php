@@ -59,6 +59,20 @@ $name = session('user_name') ?? 'User';
                                             <i class="bi bi-clock me-1"></i><?= esc(date('M j, Y g:i A', strtotime($a['created_at']))) ?>
                                             &nbsp;·&nbsp;
                                             <span class="ann-badge"><?= esc(ucfirst($a['type'] ?? 'info')) ?></span>
+                                            <?php
+                                            $tgtMap = [
+                                                'all'       => 'All Dashboards',
+                                                'admin'     => 'Admin Dashboard',
+                                                'secretary' => 'Secretary Dashboard',
+                                                'doctor'    => 'Doctor Dashboard',
+                                                'client'    => 'Patient Dashboard',
+                                            ];
+                                            $tgtLabel = $tgtMap[$a['target_dashboard'] ?? 'all'] ?? 'All Dashboards';
+                                            ?>
+                                            &nbsp;·&nbsp;
+                                            <span class="badge bg-secondary text-white small" style="font-size:0.68rem; padding: 3px 8px; border-radius: 999px; font-weight: 600;">
+                                                <i class="bi bi-tag me-1"></i><?= esc($tgtLabel) ?>
+                                            </span>
                                         </div>
                                     </div>
                                     <form action="<?= site_url('/admin/announcements/delete/' . $a['id']) ?>" method="post" class="flex-shrink-0">
@@ -97,6 +111,16 @@ $name = session('user_name') ?? 'User';
                     <div class="mb-3">
                         <label class="form-label fw-semibold" style="font-size:0.85rem;">Message</label>
                         <textarea name="body" class="form-control" rows="4" placeholder="Write your announcement..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:0.85rem;">Target Dashboard</label>
+                        <select name="target_dashboard" class="form-select">
+                            <option value="all">All Dashboards</option>
+                            <option value="admin">Admin Dashboard</option>
+                            <option value="secretary">Secretary Dashboard</option>
+                            <option value="doctor">Doctor Dashboard</option>
+                            <option value="client">Patient Dashboard</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold" style="font-size:0.85rem;">Type</label>

@@ -13,18 +13,19 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $db = \Config\Database::connect();
+        $announcements = [];
+        if ($db->tableExists('announcements')) {
+            $announcements = $db->query(
+                "SELECT * FROM announcements 
+                 ORDER BY created_at DESC 
+                 LIMIT 50"
+            )->getResultArray();
+        }
 
-        // Only show admin-posted announcements (stored with a special marker)
-        $announcements = $db->query(
-            "SELECT * FROM notifications 
-             WHERE title LIKE '[ANN]%'
-             ORDER BY created_at DESC 
-             LIMIT 50"
-        )->getResultArray();
-
-        // Strip the [ANN] prefix for display
         foreach ($announcements as &$a) {
-            $a['title'] = ltrim(str_replace('[ANN]', '', $a['title']));
+            if (! isset($a['body'])) {
+                $a['body'] = $a['content'] ?? '';
+            }
         }
 
         return view('admin/announcements', ['announcements' => $announcements]);
@@ -35,24 +36,48 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
-        $title = trim((string) $this->request->getPost('title'));
-        $body  = trim((string) $this->request->getPost('body'));
-        $type  = (string) $this->request->getPost('type') ?: 'info';
+        $title           = trim((string) $this->request->getPost('title'));
+        $body            = trim((string) $this->request->getPost('body'));
+        $type            = (string) $this->request->getPost('type') ?: 'info';
+        $targetDashboard = (string) $this->request->getPost('target_dashboard') ?: 'all';
 
         if (! $title || ! $body) {
             return redirect()->back()->with('error', 'Title and message are required.');
         }
 
-        // Send to all users with [ANN] prefix to distinguish from regular notifications
-        $notifModel = new \App\Models\NotificationModel();
-        $userModel  = new UserModel();
-        $users      = $userModel->where('deleted_at IS NULL')->findAll();
+        $db = \Config\Database::connect();
+        $db->query(
+            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by) 
+             VALUES (?, ?, ?, ?, ?, ?)",
+            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id')]
+        );
+        $announcementId = $db->insertID();
 
-        foreach ($users as $user) {
-            $notifModel->send((int) $user['id'], '[ANN]' . $title, $body, $type);
+        // Send notifications to matched users
+        $userModel = new UserModel();
+        $builder = $userModel->where('deleted_at IS NULL');
+        
+        if ($targetDashboard === 'admin') {
+            $builder->whereIn('role', ['admin', 'assistant_admin']);
+        } elseif ($targetDashboard !== 'all') {
+            $builder->where('role', $targetDashboard);
         }
 
-        return redirect()->to('/admin/announcements')->with('success', 'Announcement posted to all users.');
+        $users = $builder->findAll();
+
+        $notifModel = new \App\Models\NotificationModel();
+        foreach ($users as $user) {
+            $notifModel->save([
+                'user_id'         => (int) $user['id'],
+                'title'           => 'New Announcement: ' . $title,
+                'body'            => $body,
+                'type'            => 'announcement',
+                'announcement_id' => $announcementId,
+                'is_read'         => 0,
+            ]);
+        }
+
+        return redirect()->to('/admin/announcements')->with('success', 'Announcement posted successfully.');
     }
 
     public function deleteAnnouncement(int $id)
@@ -61,7 +86,10 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $db = \Config\Database::connect();
-        $db->query('DELETE FROM notifications WHERE id = ?', [$id]);
+        if ($db->tableExists('announcements')) {
+            $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
+        }
+        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement deleted.');
     }

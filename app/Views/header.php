@@ -369,11 +369,12 @@ $unread_notif_count  = $unread_notif_count ?? 0;
 (function() {
     let defaultNotifs = <?= json_encode(array_map(function($n) {
         $typeMap = [
-            'appointment' => ['icon' => 'bi-calendar-check', 'color' => '#10b981', 'bg' => '#f0fdf4'],
-            'info'        => ['icon' => 'bi-info-circle',    'color' => '#3b82f6', 'bg' => '#eff6ff'],
-            'warning'     => ['icon' => 'bi-exclamation-triangle', 'color' => '#f59e0b', 'bg' => '#fffbeb'],
-            'error'       => ['icon' => 'bi-x-circle',       'color' => '#ef4444', 'bg' => '#fff1f2'],
-            'request'     => ['icon' => 'bi-key',            'color' => '#8b5cf6', 'bg' => '#f5f3ff'],
+            'appointment'  => ['icon' => 'bi-calendar-check', 'color' => '#10b981', 'bg' => '#f0fdf4'],
+            'info'         => ['icon' => 'bi-info-circle',    'color' => '#3b82f6', 'bg' => '#eff6ff'],
+            'warning'      => ['icon' => 'bi-exclamation-triangle', 'color' => '#f59e0b', 'bg' => '#fffbeb'],
+            'error'        => ['icon' => 'bi-x-circle',       'color' => '#ef4444', 'bg' => '#fff1f2'],
+            'request'      => ['icon' => 'bi-key',            'color' => '#8b5cf6', 'bg' => '#f5f3ff'],
+            'announcement' => ['icon' => 'bi-megaphone',      'color' => '#2a6a7e', 'bg' => '#e0f0ff'],
         ];
         $style = $typeMap[$n['type']] ?? $typeMap['info'];
         return [

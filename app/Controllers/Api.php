@@ -1376,11 +1376,12 @@ class Api extends BaseController
      */
     public function adminCreateAnnouncement()
     {
-        $request = $this->httpRequest();
-        $json    = $request->getJSON(true);
-        $title   = trim((string) ($json['title']   ?? ''));
-        $content = trim((string) ($json['content'] ?? ''));
-        $userId  = (int) ($json['user_id'] ?? 0);
+        $request         = $this->httpRequest();
+        $json            = $request->getJSON(true);
+        $title           = trim((string) ($json['title'] ?? ''));
+        $content         = trim((string) ($json['content'] ?? ''));
+        $userId          = (int) ($json['user_id'] ?? 0);
+        $targetDashboard = trim((string) ($json['target_dashboard'] ?? 'all'));
 
         if (! $title || ! $content) {
             return $this->failValidationErrors(['_form' => 'Title and content are required.']);
@@ -1388,29 +1389,35 @@ class Api extends BaseController
 
         $db = \Config\Database::connect();
 
-        if (! $db->tableExists('announcements')) {
-            $db->query('CREATE TABLE announcements (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
-                content TEXT NOT NULL,
-                created_by INT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )');
-        }
-
         $db->query(
-            'INSERT INTO announcements (title, content, created_by) VALUES (?, ?, ?)',
-            [$title, $content, $userId]
+            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by) 
+             VALUES (?, ?, ?, 'info', ?, ?)",
+            [$title, $content, $content, $targetDashboard, $userId]
         );
+        $announcementId = $db->insertID();
 
-        // Notify all active users
+        // Notify matched active users
         try {
             $userModel = new \App\Models\UserModel();
             $notifModel = new \App\Models\NotificationModel();
-            $allUsers = $userModel->where('deleted_at IS NULL')->findAll();
-            foreach ($allUsers as $u) {
-                $notifModel->send((int) $u['id'], 'New Announcement', $title, 'announcement');
+            
+            $builder = $userModel->where('deleted_at IS NULL');
+            if ($targetDashboard === 'admin') {
+                $builder->whereIn('role', ['admin', 'assistant_admin']);
+            } elseif ($targetDashboard !== 'all') {
+                $builder->where('role', $targetDashboard);
+            }
+
+            $users = $builder->findAll();
+            foreach ($users as $u) {
+                $notifModel->save([
+                    'user_id'         => (int) $u['id'],
+                    'title'           => 'New Announcement: ' . $title,
+                    'body'            => $content,
+                    'type'            => 'announcement',
+                    'announcement_id' => $announcementId,
+                    'is_read'         => 0,
+                ]);
             }
         } catch (\Throwable $e) {
             log_message('error', 'Failed to notify users on announcement: ' . $e->getMessage());
@@ -1429,6 +1436,7 @@ class Api extends BaseController
         if ($db->tableExists('announcements')) {
             $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
         }
+        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
         return $this->respond(['success' => true, 'message' => 'Announcement deleted.']);
     }
 

@@ -19,11 +19,16 @@ class Announcements extends BaseController
         $db            = \Config\Database::connect();
         $announcements = [];
 
-        // Check if announcements table exists
         if ($db->tableExists('announcements')) {
             $announcements = $db->query(
                 'SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50'
             )->getResultArray();
+        }
+
+        foreach ($announcements as &$a) {
+            if (! isset($a['body'])) {
+                $a['body'] = $a['content'] ?? '';
+            }
         }
 
         return view('admin/announcements', ['announcements' => $announcements]);
@@ -37,31 +42,47 @@ class Announcements extends BaseController
             return redirect()->to('/admin/announcements');
         }
 
-        $title   = trim((string) $this->request->getPost('title'));
-        $content = trim((string) $this->request->getPost('content'));
+        $title           = trim((string) $this->request->getPost('title'));
+        $body            = trim((string) ($this->request->getPost('body') ?: $this->request->getPost('content')));
+        $type            = (string) $this->request->getPost('type') ?: 'info';
+        $targetDashboard = (string) $this->request->getPost('target_dashboard') ?: 'all';
 
-        if (! $title || ! $content) {
-            return redirect()->back()->with('error', 'Title and content are required.');
+        if (! $title || ! $body) {
+            return redirect()->back()->with('error', 'Title and message/content are required.');
         }
 
         $db = \Config\Database::connect();
 
-        // Create table if not exists
-        if (! $db->tableExists('announcements')) {
-            $db->query('CREATE TABLE announcements (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
-                content TEXT NOT NULL,
-                created_by INT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )');
+        $db->query(
+            "INSERT INTO announcements (title, body, content, type, target_dashboard, created_by) 
+             VALUES (?, ?, ?, ?, ?, ?)",
+            [$title, $body, $body, $type, $targetDashboard, (int) session('user_id')]
+        );
+        $announcementId = $db->insertID();
+
+        // Send notifications to matched users
+        $userModel = new \App\Models\UserModel();
+        $builder = $userModel->where('deleted_at IS NULL');
+        
+        if ($targetDashboard === 'admin') {
+            $builder->whereIn('role', ['admin', 'assistant_admin']);
+        } elseif ($targetDashboard !== 'all') {
+            $builder->where('role', $targetDashboard);
         }
 
-        $db->query(
-            'INSERT INTO announcements (title, content, created_by) VALUES (?, ?, ?)',
-            [$title, $content, (int) session('user_id')]
-        );
+        $users = $builder->findAll();
+
+        $notifModel = new \App\Models\NotificationModel();
+        foreach ($users as $user) {
+            $notifModel->save([
+                'user_id'         => (int) $user['id'],
+                'title'           => 'New Announcement: ' . $title,
+                'body'            => $body,
+                'type'            => 'announcement',
+                'announcement_id' => $announcementId,
+                'is_read'         => 0,
+            ]);
+        }
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement posted successfully.');
     }
@@ -74,6 +95,7 @@ class Announcements extends BaseController
         if ($db->tableExists('announcements')) {
             $db->query('DELETE FROM announcements WHERE id = ?', [$id]);
         }
+        $db->query('DELETE FROM notifications WHERE announcement_id = ?', [$id]);
 
         return redirect()->to('/admin/announcements')->with('success', 'Announcement deleted.');
     }
