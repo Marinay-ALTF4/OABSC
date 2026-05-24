@@ -52,6 +52,7 @@ $_first = $_contacts[0];
                  data-name="<?= htmlspecialchars($_c['name']) ?>"
                  data-icon="<?= $_c['icon'] ?>"
                  data-color="<?= $_c['color'] ?>"
+                 data-sub="<?= htmlspecialchars($_c['sub']) ?>"
                  onclick="selectContact(this)">
                 <div class="msng-avatar" style="background:<?= $_c['color'] ?>18;color:<?= $_c['color'] ?>;"><i class="bi <?= $_c['icon'] ?>"></i></div>
                 <div class="msng-contact-info">
@@ -91,7 +92,9 @@ $_first = $_contacts[0];
 
 <script>
 (function () {
-    const CHAT_KEY = 'oabsc_chat_<?= session('user_id') ?? '0' ?>';
+    const SHARED_CHAT_KEY = 'oabsc_shared_chat_messages';
+    let myRole = '<?= in_array($_chat_role, ['admin', 'assistant_admin']) ? 'admin' : $_chat_role ?>';
+
     let currentContact = {
         id:    '<?= $_first['id'] ?>',
         name:  '<?= htmlspecialchars($_first['name'], ENT_QUOTES) ?>',
@@ -99,19 +102,40 @@ $_first = $_contacts[0];
         color: '<?= $_first['color'] ?>'
     };
 
-    function getMessages() {
-        try { return JSON.parse(localStorage.getItem(CHAT_KEY) || '{}'); } catch(e) { return {}; }
+    function getSharedMessages() {
+        try { return JSON.parse(localStorage.getItem(SHARED_CHAT_KEY) || '{}'); } catch(e) { return {}; }
     }
-    function saveMessages(d) { localStorage.setItem(CHAT_KEY, JSON.stringify(d)); }
-    function getContactMessages() { return getMessages()[currentContact.id] || []; }
+    
+    function saveSharedMessages(d) {
+        localStorage.setItem(SHARED_CHAT_KEY, JSON.stringify(d));
+    }
 
-    function addMessage(msg) {
-        var all = getMessages();
-        if (!all[currentContact.id]) all[currentContact.id] = [];
-        all[currentContact.id].push(msg);
-        saveMessages(all);
-        var el = document.getElementById('preview-' + currentContact.id);
-        if (el) el.textContent = msg.text.length > 28 ? msg.text.slice(0,28)+'...' : msg.text;
+    function getConvoKey(targetId) {
+        let targetRole = targetId.replace('c_', '');
+        return [myRole, contactRoleToSystemRole(targetRole)].sort().join('_');
+    }
+
+    function contactRoleToSystemRole(role) {
+        if (role === 'patient') return 'client';
+        return role;
+    }
+
+    function getContactMessages() {
+        let key = getConvoKey(currentContact.id);
+        return getSharedMessages()[key] || [];
+    }
+
+    function addMessage(text) {
+        let key = getConvoKey(currentContact.id);
+        let all = getSharedMessages();
+        if (!all[key]) all[key] = [];
+        all[key].push({
+            sender: myRole,
+            text: text,
+            time: nowTime()
+        });
+        saveSharedMessages(all);
+        refreshPreviews();
     }
 
     function escHtml(s) {
@@ -130,8 +154,8 @@ $_first = $_contacts[0];
         }
         var html = '';
         msgs.forEach(function(m, i) {
-            var isMe = m.from === 'me';
-            var showAv = !isMe && (i === msgs.length-1 || msgs[i+1].from === 'me');
+            var isMe = m.sender === myRole;
+            var showAv = !isMe && (i === msgs.length-1 || msgs[i+1].sender === myRole);
             html += '<div class="msng-row ' + (isMe ? 'msng-row-me' : 'msng-row-them') + '">';
             if (!isMe) {
                 html += showAv
@@ -149,11 +173,31 @@ $_first = $_contacts[0];
         container.scrollTop = container.scrollHeight;
     }
 
+    function refreshPreviews() {
+        document.querySelectorAll('.msng-contact').forEach(function(el) {
+            var contactId = el.dataset.id;
+            var contactRole = contactId.replace('c_', '');
+            var key = [myRole, contactRoleToSystemRole(contactRole)].sort().join('_');
+            var msgs = getSharedMessages()[key] || [];
+            var previewEl = document.getElementById('preview-' + contactId);
+            if (previewEl) {
+                if (msgs.length) {
+                    var last = msgs[msgs.length - 1];
+                    var prefix = last.sender === myRole ? 'You: ' : '';
+                    var truncated = last.text.length > 28 ? last.text.slice(0, 28) + '...' : last.text;
+                    previewEl.textContent = prefix + truncated;
+                } else {
+                    previewEl.textContent = el.dataset.sub || '';
+                }
+            }
+        });
+    }
+
     window.sendMessage = function () {
         var input = document.getElementById('chat-input');
         var text = input.value.trim();
         if (!text) return;
-        addMessage({ from: 'me', text: text, time: nowTime() });
+        addMessage(text);
         input.value = '';
         renderMessages();
     };
@@ -162,6 +206,7 @@ $_first = $_contacts[0];
         document.getElementById('chat-widget').classList.remove('d-none');
         document.getElementById('chat-fab').classList.add('d-none');
         document.getElementById('chat-fab-dot').classList.add('d-none');
+        refreshPreviews();
         renderMessages();
         setTimeout(function(){ document.getElementById('chat-input').focus(); }, 100);
     };
@@ -194,6 +239,9 @@ $_first = $_contacts[0];
         document.getElementById('msng-convo').style.display = '';
         document.getElementById('msng-back-btn').classList.add('d-none');
     };
+
+    // Initialize previews on load
+    refreshPreviews();
 })();
 </script>
 
