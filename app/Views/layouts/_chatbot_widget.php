@@ -19,12 +19,15 @@ if ($userRole === 'client') {
     $chatbotData['appointments'] = $appts;
 
     // 2. Prescriptions for Patient
-    $prescriptions = $db->query("
-        SELECT medication_name, dosage, frequency, duration, instructions, created_at 
-        FROM prescriptions 
-        WHERE patient_id = ?
-        ORDER BY created_at DESC
-    ", [$userId])->getResultArray();
+        $prescriptions = [];
+        if ($db->tableExists('prescriptions')) {
+            $prescriptions = $db->query("
+                SELECT medication_name, dosage, frequency, duration, instructions, created_at 
+                FROM prescriptions 
+                WHERE patient_id = ?
+                ORDER BY created_at DESC
+            ", [$userId])->getResultArray();
+        }
     $chatbotData['prescriptions'] = $prescriptions;
 } elseif ($userRole === 'doctor') {
     // Patients count/lookup
