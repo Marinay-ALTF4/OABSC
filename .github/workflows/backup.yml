@@ -27,7 +27,7 @@ jobs:
             -f backup_$(date +%Y%m%d_%H%M%S).dump
 
       - name: Upload Backup
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: supabase-backup-${{ github.run_number }}
           path: backup_*.dump
