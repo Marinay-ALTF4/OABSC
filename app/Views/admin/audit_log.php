@@ -48,6 +48,21 @@ if (!function_exists('parseUserAgent')) {
         return ['browser' => $browser, 'os' => $os, 'icon' => $icon];
     }
 }
+
+if (! function_exists('prettyAuditCode')) {
+    function prettyAuditCode($value): string
+    {
+        $s = trim((string) $value);
+        if ($s === '' || $s === '—') {
+            return '—';
+        }
+
+        $s = str_replace(['_', '-'], ' ', $s);
+        $s = preg_replace('/\s+/', ' ', $s) ?? $s;
+
+        return ucwords($s);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -213,10 +228,10 @@ if (!function_exists('parseUserAgent')) {
             <tr>
                 <td><?= $i + 1 ?></td>
                 <td style="white-space:nowrap;"><?= esc($e['created_at'] ?? '—') ?></td>
-                <td><span class="event-badge <?= $badgeClass ?>"><?= esc($e['event_type']) ?></span></td>
+                <td><span class="event-badge <?= $badgeClass ?>"><?= esc(prettyAuditCode($e['event_type'] ?? '')) ?></span></td>
                 <td><?= esc((string) ($e['user_id'] ?? '—')) ?></td>
                 <td><?= esc($e['email_attempted'] ?? '—') ?></td>
-                <td><?= esc($e['reason_code'] ?? '—') ?></td>
+                <td><?= esc(prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

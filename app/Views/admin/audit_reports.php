@@ -18,6 +18,21 @@ $name = session('user_name') ?? 'User';
 /** @var array $chart_success */
 /** @var array $chart_failed */
 /** @var string $since */
+
+if (! function_exists('prettyAuditCode')) {
+    function prettyAuditCode($value): string
+    {
+        $s = trim((string) $value);
+        if ($s === '' || $s === '—') {
+            return '—';
+        }
+
+        $s = str_replace(['_', '-'], ' ', $s);
+        $s = preg_replace('/\s+/', ' ', $s) ?? $s;
+
+        return ucwords($s);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -177,10 +192,10 @@ $name = session('user_name') ?? 'User';
                 <tr>
                     <td><?= $i + 1 ?></td>
                     <td style="white-space:nowrap;font-size:0.78rem;"><?= esc($e['created_at'] ?? '—') ?></td>
-                    <td><span class="ar-badge <?= $badge ?>"><?= esc($e['event_type']) ?></span></td>
+                    <td><span class="ar-badge <?= $badge ?>"><?= esc(prettyAuditCode($e['event_type'] ?? '')) ?></span></td>
                     <td><?= esc((string) ($e['user_id'] ?? '—')) ?></td>
                     <td><?= esc($e['email_attempted'] ?? '—') ?></td>
-                    <td><?= esc($e['reason_code'] ?? '—') ?></td>
+                    <td><?= esc(prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
