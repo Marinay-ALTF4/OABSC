@@ -1,0 +1,39 @@
+name: Supabase Restore
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_name:
+        description: 'Artifact name to restore (e.g. supabase-backup-1)'
+        required: true
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Download Backup Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.event.inputs.artifact_name }}
+
+      - name: Restore Database
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+        run: |
+          pg_restore \
+            -h ${{ secrets.SUPABASE_HOST }} \
+            -U ${{ secrets.SUPABASE_USER }} \
+            -d ${{ secrets.SUPABASE_DB }} \
+            -p ${{ secrets.SUPABASE_PORT }} \
+            --no-owner \
+            --no-acl \
+            --clean \
+            --if-exists \
+            -F c \
+            *.dump
+
+      - name: Restore Complete
+        run: echo "Database restored successfully!"
