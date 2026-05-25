@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\UserDataCrypt;
 use App\Models\AppointmentModel;
 use App\Models\UserModel;
 
@@ -126,6 +127,21 @@ class Secretary extends BaseController
              ORDER BY COALESCE(up.name, u.username, "") ASC',
             ['doctor']
         )->getResultArray();
+
+        // This endpoint uses a raw SQL query, so model-level afterFind decryption does not run.
+        // Decrypt any encrypted profile fields before rendering.
+        try {
+            $crypt = new UserDataCrypt();
+            foreach ($doctors as $i => $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $doctors[$i] = $crypt->decryptFields($row, ['phone', 'specialization', 'experience', 'degree']);
+            }
+        } catch (\Throwable) {
+            // If encryption service is not available, keep raw values.
+        }
 
         return view('secretary/schedules', ['doctors' => $doctors]);
     }
