@@ -124,7 +124,34 @@ class CreateSecureUserStorageSchema extends Migration
 
     private function createUserAuthTable($db): void
     {
+        // If the table already exists (e.g. created by an earlier migration), make sure
+        // it has the newer columns expected by backfills and seeders.
         if ($db->tableExists('user_auth')) {
+            $missing = [];
+
+            if (! $db->fieldExists('hash_algo', 'user_auth')) {
+                $missing['hash_algo'] = ['type' => 'VARCHAR', 'constraint' => 50, 'null' => true];
+            }
+            if (! $db->fieldExists('hash_params', 'user_auth')) {
+                $missing['hash_params'] = ['type' => 'TEXT', 'null' => true];
+            }
+            if (! $db->fieldExists('pepper_version', 'user_auth')) {
+                $missing['pepper_version'] = ['type' => 'TINYINT', 'constraint' => 3, 'unsigned' => true, 'default' => 1];
+            }
+            if (! $db->fieldExists('must_rotate', 'user_auth')) {
+                $missing['must_rotate'] = ['type' => 'TINYINT', 'constraint' => 1, 'unsigned' => true, 'default' => 0];
+            }
+            if (! $db->fieldExists('created_at', 'user_auth')) {
+                $missing['created_at'] = ['type' => 'DATETIME', 'null' => true];
+            }
+            if (! $db->fieldExists('updated_at', 'user_auth')) {
+                $missing['updated_at'] = ['type' => 'DATETIME', 'null' => true];
+            }
+
+            if (! empty($missing)) {
+                $this->forge->addColumn('user_auth', $missing);
+            }
+
             return;
         }
 
@@ -137,6 +164,27 @@ class CreateSecureUserStorageSchema extends Migration
             'password_hash' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
+            ],
+            'hash_algo' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
+                'null'       => true,
+            ],
+            'hash_params' => [
+                'type' => 'TEXT',
+                'null' => true,
+            ],
+            'pepper_version' => [
+                'type'       => 'TINYINT',
+                'constraint' => 3,
+                'unsigned'   => true,
+                'default'    => 1,
+            ],
+            'must_rotate' => [
+                'type'       => 'TINYINT',
+                'constraint' => 1,
+                'unsigned'   => true,
+                'default'    => 0,
             ],
             'role_password' => [
                 'type'       => 'VARCHAR',
@@ -185,6 +233,14 @@ class CreateSecureUserStorageSchema extends Migration
                 'type'       => 'TINYINT',
                 'constraint' => 1,
                 'default'    => 0,
+            ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
             ],
         ]);
 
@@ -417,6 +473,7 @@ class CreateSecureUserStorageSchema extends Migration
         $defaults = [
             ['name' => 'admin', 'description' => 'Administrator'],
             ['name' => 'assistant_admin', 'description' => 'Assistant administrator'],
+            ['name' => 'secretary', 'description' => 'Secretary'],
             ['name' => 'doctor', 'description' => 'Doctor'],
             ['name' => 'client', 'description' => 'Client'],
         ];
@@ -447,9 +504,37 @@ class CreateSecureUserStorageSchema extends Migration
             return;
         }
 
+        $insertCols = ['user_id', 'password_hash'];
+        $selectExpr = ['u.id', 'u.password_hash'];
+
+        if ($db->fieldExists('hash_algo', 'user_auth')) {
+            $insertCols[] = 'hash_algo';
+            $selectExpr[] = "'argon2id'";
+        }
+        if ($db->fieldExists('hash_params', 'user_auth')) {
+            $insertCols[] = 'hash_params';
+            $selectExpr[] = "'{}'";
+        }
+        if ($db->fieldExists('pepper_version', 'user_auth')) {
+            $insertCols[] = 'pepper_version';
+            $selectExpr[] = '1';
+        }
+        if ($db->fieldExists('must_rotate', 'user_auth')) {
+            $insertCols[] = 'must_rotate';
+            $selectExpr[] = '0';
+        }
+        if ($db->fieldExists('created_at', 'user_auth') && $db->fieldExists('created_at', 'users')) {
+            $insertCols[] = 'created_at';
+            $selectExpr[] = 'u.created_at';
+        }
+        if ($db->fieldExists('updated_at', 'user_auth') && $db->fieldExists('updated_at', 'users')) {
+            $insertCols[] = 'updated_at';
+            $selectExpr[] = 'u.updated_at';
+        }
+
         $db->query(
-            "INSERT INTO user_auth (user_id, password_hash, hash_algo, hash_params, pepper_version, must_rotate, created_at, updated_at)\n" .
-            "SELECT u.id, u.password_hash, 'argon2id', '{}', 1, 0, u.created_at, u.updated_at\n" .
+            "INSERT INTO user_auth (" . implode(', ', $insertCols) . ")\n" .
+            "SELECT " . implode(', ', $selectExpr) . "\n" .
             "FROM users u\n" .
             "LEFT JOIN user_auth ua ON ua.user_id = u.id\n" .
             "WHERE ua.user_id IS NULL AND u.password_hash IS NOT NULL AND u.password_hash <> ''"
