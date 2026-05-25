@@ -1,0 +1,34 @@
+name: Supabase Automated Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Run Backup
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+        run: |
+          pg_dump \
+            -h ${{ secrets.SUPABASE_HOST }} \
+            -U ${{ secrets.SUPABASE_USER }} \
+            -d ${{ secrets.SUPABASE_DB }} \
+            -p ${{ secrets.SUPABASE_PORT }} \
+            --no-owner \
+            --no-acl \
+            -F c \
+            -f backup_$(date +%Y%m%d_%H%M%S).dump
+
+      - name: Upload Backup
+        uses: actions/upload-artifact@v3
+        with:
+          name: supabase-backup-${{ github.run_number }}
+          path: backup_*.dump
+          retention-days: 7
