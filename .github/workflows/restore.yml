@@ -19,7 +19,7 @@ jobs:
           echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
-          sudo apt-get install -y postgresql-client-16
+          sudo apt-get install -y postgresql-client-17
           pg_restore --version
 
       - name: Download Backup Artifact
@@ -56,7 +56,7 @@ jobs:
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
         run: |
-          /usr/lib/postgresql/16/bin/pg_restore \
+          /usr/lib/postgresql/17/bin/pg_restore \
             -h ${{ secrets.SUPABASE_HOST }} \
             -U ${{ secrets.SUPABASE_USER }} \
             -d ${{ secrets.SUPABASE_DB }} \
