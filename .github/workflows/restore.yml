@@ -56,7 +56,7 @@ jobs:
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
         run: |
-          pg_restore \
+          /usr/lib/postgresql/16/bin/pg_restore \
             -h ${{ secrets.SUPABASE_HOST }} \
             -U ${{ secrets.SUPABASE_USER }} \
             -d ${{ secrets.SUPABASE_DB }} \
