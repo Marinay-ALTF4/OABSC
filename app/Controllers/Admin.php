@@ -107,6 +107,8 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $db = \Config\Database::connect();
+        $hasDoctorId = $db->fieldExists('doctor_id', 'appointments');
+        $hasDoctorName = $db->fieldExists('doctor_name', 'appointments');
 
         $all = $db->query(
               'SELECT a.*, COALESCE(up.name, u.username, "—") as patient_name
@@ -115,6 +117,42 @@ class Admin extends BaseController
                LEFT JOIN user_profiles up ON up.user_id = u.id
              ORDER BY a.appointment_date DESC'
         )->getResultArray();
+
+        if ($hasDoctorId && ! empty($all)) {
+            $doctorIds = [];
+            foreach ($all as $row) {
+                $doctorId = (int) ($row['doctor_id'] ?? 0);
+                if ($doctorId > 0) {
+                    $doctorIds[$doctorId] = true;
+                }
+            }
+
+            if ($doctorIds !== []) {
+                $doctorRows = $db->query(
+                    'SELECT u.id, COALESCE(up.name, u.username, "—") AS doctor_display_name
+                     FROM users u
+                     LEFT JOIN user_profiles up ON up.user_id = u.id
+                     WHERE u.id IN (' . implode(',', array_fill(0, count($doctorIds), '?')) . ')',
+                    array_keys($doctorIds)
+                )->getResultArray();
+
+                $doctorMap = [];
+                foreach ($doctorRows as $doctorRow) {
+                    $doctorMap[(int) $doctorRow['id']] = trim((string) ($doctorRow['doctor_display_name'] ?? '')) ?: '—';
+                }
+
+                foreach ($all as &$row) {
+                    $doctorName = trim((string) ($row['doctor_name'] ?? ''));
+                    if ($doctorName === '' && $hasDoctorId) {
+                        $doctorId = (int) ($row['doctor_id'] ?? 0);
+                        if ($doctorId > 0 && isset($doctorMap[$doctorId])) {
+                            $row['doctor_name'] = $doctorMap[$doctorId];
+                        }
+                    }
+                }
+                unset($row);
+            }
+        }
 
         $pending   = array_filter($all, fn($a) => ($a['status'] ?? '') === 'pending');
         $confirmed = array_filter($all, fn($a) => ($a['status'] ?? '') === 'confirmed');

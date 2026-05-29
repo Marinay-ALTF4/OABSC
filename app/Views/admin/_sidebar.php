@@ -56,7 +56,16 @@ function navItem(string $url, string $icon, string $label, string $key, string $
     </a>
     <?php endif; ?>
 
-    <?= navItem(site_url('/admin/appointments'),    'bi-calendar-event',        'Appointments',    'appointments', $active, $isAdmin || PermissionManager::can('view_appointments')) ?>
+    <?php
+        $pendingAppointmentsCount = 0;
+        try {
+            $apptModel = new \App\Models\AppointmentModel();
+            $pendingAppointmentsCount = count($apptModel->getPending());
+        } catch (\Throwable $e) {
+            $pendingAppointmentsCount = 0;
+        }
+    ?>
+    <?= navItem(site_url('/admin/appointments'),    'bi-calendar-event',        'Appointments',    'appointments', $active, $isAdmin || PermissionManager::can('view_appointments'), $pendingAppointmentsCount) ?>
     <?= navItem(site_url('/admin/doctor-schedules'),'bi-calendar2-check',       'Doctor Schedules','schedules',    $active, $isAdmin || PermissionManager::can('view_doctors')) ?>
     <?php
         // Show pending requests count as a red badge on the Access Requests nav item
