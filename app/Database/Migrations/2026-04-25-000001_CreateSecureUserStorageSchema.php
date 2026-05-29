@@ -116,10 +116,19 @@ class CreateSecureUserStorageSchema extends Migration
             $this->forge->addColumn('users', $fields);
         }
 
-        $this->createIndexIfMissing($db, 'users', 'uq_users_public_id', 'UNIQUE', '(public_id)');
-        $this->createIndexIfMissing($db, 'users', 'uq_users_username', 'UNIQUE', '(username)');
-        $this->createIndexIfMissing($db, 'users', 'idx_users_status_created', 'INDEX', '(status, created_at)');
-        $this->createIndexIfMissing($db, 'users', 'idx_users_last_login', 'INDEX', '(last_login_at)');
+        // Only create indexes if the columns exist
+        if ($db->fieldExists('public_id', 'users')) {
+            $this->createIndexIfMissing($db, 'users', 'uq_users_public_id', 'UNIQUE', '(public_id)');
+        }
+        if ($db->fieldExists('username', 'users')) {
+            $this->createIndexIfMissing($db, 'users', 'uq_users_username', 'UNIQUE', '(username)');
+        }
+        if ($db->fieldExists('status', 'users') && $db->fieldExists('created_at', 'users')) {
+            $this->createIndexIfMissing($db, 'users', 'idx_users_status_created', 'INDEX', '(status, created_at)');
+        }
+        if ($db->fieldExists('last_login_at', 'users')) {
+            $this->createIndexIfMissing($db, 'users', 'idx_users_last_login', 'INDEX', '(last_login_at)');
+        }
     }
 
     private function createUserAuthTable($db): void
