@@ -15,19 +15,31 @@
     </div>
 
     <!-- Filter Tabs -->
-    <div class="d-flex gap-2 mb-4">
-        <a href="?filter=upcoming" class="doc-filter-btn <?= $filter === 'upcoming' ? 'active' : '' ?>">Upcoming</a>
-        <a href="?filter=today"    class="doc-filter-btn <?= $filter === 'today'    ? 'active' : '' ?>">Today</a>
-        <a href="?filter=past"     class="doc-filter-btn <?= $filter === 'past'     ? 'active' : '' ?>">Past</a>
-        <a href="?filter=all"      class="doc-filter-btn <?= $filter === 'all'      ? 'active' : '' ?>">All</a>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="?filter=upcoming"  class="doc-filter-btn <?= $filter === 'upcoming'  ? 'active' : '' ?>">Upcoming</a>
+        <a href="?filter=today"     class="doc-filter-btn <?= $filter === 'today'     ? 'active' : '' ?>">Today</a>
+        <a href="?filter=past"      class="doc-filter-btn <?= $filter === 'past'      ? 'active' : '' ?>">Past</a>
+        <a href="?filter=approved"  class="doc-filter-btn <?= $filter === 'approved'  ? 'active' : '' ?>">Approved</a>
+        <a href="?filter=cancelled" class="doc-filter-btn <?= $filter === 'cancelled' ? 'active' : '' ?>">Cancelled</a>
+        <a href="?filter=all"       class="doc-filter-btn <?= $filter === 'all'       ? 'active' : '' ?>">Other</a>
     </div>
 
     <div class="doc-table-card">
         <div class="table-responsive">
             <?php if (empty($appointments)): ?>
+                <?php
+                $emptyMsg = match ($filter) {
+                    'approved'  => 'No approved appointments.',
+                    'cancelled' => 'No cancelled appointments.',
+                    'upcoming'  => 'No upcoming appointments.',
+                    'today'     => 'No appointments scheduled for today.',
+                    'past'      => 'No past appointments.',
+                    default     => 'No appointments in this view.',
+                };
+                ?>
                 <div class="text-center text-muted py-5">
                     <i class="bi bi-calendar-x d-block mb-2" style="font-size:2rem;color:#6aaa70;"></i>
-                    <p class="mb-0">No appointments found.</p>
+                    <p class="mb-0"><?= esc($emptyMsg) ?></p>
                 </div>
             <?php else: ?>
                 <table class="doc-table">
@@ -45,11 +57,11 @@
                         <?php foreach ($appointments as $appt): ?>
                             <?php
                             $statusClass = match($appt['status']) {
-                                'approved'  => 'doc-badge-approved',
-                                'pending'   => 'doc-badge-pending',
-                                'completed' => 'doc-badge-completed',
-                                'cancelled' => 'doc-badge-cancelled',
-                                default     => 'doc-badge-default',
+                                'approved', 'confirmed' => 'doc-badge-approved',
+                                'pending'               => 'doc-badge-pending',
+                                'completed'             => 'doc-badge-completed',
+                                'cancelled'             => 'doc-badge-cancelled',
+                                default                 => 'doc-badge-default',
                             };
                             ?>
                             <tr>
@@ -81,7 +93,7 @@
                                             <input type="hidden" name="status" value="cancelled">
                                             <button type="submit" class="doc-action-btn doc-action-cancel" onclick="return confirm('Cancel this appointment?')">Cancel</button>
                                         </form>
-                                    <?php elseif ($appt['status'] === 'approved'): ?>
+                                    <?php elseif (in_array($appt['status'], ['approved', 'confirmed'], true)): ?>
                                         <form action="<?= site_url('/doctor/appointments/status') ?>" method="post" class="d-inline">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= $appt['id'] ?>">

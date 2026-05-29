@@ -1,6 +1,14 @@
 <?php
 $name = session('user_name') ?? 'Doctor';
 $active = $active ?? '';
+
+if (! isset($doc_pending_count) && session('user_role') === 'doctor') {
+    $apptModel = new \App\Models\AppointmentModel();
+    $doc_pending_count = $apptModel->countPendingForDoctor(
+        (int) session('user_id'),
+        'Dr. ' . (session('user_name') ?? '')
+    );
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

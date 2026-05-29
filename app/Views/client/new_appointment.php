@@ -401,25 +401,12 @@ $bookedSlots = $bookedSlots ?? [];
         '16:00', '16:30'
     ];
 
-    const localStorageKey = 'oabsc_client_bookings';
     let submitting = false;
 
-    function getLocalBookings() {
-        try {
-            const raw = localStorage.getItem(localStorageKey);
-            if (!raw) {
-                return [];
-            }
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            return [];
-        }
-    }
-
-    function setLocalBookings(bookings) {
-        localStorage.setItem(localStorageKey, JSON.stringify(bookings));
-    }
+    // Clear legacy client-side slot cache (cancelled slots must come from server only).
+    try {
+        localStorage.removeItem('oabsc_client_bookings');
+    } catch (e) {}
 
     function normalizeTime(value) {
         if (!value) {
@@ -436,15 +423,6 @@ $bookedSlots = $bookedSlots ?? [];
         const keys = new Set();
 
         bookedFromServer.forEach(function (item) {
-            const doctor = String(item.doctor_name || '');
-            const date = String(item.appointment_date || '');
-            const time = normalizeTime(String(item.appointment_time || ''));
-            if (doctor && date && time) {
-                keys.add(getBookingKey(doctor, date, time));
-            }
-        });
-
-        getLocalBookings().forEach(function (item) {
             const doctor = String(item.doctor_name || '');
             const date = String(item.appointment_date || '');
             const time = normalizeTime(String(item.appointment_time || ''));
@@ -642,17 +620,6 @@ $bookedSlots = $bookedSlots ?? [];
         }
     }
 
-    function reserveSlotClientSide() {
-        const booking = {
-            doctor_name: doctorInput.value,
-            appointment_date: dateInput.value,
-            appointment_time: timeInput.value,
-        };
-        const bookings = getLocalBookings();
-        bookings.push(booking);
-        setLocalBookings(bookings);
-    }
-
     doctorInput.addEventListener('change', function () {
         timeInput.value = '';
         renderSlots();
@@ -696,7 +663,6 @@ $bookedSlots = $bookedSlots ?? [];
         openConfirmModalBtn.disabled = true;
         openConfirmModalBtn.textContent = 'Submitting...';
 
-        reserveSlotClientSide();
         clientSuccessAlert.classList.remove('d-none');
         confirmModal.hide();
         form.submit();

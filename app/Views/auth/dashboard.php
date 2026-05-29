@@ -348,6 +348,9 @@ $name = session('user_name') ?? 'User';
             </a>
             <a href="<?= site_url('/doctor/appointments') ?>" class="doc-nav-item">
                 <i class="bi bi-calendar2-week"></i> My Appointments
+                <?php if (!empty($doc_pending_count) && $doc_pending_count > 0): ?>
+                    <span class="doc-nav-badge"><?= (int) $doc_pending_count ?></span>
+                <?php endif; ?>
             </a>
             <a href="<?= site_url('/doctor/queue') ?>" class="doc-nav-item">
                 <i class="bi bi-list-ol"></i> Today's Queue
@@ -1306,6 +1309,12 @@ $name = session('user_name') ?? 'User';
     .doc-nav-item.active {
         background: #2e5c32; color: #ffffff;
         font-weight: 600; box-shadow: 0 4px 14px rgba(46, 92, 50, 0.25);
+    }
+    .doc-nav-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #dc2626; color: white;
+        min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+        font-size: 0.7rem; font-weight: 700; margin-left: auto;
     }
 
     /* Sidebar layout */

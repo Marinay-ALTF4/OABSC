@@ -34,14 +34,25 @@ class DoctorAppointments extends BaseController
         if ($filter === 'today') {
             $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] === $today);
         } elseif ($filter === 'upcoming') {
-            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] > $today && in_array($a['status'], ['pending', 'approved']));
+            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] > $today && in_array($a['status'], ['pending', 'approved'], true));
         } elseif ($filter === 'past') {
             $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] < $today);
+        } elseif ($filter === 'approved') {
+            $appointments = array_filter($appointments, fn($a) => in_array($a['status'] ?? '', ['approved', 'confirmed'], true));
+        } elseif ($filter === 'cancelled') {
+            $appointments = array_filter($appointments, fn($a) => ($a['status'] ?? '') === 'cancelled');
+        } elseif ($filter === 'all') {
+            $appointments = array_filter($appointments, fn($a) => ! in_array($a['status'] ?? '', ['approved', 'confirmed', 'cancelled'], true));
         }
 
         $appointments = array_values($appointments);
 
-        usort($appointments, fn($a, $b) => strcmp($a['appointment_date'] . $a['appointment_time'], $b['appointment_date'] . $b['appointment_time']));
+        $sortDesc = $filter === 'cancelled';
+        usort($appointments, function ($a, $b) use ($sortDesc) {
+            $cmp = strcmp($a['appointment_date'] . $a['appointment_time'], $b['appointment_date'] . $b['appointment_time']);
+
+            return $sortDesc ? -$cmp : $cmp;
+        });
 
         foreach ($appointments as &$appt) {
             $clientId = $appt['client_id'] ?? $appt['user_id'] ?? null;
@@ -128,7 +139,11 @@ class DoctorAppointments extends BaseController
         $access = $this->ensureDoctor();
         if ($access !== null) return $access;
 
-        $filter = $this->request->getGet('filter') ?? 'all';
+        $filter = $this->request->getGet('filter') ?? 'upcoming';
+        $allowedFilters = ['upcoming', 'today', 'past', 'approved', 'cancelled', 'all'];
+        if (! in_array($filter, $allowedFilters, true)) {
+            $filter = 'upcoming';
+        }
         $appointments = $this->loadDoctorAppointments($filter);
 
         return view('doctor/appointments', [
@@ -501,7 +516,12 @@ class DoctorAppointments extends BaseController
             return redirect()->back()->with('error', 'Unauthorized.');
         }
 
-        $model->update($id, ['status' => $status]);
+        $updateData = ['status' => $status];
+        if ($status === 'cancelled' && \Config\Database::connect()->fieldExists('archived_at', 'appointments')) {
+            $updateData['archived_at'] = date('Y-m-d H:i:s');
+        }
+
+        $model->update($id, $updateData);
         return redirect()->back()->with('success', 'Appointment status updated.');
     }
 }

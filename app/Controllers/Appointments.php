@@ -38,24 +38,8 @@ class Appointments extends BaseController
             return redirect()->to('/dashboard')->with('error', 'Only clients can create appointments.');
         }
 
-        $model = new AppointmentModel();
-        $selectFields = ['appointment_date', 'appointment_time', 'status'];
-        if ($this->hasDoctorNameColumn()) {
-            array_unshift($selectFields, 'doctor_name');
-        }
-
-        $bookedSlots = $model
-            ->select(implode(', ', $selectFields))
-            ->where('appointment_date >=', date('Y-m-d'))
-            ->whereIn('status', ['pending', 'approved'])
-            ->findAll();
-
-        if (! $this->hasDoctorNameColumn()) {
-            $bookedSlots = array_map(static function (array $row): array {
-                $row['doctor_name'] = '';
-                return $row;
-            }, $bookedSlots);
-        }
+        $model       = new AppointmentModel();
+        $bookedSlots = $model->getBookedSlotsForCalendar();
 
         $userModel    = new UserModel();
         $doctorUsers  = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
@@ -217,8 +201,17 @@ class Appointments extends BaseController
             }
         }
 
-        $model = new AppointmentModel();
-        $db    = \Config\Database::connect();
+        $resolvedDoctorId = (int) ($insertData['doctor_id'] ?? 0);
+        $model            = new AppointmentModel();
+        $appointmentTime  = (string) $insertData['appointment_time'];
+
+        if ($model->isSlotTaken($resolvedDoctorId, $appointmentDate, $appointmentTime, $doctorNamePost)) {
+            return redirect()->back()->withInput()->with('errors', [
+                'appointment_time' => 'This time slot is no longer available. Please choose another.',
+            ]);
+        }
+
+        $db = \Config\Database::connect();
         $db->transStart();
 
         try {

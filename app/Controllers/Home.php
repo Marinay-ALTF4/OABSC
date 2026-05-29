@@ -80,11 +80,11 @@ class Home extends BaseController
                 ($a['doctor_name'] ?? '') === $doctorName || (int)($a['doctor_id'] ?? 0) === $doctorId
             );
 
-            $data['doc_today']        = count(array_filter($myAppts, fn($a) => $a['appointment_date'] === $today));
-            $data['doc_upcoming']     = count(array_filter($myAppts, fn($a) => $a['appointment_date'] >= $today && in_array($a['status'], ['pending', 'approved'])));
-            $data['doc_completed']    = count(array_filter($myAppts, fn($a) => $a['status'] === 'completed'));
-            $data['doc_total']        = count($myAppts);
-            $data['doc_pending_count'] = count(array_filter($myAppts, fn($a) => $a['status'] === 'pending'));
+            $data['doc_today']         = count(array_filter($myAppts, fn($a) => $a['appointment_date'] === $today));
+            $data['doc_upcoming']      = count(array_filter($myAppts, fn($a) => $a['appointment_date'] >= $today && in_array($a['status'], ['pending', 'approved'])));
+            $data['doc_completed']     = count(array_filter($myAppts, fn($a) => $a['status'] === 'completed'));
+            $data['doc_total']         = count($myAppts);
+            $data['doc_pending_count'] = $model->countPendingForDoctor($doctorId, $doctorName);
         }
 
         return view('auth/dashboard', $data);
