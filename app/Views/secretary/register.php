@@ -2,6 +2,7 @@
 
 <div class="mb-4">
     <h5 class="sec-page-title"><i class="bi bi-person-plus me-2"></i>Register New Patient</h5>
+    <div class="text-muted small mt-1">A verification code will be sent to the email address before the patient account is created.</div>
 </div>
 
 <?php if (session('success')): ?>
@@ -33,7 +34,7 @@
             <label class="sec-label">Temporary Password</label>
             <input type="password" name="password" class="sec-input" placeholder="Min. 8 characters" required>
         </div>
-        <button type="submit" class="sec-save-btn"><i class="bi bi-person-check me-1"></i>Register Patient</button>
+        <button type="submit" class="sec-save-btn"><i class="bi bi-envelope-check me-1"></i>Send Verification Code</button>
     </form>
 </div>
 

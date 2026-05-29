@@ -69,6 +69,10 @@ class Secretary extends BaseController
     {
         if ($r = $this->checkAccess()) return $r;
 
+        if ($this->hasPendingRegistration()) {
+            return redirect()->to('/register/verify');
+        }
+
         if ($this->request->is('post')) {
             $rules = [
                 'name'     => 'required|min_length[3]',
@@ -80,34 +84,34 @@ class Secretary extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
-            $db = \Config\Database::connect();
-            $db->transStart();
+            $name = trim((string) $this->request->getPost('name'));
+            $email = strtolower(trim((string) $this->request->getPost('email')));
+            $phone = trim((string) $this->request->getPost('phone') ?? '');
+            $password = (string) $this->request->getPost('password');
+            $verificationCode = (string) random_int(100000, 999999);
 
-            try {
-                $model   = new UserModel();
-                $created = $model->insert([
-                    'name'          => trim($this->request->getPost('name')),
-                    'email'         => strtolower(trim($this->request->getPost('email'))),
-                    'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-                    'role'          => 'client',
-                    'phone'         => trim($this->request->getPost('phone') ?? ''),
-                ]);
+            $pendingRegistration = [
+                'name'                   => $name,
+                'email'                  => $email,
+                'phone'                  => $phone,
+                'password_hash'          => password_hash($password, PASSWORD_DEFAULT),
+                'role'                   => 'client',
+                'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
+                'verification_expires_at'=> time() + 600,
+                'verification_attempts'  => 0,
+                'redirect_to'            => '/secretary/register',
+                'reset_url'              => '/secretary/register',
+                'created_by'             => (int) session('user_id'),
+                'audit_note'             => 'patient_registered:' . $email . ' | by_secretary:' . (int) session('user_id'),
+            ];
 
-                if (! $created || ! $db->transStatus()) {
-                    $db->transRollback();
-                    return redirect()->back()->withInput()->with('errors', ['_form' => 'Unable to register patient. Transaction rolled back.']);
-                }
-
-                applyDenyOverridesForNewUser((int) $created, 'client');
-
-                $db->transComplete();
-            } catch (\Throwable $e) {
-                $db->transRollback();
-                log_message('error', 'Secretary register transaction failed: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('errors', ['_form' => 'An unexpected error occurred. Changes rolled back.']);
+            if (! $this->sendVerificationCode($email, $name, $verificationCode)) {
+                return redirect()->back()->withInput()->with('errors', ['_form' => 'Unable to send verification code. Please check email settings and try again.']);
             }
 
-            return redirect()->to('/secretary/register')->with('success', 'Patient registered successfully.');
+            session()->set('pending_registration', $pendingRegistration);
+
+            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to the provided email. The patient will be created after verification.');
         }
 
         return view('secretary/register');
@@ -203,5 +207,40 @@ class Secretary extends BaseController
         }
 
         return redirect()->back()->with('success', 'Appointment status updated.');
+    }
+
+    private function hasPendingRegistration(): bool
+    {
+        $pending = session()->get('pending_registration');
+
+        return is_array($pending) && ! empty($pending['verification_code_hash']) && ! empty($pending['email']);
+    }
+
+    private function sendVerificationCode(string $email, string $name, string $verificationCode): bool
+    {
+        $emailService = service('email');
+        $emailConfig = config('Email');
+        $fromEmail = $emailConfig->fromEmail ?: $emailConfig->SMTPUser;
+        $fromName = $emailConfig->fromName ?: 'Clinic Appointment Portal';
+
+        if ($fromEmail === '' || $emailConfig->SMTPHost === '' || $emailConfig->SMTPUser === '' || $emailConfig->SMTPPass === '') {
+            return false;
+        }
+
+        $emailService->setFrom($fromEmail, $fromName);
+        $emailService->setTo($email);
+        $emailService->setSubject('Your verification code: ' . $verificationCode);
+        $emailService->setMessage(view('emails/verification_code', [
+            'name' => $name,
+            'email' => $email,
+            'verificationCode' => $verificationCode,
+            'expiresMinutes' => 10,
+        ]));
+        $emailService->setAltMessage(
+            'Hello ' . $name . ', your verification code is ' . $verificationCode .
+            '. This code expires in 10 minutes.'
+        );
+
+        return (bool) $emailService->send(false);
     }
 }

@@ -470,6 +470,10 @@ class Admin extends BaseController
         $access = $this->ensureAdminAccess();
         if ($access !== null) return $access;
 
+        if ($this->hasPendingRegistration()) {
+            return redirect()->to('/register/verify');
+        }
+
         if ($this->request->is('post')) {
             $rules = [
                 'name' => 'required|min_length[3]|regex_match[/^[A-Za-zÑñ\s]+$/u]',
@@ -504,56 +508,29 @@ class Admin extends BaseController
                 ]);
             }
 
-            $userModel = new UserModel();
-            $db = \Config\Database::connect();
-            $db->transStart();
+            $verificationCode = (string) random_int(100000, 999999);
+            $pendingRegistration = [
+                'name'                   => $name,
+                'email'                  => $email,
+                'phone'                  => $role === 'client' ? trim((string) $this->request->getPost('phone')) : null,
+                'password_hash'          => password_hash($password, PASSWORD_DEFAULT),
+                'role'                   => $role,
+                'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
+                'verification_expires_at'=> time() + 600,
+                'verification_attempts'  => 0,
+                'redirect_to'            => '/admin/patients/list',
+                'reset_url'              => '/admin/patients/add',
+                'created_by'             => (int) session('user_id'),
+                'audit_note'             => 'user_added:' . $email . ' | by_admin:' . (int) session('user_id') . ' | role:' . $role,
+            ];
 
-            try {
-                $created = $userModel->insert([
-                    'name'          => $name,
-                    'email'         => $email,
-                    'role'          => $role,
-                ]);
-
-                if ($created) {
-                    if ($db->tableExists('user_auth')) {
-                        $db->table('user_auth')->insert([
-                            'user_id'            => (int) $created,
-                            'password_hash'      => password_hash($password, PASSWORD_DEFAULT),
-                            'role_password'      => null,
-                            'mfa_code_hash'      => null,
-                            'mfa_expires_at'     => null,
-                            'failed_login_count' => 0,
-                            'cancel_attempts'    => 0,
-                            'cancel_reset_at'    => null,
-                            'lock_until'         => null,
-                            'last_login_at'      => null,
-                            'password_changed_at'=> null,
-                            'is_email_verified'  => 1,
-                        ]);
-                    }
-
-                    applyDenyOverridesForNewUser((int) $created, $role);
-                }
-
-                (new LoginEventModel())->log(LoginEventModel::EVENT_ACCOUNT_MODIFIED, (int) session('user_id'), null, 'user_added:' . $email);
-
-                if (! $db->transStatus()) {
-                    $db->transRollback();
-                    return redirect()->back()->withInput()->with('error', 'Unable to add user. Transaction rolled back.');
-                }
-                $db->transComplete();
-            } catch (\Throwable $e) {
-                $db->transRollback();
-                log_message('error', 'addUser transaction failed: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('error', 'An unexpected error occurred. Changes rolled back.');
+            if (! $this->sendVerificationCode($email, $name, $verificationCode)) {
+                return redirect()->back()->withInput()->with('error', 'Unable to send verification code. Please check email settings and try again.');
             }
 
-            if (! $created) {
-                return redirect()->back()->withInput()->with('error', 'Unable to add user.');
-            }
+            session()->set('pending_registration', $pendingRegistration);
 
-            return redirect()->to('/admin/patients/list')->with('success', 'New user added successfully.');
+            return redirect()->to('/register/verify')->with('success', 'We sent a 6-digit verification code to the provided email. The user will be created after verification.');
         }
 
         return view('admin/add_user');
@@ -738,6 +715,41 @@ class Admin extends BaseController
         }
 
         return redirect()->to('/admin/patients/list')->with('success', 'User restored successfully.');
+    }
+
+    private function hasPendingRegistration(): bool
+    {
+        $pending = session()->get('pending_registration');
+
+        return is_array($pending) && ! empty($pending['verification_code_hash']) && ! empty($pending['email']);
+    }
+
+    private function sendVerificationCode(string $email, string $name, string $verificationCode): bool
+    {
+        $emailService = service('email');
+        $emailConfig = config('Email');
+        $fromEmail = $emailConfig->fromEmail ?: $emailConfig->SMTPUser;
+        $fromName = $emailConfig->fromName ?: 'Clinic Appointment Portal';
+
+        if ($fromEmail === '' || $emailConfig->SMTPHost === '' || $emailConfig->SMTPUser === '' || $emailConfig->SMTPPass === '') {
+            return false;
+        }
+
+        $emailService->setFrom($fromEmail, $fromName);
+        $emailService->setTo($email);
+        $emailService->setSubject('Your verification code: ' . $verificationCode);
+        $emailService->setMessage(view('emails/verification_code', [
+            'name' => $name,
+            'email' => $email,
+            'verificationCode' => $verificationCode,
+            'expiresMinutes' => 10,
+        ]));
+        $emailService->setAltMessage(
+            'Hello ' . $name . ', your verification code is ' . $verificationCode .
+            '. This code expires in 10 minutes.'
+        );
+
+        return (bool) $emailService->send(false);
     }
 }
 

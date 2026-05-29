@@ -389,6 +389,8 @@ class Auth extends BaseController
                 'verification_code_hash' => password_hash($verificationCode, PASSWORD_DEFAULT),
                 'verification_expires_at'=> time() + self::VERIFICATION_TTL_SECONDS,
                 'verification_attempts'  => 0,
+                'redirect_to'            => '/login',
+                'reset_url'              => '/register',
             ];
 
             if (! $this->sendVerificationCode($email, $name, $verificationCode)) {
@@ -407,7 +409,7 @@ class Auth extends BaseController
 
     public function verifyRegistration()
     {
-        if (session()->get('isLoggedIn')) {
+        if (session()->get('isLoggedIn') && ! $this->getPendingRegistration()) {
             return redirect()->to('/dashboard');
         }
 
@@ -472,9 +474,8 @@ class Auth extends BaseController
             ]);
 
             if (! $userId) {
-
                 return redirect()->to('/register')->withInput()->with('errors', [
-                    '_form' => $errors['email'] ?? 'Unable to create account right now. Please try again.',
+                    '_form' => 'Unable to create account right now. Please try again.',
                 ]);
             }
 
@@ -503,9 +504,19 @@ class Auth extends BaseController
             // Apply deny overrides if this role has disabled features
             applyDenyOverridesForNewUser((int) $userId, $pendingRegistration['role'] ?? 'client');
 
+            if (! empty($pendingRegistration['created_by']) && ! empty($pendingRegistration['audit_note'])) {
+                (new LoginEventModel())->log(
+                    LoginEventModel::EVENT_ACCOUNT_MODIFIED,
+                    (int) $pendingRegistration['created_by'],
+                    $pendingRegistration['email'] ?? null,
+                    (string) $pendingRegistration['audit_note']
+                );
+            }
+
+            $redirectTo = (string) ($pendingRegistration['redirect_to'] ?? '/login');
             session()->remove(self::PENDING_REGISTRATION_KEY);
 
-            return redirect()->to('/login')->with('success', 'Email verified. Your account has been created.');
+            return redirect()->to($redirectTo)->with('success', 'Email verified. Your account has been created.');
         }
 
         return view('auth/verify_registration', [
@@ -518,7 +529,7 @@ class Auth extends BaseController
 
     public function resendVerificationCode()
     {
-        if (session()->get('isLoggedIn')) {
+        if (session()->get('isLoggedIn') && ! $this->getPendingRegistration()) {
             return redirect()->to('/dashboard');
         }
 
@@ -548,11 +559,16 @@ class Auth extends BaseController
 
     public function resetRegistration()
     {
-        if (! session()->get('isLoggedIn')) {
+        $pendingRegistration = $this->getPendingRegistration();
+        $resetUrl = is_array($pendingRegistration) && ! empty($pendingRegistration['reset_url'])
+            ? (string) $pendingRegistration['reset_url']
+            : '/register';
+
+        if ($pendingRegistration) {
             session()->remove(self::PENDING_REGISTRATION_KEY);
         }
 
-        return redirect()->to('/register');
+        return redirect()->to($resetUrl);
     }
 
     private function getPendingMfa(): ?array

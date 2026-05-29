@@ -25,7 +25,7 @@ if (! is_array($errors)) { $errors = []; }
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
                     <div>
                         <h4 class="pl-title mb-1">Add User</h4>
-                        <p class="pl-sub mb-0">Register a new user account and assign their role.</p>
+                        <p class="pl-sub mb-0">A verification code will be sent to the email address before the account is created.</p>
                     </div>
                     <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">
                         <i class="bi bi-arrow-left me-1"></i>Back to List
@@ -133,7 +133,7 @@ if (! is_array($errors)) { $errors = []; }
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="pl-btn pl-btn-filled">
-                                <i class="bi bi-check-lg me-1"></i>Add User
+                                <i class="bi bi-envelope-check me-1"></i>Send Verification Code
                             </button>
                             <a href="<?= site_url('/admin/patients/list') ?>" class="pl-btn pl-btn-ghost">Cancel</a>
                         </div>
