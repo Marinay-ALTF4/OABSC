@@ -7,6 +7,62 @@ use App\Models\LoginEventModel;
 
 class Admin extends BaseController
 {
+    private function sendAppointmentApprovedNotification(array $appointment): void
+    {
+        $doctorId   = (int) ($appointment['doctor_id'] ?? 0);
+        $doctorName = trim((string) ($appointment['doctor_name'] ?? ''));
+
+        if ($doctorId <= 0 && $doctorName === '') {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+        $doctor = null;
+
+        if ($doctorId > 0) {
+            $doctor = $db->query(
+                'SELECT u.id, COALESCE(up.name, u.username, "") AS name
+                 FROM users u
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.id = ?
+                   AND u.role = ?
+                 LIMIT 1',
+                [$doctorId, 'doctor']
+            )->getRowArray();
+        }
+
+        if (! $doctor && $doctorName !== '') {
+            $doctor = $db->query(
+                'SELECT u.id, COALESCE(up.name, u.username, "") AS name
+                 FROM users u
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.role = ?
+                   AND COALESCE(up.name, u.username, "") = ?
+                 LIMIT 1',
+                ['doctor', $doctorName]
+            )->getRowArray();
+        }
+
+        if (! $doctor || empty($doctor['id'])) {
+            return;
+        }
+
+        $approverName = trim((string) (session('user_name') ?? ''));
+        $approverRole  = session('user_role') === 'assistant_admin' ? 'Assistant Admin' : 'Admin';
+        $approvedBy    = $approverName !== '' ? "{$approverRole} {$approverName}" : strtolower($approverRole);
+
+        $date = (string) ($appointment['appointment_date'] ?? 'a scheduled date');
+        $time = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
+
+        $notifModel = new \App\Models\NotificationModel();
+        $notifModel->send(
+            (int) $doctor['id'],
+            'Appointment Confirmed',
+            "Your client appointment on {$date} at {$time} has been confirmed by {$approvedBy}.",
+            'appointment'
+        );
+    }
+
     public function announcements()
     {
         $access = $this->ensureAdminAccess();
@@ -227,6 +283,7 @@ class Admin extends BaseController
 
         try {
             $model      = new \App\Models\AppointmentModel();
+            $appointment = $model->find($id);
             $updateData = ['status' => $status];
 
             // Auto-archive when admin sets status to cancelled
@@ -235,6 +292,10 @@ class Admin extends BaseController
             }
 
             $model->update($id, $updateData);
+
+            if ($status === 'confirmed' && $appointment) {
+                $this->sendAppointmentApprovedNotification($appointment);
+            }
 
             if (! $db->transStatus()) {
                 $db->transRollback();

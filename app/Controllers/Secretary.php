@@ -9,6 +9,62 @@ use App\Models\DoctorScheduleModel;
 
 class Secretary extends BaseController
 {
+    private function sendAppointmentApprovedNotification(array $appointment): void
+    {
+        $doctorId   = (int) ($appointment['doctor_id'] ?? 0);
+        $doctorName = trim((string) ($appointment['doctor_name'] ?? ''));
+
+        if ($doctorId <= 0 && $doctorName === '') {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+        $doctor = null;
+
+        if ($doctorId > 0) {
+            $doctor = $db->query(
+                'SELECT u.id, COALESCE(up.name, u.username, "") AS name
+                 FROM users u
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.id = ?
+                   AND u.role = ?
+                 LIMIT 1',
+                [$doctorId, 'doctor']
+            )->getRowArray();
+        }
+
+        if (! $doctor && $doctorName !== '') {
+            $doctor = $db->query(
+                'SELECT u.id, COALESCE(up.name, u.username, "") AS name
+                 FROM users u
+                 LEFT JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.role = ?
+                   AND COALESCE(up.name, u.username, "") = ?
+                 LIMIT 1',
+                ['doctor', $doctorName]
+            )->getRowArray();
+        }
+
+        if (! $doctor || empty($doctor['id'])) {
+            return;
+        }
+
+        $approverName = trim((string) (session('user_name') ?? ''));
+        $approverRole  = 'Secretary';
+        $approvedBy    = $approverName !== '' ? "{$approverRole} {$approverName}" : strtolower($approverRole);
+
+        $date = (string) ($appointment['appointment_date'] ?? 'a scheduled date');
+        $time = substr((string) ($appointment['appointment_time'] ?? ''), 0, 5);
+
+        $notifModel = new \App\Models\NotificationModel();
+        $notifModel->send(
+            (int) $doctor['id'],
+            'Appointment Confirmed',
+            "Your client appointment on {$date} at {$time} has been confirmed by {$approvedBy}.",
+            'appointment'
+        );
+    }
+
     private function checkAccess()
     {
         if (! session()->get('isLoggedIn') || session('user_role') !== 'secretary') {
@@ -229,7 +285,12 @@ class Secretary extends BaseController
 
         try {
             $model = new AppointmentModel();
+            $appointment = $model->find($id);
             $model->update($id, ['status' => $status]);
+
+            if ($status === 'confirmed' && $appointment) {
+                $this->sendAppointmentApprovedNotification($appointment);
+            }
 
             if (! $db->transStatus()) {
                 $db->transRollback();
