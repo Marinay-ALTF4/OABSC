@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Libraries\UserDataCrypt;
 use App\Models\AppointmentModel;
 use App\Models\UserModel;
+use App\Models\DoctorScheduleModel;
 
 class Secretary extends BaseController
 {
@@ -128,8 +129,16 @@ class Secretary extends BaseController
             ['doctor']
         )->getResultArray();
 
+        // Load schedules for all doctors in one query and index by doctor_id
+        $scheduleModel = new DoctorScheduleModel();
+        $allSchedules = $scheduleModel->findAll();
+        $schedByDoctor = [];
+        foreach ($allSchedules as $row) {
+            $schedByDoctor[(int)$row['doctor_id']][ucfirst(strtolower($row['day']))] = $row;
+        }
+
         // This endpoint uses a raw SQL query, so model-level afterFind decryption does not run.
-        // Decrypt any encrypted profile fields before rendering.
+        // Decrypt any encrypted profile fields before rendering and attach schedules.
         try {
             $crypt = new UserDataCrypt();
             foreach ($doctors as $i => $row) {
@@ -137,10 +146,18 @@ class Secretary extends BaseController
                     continue;
                 }
 
-                $doctors[$i] = $crypt->decryptFields($row, ['phone', 'specialization', 'experience', 'degree']);
+                $decrypted = $crypt->decryptFields($row, ['phone', 'specialization', 'experience', 'degree']);
+                // Attach schedules for this doctor (may be empty)
+                $decrypted['schedules'] = $schedByDoctor[(int) ($row['id'] ?? 0)] ?? [];
+                $doctors[$i] = $decrypted;
             }
         } catch (\Throwable) {
-            // If encryption service is not available, keep raw values.
+            // If encryption service is not available, keep raw values and attach schedules.
+            foreach ($doctors as $i => $row) {
+                if (! is_array($row)) continue;
+                $row['schedules'] = $schedByDoctor[(int) ($row['id'] ?? 0)] ?? [];
+                $doctors[$i] = $row;
+            }
         }
 
         return view('secretary/schedules', ['doctors' => $doctors]);

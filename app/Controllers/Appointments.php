@@ -190,23 +190,30 @@ class Appointments extends BaseController
             'status' => 'pending',
         ];
 
+        // Resolve doctor selection: prefer storing doctor_name when column exists,
+        // and always attempt to resolve and store doctor_id when the column exists.
+        $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
         if ($this->hasDoctorNameColumn()) {
-            $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
             $insertData['doctor_name'] = $doctorNamePost;
+        }
 
-            // Save doctor_id - strip "Dr. " prefix to find by name
-            $nameOnly    = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
-                        $doctorUser  = Database::connect()->query(
-                                'SELECT u.id
-                                 FROM users u
-                                 INNER JOIN user_profiles up ON up.user_id = u.id
-                                 WHERE u.role = ?
-                                     AND up.name = ?
-                                 LIMIT 1',
-                                ['doctor', $nameOnly]
-                        )->getRowArray();
+        if ($doctorNamePost !== '') {
+            $nameOnly   = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
+            $doctorUser = Database::connect()->query(
+                'SELECT u.id
+                 FROM users u
+                 INNER JOIN user_profiles up ON up.user_id = u.id
+                 WHERE u.role = ?
+                   AND up.name = ?
+                 LIMIT 1',
+                ['doctor', $nameOnly]
+            )->getRowArray();
+
             if ($doctorUser) {
-                $insertData['doctor_id'] = $doctorUser['id'];
+                $db = Database::connect();
+                if ($db->fieldExists('doctor_id', 'appointments')) {
+                    $insertData['doctor_id'] = $doctorUser['id'];
+                }
             }
         }
 

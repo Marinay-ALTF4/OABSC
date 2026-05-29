@@ -448,10 +448,56 @@ class DoctorAppointments extends BaseController
             return redirect()->back()->with('error', 'Appointment not found.');
         }
 
-        // Make sure this appointment belongs to this doctor
-        $doctorName = 'Dr. ' . session('user_name');
+        // Make sure this appointment belongs to this doctor.
+        // Allow matches by doctor_id or by a normalized doctor_name.
         $doctorId   = (int) session('user_id');
-        if (($appt['doctor_name'] ?? '') !== $doctorName && ($appt['doctor_id'] ?? 0) !== $doctorId) {
+        $sessionName = (string) session('user_name');
+
+        $apptDoctorName = (string) ($appt['doctor_name'] ?? '');
+        $apptDoctorId   = (int) ($appt['doctor_id'] ?? 0);
+
+        $normalizeName = function (string $name): string {
+            $n = preg_replace('/^Dr\.\s*/i', '', $name);
+            return mb_strtolower(trim($n));
+        };
+
+        $authorized = false;
+
+        // Exact id match is the strongest signal
+        if ($apptDoctorId > 0 && $apptDoctorId === $doctorId) {
+            $authorized = true;
+        }
+
+        // Normalize and compare names (case-insensitive, strip leading "Dr.")
+        if (! $authorized && $apptDoctorName !== '' && $sessionName !== '') {
+            if ($normalizeName($apptDoctorName) === $normalizeName($sessionName)) {
+                $authorized = true;
+            }
+        }
+
+        // If still not authorized but appointment has a doctor_name and no doctor_id,
+        // attempt to resolve the user id from profiles/users and persist it.
+        if (! $authorized && $apptDoctorId === 0 && $apptDoctorName !== '') {
+            $nameOnly = preg_replace('/^Dr\.\s*/i', '', $apptDoctorName);
+            $db = \Config\Database::connect();
+            $found = $db->query(
+                'SELECT u.id FROM users u INNER JOIN user_profiles up ON up.user_id = u.id WHERE u.role = ? AND TRIM(up.name) = TRIM(?) LIMIT 1',
+                ['doctor', $nameOnly]
+            )->getRowArray();
+            if ($found && isset($found['id'])) {
+                $foundId = (int) $found['id'];
+                try {
+                    $model->update($id, ['doctor_id' => $foundId]);
+                    if ($foundId === $doctorId) {
+                        $authorized = true;
+                    }
+                } catch (\Throwable $e) {
+                    // ignore update failures here; authorization will fail below if not matched
+                }
+            }
+        }
+
+        if (! $authorized) {
             return redirect()->back()->with('error', 'Unauthorized.');
         }
 

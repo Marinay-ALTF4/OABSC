@@ -172,7 +172,9 @@ class UserSeeder extends Seeder
                 $existingProfile = $db->table('user_profiles')->where('user_id', $userId)->get()->getRowArray();
                 if ($existingProfile) {
                     unset($profileRow['user_id']);
-                    $db->table('user_profiles')->where('user_id', $userId)->update($profileRow);
+                    if (! empty($profileRow)) {
+                        $db->table('user_profiles')->where('user_id', $userId)->update($profileRow);
+                    }
                 } else {
                     $db->table('user_profiles')->insert($profileRow);
                 }
@@ -207,7 +209,9 @@ class UserSeeder extends Seeder
                 $existingAuth = $db->table('user_auth')->where('user_id', $userId)->get()->getRowArray();
                 if ($existingAuth) {
                     unset($authRow['user_id']);
-                    $db->table('user_auth')->where('user_id', $userId)->update($authRow);
+                    if (! empty($authRow)) {
+                        $db->table('user_auth')->where('user_id', $userId)->update($authRow);
+                    }
                 } else {
                     $db->table('user_auth')->insert($authRow);
                 }
@@ -225,7 +229,9 @@ class UserSeeder extends Seeder
                 $existingDoc = $db->table('doctor_profiles')->where('user_id', $userId)->get()->getRowArray();
                 if ($existingDoc) {
                     unset($docRow['user_id']);
-                    $db->table('doctor_profiles')->where('user_id', $userId)->update($docRow);
+                    if (! empty($docRow)) {
+                        $db->table('doctor_profiles')->where('user_id', $userId)->update($docRow);
+                    }
                 } else {
                     $db->table('doctor_profiles')->insert($docRow);
                 }
