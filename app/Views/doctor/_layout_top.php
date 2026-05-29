@@ -1,12 +1,14 @@
 <?php
 $name = session('user_name') ?? 'Doctor';
+$doctorDisplayName = preg_replace('/^Dr\.\s*/i', '', trim((string) $name));
+$doctorLookupName = trim((string) ($name ?? ''));
 $active = $active ?? '';
 
 if (! isset($doc_pending_count) && session('user_role') === 'doctor') {
     $apptModel = new \App\Models\AppointmentModel();
     $doc_pending_count = $apptModel->countPendingForDoctor(
         (int) session('user_id'),
-        'Dr. ' . (session('user_name') ?? '')
+        $doctorLookupName
     );
 }
 ?>
@@ -29,7 +31,7 @@ if (! isset($doc_pending_count) && session('user_role') === 'doctor') {
         <div class="doc-sidebar-user">
             <div class="doc-sidebar-avatar"><i class="bi bi-person-circle"></i></div>
             <div>
-                <div class="doc-sidebar-name">Dr. <?= esc($name) ?></div>
+                <div class="doc-sidebar-name">Dr. <?= esc($doctorDisplayName !== '' ? $doctorDisplayName : 'Doctor') ?></div>
                 <div class="doc-sidebar-role">Doctor</div>
             </div>
         </div>

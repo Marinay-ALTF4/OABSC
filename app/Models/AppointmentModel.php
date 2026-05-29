@@ -211,8 +211,9 @@ class AppointmentModel extends Model
         $map = [];
         foreach ($result as $row) {
             $name = trim((string) ($row['name'] ?? ''));
-            if ($name !== '') {
-                $map[(int) $row['id']] = 'Dr. ' . $name;
+            $cleanName = preg_replace('/^Dr\.\s*/i', '', $name);
+            if ($cleanName !== '') {
+                $map[(int) $row['id']] = 'Dr. ' . $cleanName;
             }
         }
 

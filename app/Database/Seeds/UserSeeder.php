@@ -39,15 +39,15 @@ class UserSeeder extends Seeder
                 'role'          => 'secretary',
             ],
             [
-                'name'          => 'Doctor',
-                'email'         => 'doctor@example.com',
-                'password_hash' => password_hash('doctor123', PASSWORD_DEFAULT),
+                'name'          => 'Dr. Adrienne Marinay',
+                'email'         => 'adrienne@example.com',
+                'password_hash' => password_hash('adrienne123', PASSWORD_DEFAULT),
                 'role'          => 'doctor',
             ],
             [
-                'name'           => 'Maria Santos',
-                'email'          => 'dr.santos@example.com',
-                'password_hash'  => password_hash('doctor123', PASSWORD_DEFAULT),
+                'name'           => 'Dr. Sugar Plogio',
+                'email'          => 'sugar@example.com',
+                'password_hash'  => password_hash('sugar123', PASSWORD_DEFAULT),
                 'role'           => 'doctor',
                 'specialization' => 'General Practitioner',
                 'experience'     => '8 years',
@@ -57,9 +57,9 @@ class UserSeeder extends Seeder
                 'city'           => 'General Santos City',
             ],
             [
-                'name'           => 'Jose Reyes',
-                'email'          => 'dr.reyes@example.com',
-                'password_hash'  => password_hash('doctor123', PASSWORD_DEFAULT),
+                'name'           => 'Dr. Leo Dancesport',
+                'email'          => 'leo@example.com',
+                'password_hash'  => password_hash('leo123', PASSWORD_DEFAULT),
                 'role'           => 'doctor',
                 'specialization' => 'Cardiologist',
                 'experience'     => '12 years',
@@ -69,9 +69,9 @@ class UserSeeder extends Seeder
                 'city'           => 'General Santos City',
             ],
             [
-                'name'           => 'Ana Cruz',
-                'email'          => 'dr.cruz@example.com',
-                'password_hash'  => password_hash('doctor123', PASSWORD_DEFAULT),
+                'name'           => 'Dr. Josh Julom',
+                'email'          => 'josh@example.com',
+                'password_hash'  => password_hash('josh123', PASSWORD_DEFAULT),
                 'role'           => 'doctor',
                 'specialization' => 'Pediatrician',
                 'experience'     => '6 years',
@@ -81,9 +81,9 @@ class UserSeeder extends Seeder
                 'city'           => 'General Santos City',
             ],
             [
-                'name'           => 'Ramon Garcia',
-                'email'          => 'dr.garcia@example.com',
-                'password_hash'  => password_hash('doctor123', PASSWORD_DEFAULT),
+                'name'           => 'Dr. Lemuel Ponting',
+                'email'          => 'lemuel@example.com',
+                'password_hash'  => password_hash('lemuel123', PASSWORD_DEFAULT),
                 'role'           => 'doctor',
                 'specialization' => 'Dermatologist',
                 'experience'     => '10 years',
@@ -151,36 +151,6 @@ class UserSeeder extends Seeder
                 continue;
             }
 
-            // Seed user_profiles (normalized name + profile fields)
-            if ($db->tableExists('user_profiles')) {
-                $profileRow = ['user_id' => $userId];
-
-                if ($db->fieldExists('name', 'user_profiles')) {
-                    $profileRow['name'] = $user['name'];
-                }
-                foreach (['bio', 'phone', 'city', 'address', 'profile_photo'] as $field) {
-                    if (array_key_exists($field, $user) && $db->fieldExists($field, 'user_profiles')) {
-                        $profileRow[$field] = $user[$field];
-                    }
-                }
-
-                // Optionally encrypt sensitive profile fields when encryption service is available.
-                if ($crypt) {
-                    $profileRow = $crypt->encryptFields($profileRow, ['bio', 'phone', 'city', 'address']);
-                }
-
-                $existingProfile = $db->table('user_profiles')->where('user_id', $userId)->get()->getRowArray();
-                if ($existingProfile) {
-                    unset($profileRow['user_id']);
-                    if (! empty($profileRow)) {
-                        $db->table('user_profiles')->where('user_id', $userId)->update($profileRow);
-                    }
-                } else {
-                    $db->table('user_profiles')->insert($profileRow);
-                }
-            }
-
-            // Seed user_auth if present (normalized credentials)
             if ($db->tableExists('user_auth') && $db->fieldExists('password_hash', 'user_auth')) {
                 $authRow = [
                     'user_id'       => $userId,
@@ -214,6 +184,35 @@ class UserSeeder extends Seeder
                     }
                 } else {
                     $db->table('user_auth')->insert($authRow);
+                }
+            }
+
+            // Seed user_profiles (normalized name + profile fields)
+            if ($db->tableExists('user_profiles')) {
+                $profileRow = ['user_id' => $userId];
+
+                if ($db->fieldExists('name', 'user_profiles')) {
+                    $profileRow['name'] = $user['name'];
+                }
+                foreach (['bio', 'phone', 'city', 'address', 'profile_photo'] as $field) {
+                    if (array_key_exists($field, $user) && $db->fieldExists($field, 'user_profiles')) {
+                        $profileRow[$field] = $user[$field];
+                    }
+                }
+
+                // Optionally encrypt sensitive profile fields when encryption service is available.
+                if ($crypt) {
+                    $profileRow = $crypt->encryptFields($profileRow, ['bio', 'phone', 'city', 'address']);
+                }
+
+                $existingProfile = $db->table('user_profiles')->where('user_id', $userId)->get()->getRowArray();
+                if ($existingProfile) {
+                    unset($profileRow['user_id']);
+                    if (! empty($profileRow)) {
+                        $db->table('user_profiles')->where('user_id', $userId)->update($profileRow);
+                    }
+                } else {
+                    $db->table('user_profiles')->insert($profileRow);
                 }
             }
 

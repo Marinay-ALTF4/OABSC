@@ -24,6 +24,10 @@ class AddDoctorIdToAppointments extends Migration
 
     public function down()
     {
-        $this->forge->dropColumn('appointments', ['doctor_id']);
+        $db = \Config\Database::connect();
+
+        if ($db->fieldExists('doctor_id', 'appointments')) {
+            $this->forge->dropColumn('appointments', ['doctor_id']);
+        }
     }
 }

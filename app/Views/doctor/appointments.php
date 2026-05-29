@@ -1,5 +1,7 @@
 <?= view('doctor/_layout_top', ['pageTitle' => 'My Appointments', 'active' => 'appointments']) ?>
 
+<?php $filter = $filter ?? 'upcoming'; ?>
+
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
     <?php endif; ?>
@@ -21,7 +23,6 @@
         <a href="?filter=past"      class="doc-filter-btn <?= $filter === 'past'      ? 'active' : '' ?>">Past</a>
         <a href="?filter=approved"  class="doc-filter-btn <?= $filter === 'approved'  ? 'active' : '' ?>">Approved</a>
         <a href="?filter=cancelled" class="doc-filter-btn <?= $filter === 'cancelled' ? 'active' : '' ?>">Cancelled</a>
-        <a href="?filter=all"       class="doc-filter-btn <?= $filter === 'all'       ? 'active' : '' ?>">Other</a>
     </div>
 
     <div class="doc-table-card">

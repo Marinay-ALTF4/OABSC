@@ -347,7 +347,7 @@ $avatarColors = [
                                                 <?= esc($initials) ?>
                                             </div>
                                             <div>
-                                                <div class="doc-name">Dr. <?= esc($doc['name']) ?></div>
+                                                <div class="doc-name">Dr. <?= esc(preg_replace('/^Dr\.\s*/i', '', trim((string) ($doc['name'] ?? '')))) ?></div>
                                                 <?php if (!empty($doc['specialization'])): ?>
                                                     <div class="doc-spec"><?= esc($doc['specialization']) ?></div>
                                                 <?php endif; ?>
@@ -377,8 +377,8 @@ $avatarColors = [
                                     <td>
                                         <button class="btn-view"
                                             onclick="openSchedModal(
-                                                <?= htmlspecialchars(json_encode('Dr. ' . $doc['name']), ENT_QUOTES) ?>,
-                                                <?= htmlspecialchars(json_encode($doc['specialization'] ?? 'Doctor'), ENT_QUOTES) ?>,
+                                                    <?= htmlspecialchars(json_encode('Dr. ' . preg_replace('/^Dr\.\s*/i', '', trim((string) ($doc['name'] ?? '')))), ENT_QUOTES) ?>,
+                                                    <?= htmlspecialchars(json_encode($doc['specialization'] ?? 'Doctor'), ENT_QUOTES) ?>,
                                                 <?= htmlspecialchars(json_encode($color), ENT_QUOTES) ?>,
                                                 <?= htmlspecialchars(json_encode($initials), ENT_QUOTES) ?>,
                                                 <?= htmlspecialchars(json_encode($modalSched), ENT_QUOTES) ?>,

@@ -27,6 +27,10 @@ class AddRolePasswordAndClinicSettings extends Migration
 
     public function down()
     {
-        $this->forge->dropColumn('users', ['role_password']);
+        $db = \Config\Database::connect();
+
+        if ($db->fieldExists('role_password', 'users')) {
+            $this->forge->dropColumn('users', ['role_password']);
+        }
     }
 }

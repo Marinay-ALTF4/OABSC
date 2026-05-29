@@ -43,7 +43,7 @@ class Appointments extends BaseController
 
         $userModel    = new UserModel();
         $doctorUsers  = $userModel->where('role', 'doctor')->where('deleted_at IS NULL')->findAll();
-        $doctorOptions = array_map(fn($d) => 'Dr. ' . $d['name'], $doctorUsers);
+        $doctorOptions = array_map(fn($d) => trim((string) ($d['name'] ?? '')), $doctorUsers);
         $scheduleModel = new \App\Models\DoctorScheduleModel();
 
         // Use raw query to bypass encryption hooks for display fields
@@ -73,7 +73,9 @@ class Appointments extends BaseController
             if (str_starts_with((string)$bio,  'enc:')) $bio  = 'Experienced medical professional.';
             if (str_starts_with((string)$phone,'enc:')) $phone = null;
 
-            $doctorProfiles['Dr. ' . $d['name']] = [
+            $doctorName = trim((string) ($d['name'] ?? ''));
+
+            $doctorProfiles[$doctorName] = [
                 'avatar'    => ! empty($d['profile_photo']) ? base_url($d['profile_photo']) : null,
                 'spec'      => $spec ?: 'Specialist',
                 'exp'       => $exp  ?: 'N/A',
@@ -122,7 +124,6 @@ class Appointments extends BaseController
         // ── Validate that the selected date falls on a schedule day for the doctor ──
         $doctorNamePost = trim((string) $this->request->getPost('doctor_name'));
         if ($doctorNamePost) {
-            $nameOnly   = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
             $doctorUser = Database::connect()->query(
                 'SELECT u.id
                  FROM users u
@@ -130,7 +131,7 @@ class Appointments extends BaseController
                  WHERE u.role = ?
                    AND up.name = ?
                  LIMIT 1',
-                ['doctor', $nameOnly]
+                ['doctor', $doctorNamePost]
             )->getRowArray();
             if ($doctorUser) {
                 $scheduleModel = new \App\Models\DoctorScheduleModel();
@@ -142,7 +143,7 @@ class Appointments extends BaseController
                     if (! in_array($selectedDay, $allowedDays, true)) {
                         $allowedLabels = implode(', ', array_map('ucfirst', $allowedDays));
                         return redirect()->back()->withInput()->with('errors', [
-                            'appointment_date' => "Dr. {$nameOnly} is not available on " . ucfirst($selectedDay) . ". Available days: {$allowedLabels}.",
+                            'appointment_date' => "{$doctorNamePost} is not available on " . ucfirst($selectedDay) . ". Available days: {$allowedLabels}.",
                         ]);
                     }
                 }
@@ -182,7 +183,6 @@ class Appointments extends BaseController
         }
 
         if ($doctorNamePost !== '') {
-            $nameOnly   = preg_replace('/^Dr\.\s*/i', '', $doctorNamePost);
             $doctorUser = Database::connect()->query(
                 'SELECT u.id
                  FROM users u
@@ -190,7 +190,7 @@ class Appointments extends BaseController
                  WHERE u.role = ?
                    AND up.name = ?
                  LIMIT 1',
-                ['doctor', $nameOnly]
+                                ['doctor', $doctorNamePost]
             )->getRowArray();
 
             if ($doctorUser) {

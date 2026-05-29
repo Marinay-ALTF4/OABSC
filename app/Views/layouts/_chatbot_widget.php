@@ -148,7 +148,7 @@ if ($userRole === 'client') {
         },
         doctor: {
             title: "Doctor Panel Support",
-            greeting: "Welcome back, Dr. " + userName + ". How can I assist you with clinical record coordination today?",
+            greeting: "Welcome back, Dr. " + userName.replace(/^Dr\.\s*/i, "") + ". How can I assist you with clinical record coordination today?",
             options: [
                 { label: "🔍 Patient Lookup", id: "patients" },
                 { label: "💊 Create Prescription", id: "presc_guide" },

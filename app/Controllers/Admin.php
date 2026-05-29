@@ -513,10 +513,26 @@ class Admin extends BaseController
                     'name'          => $name,
                     'email'         => $email,
                     'role'          => $role,
-                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                 ]);
 
                 if ($created) {
+                    if ($db->tableExists('user_auth')) {
+                        $db->table('user_auth')->insert([
+                            'user_id'            => (int) $created,
+                            'password_hash'      => password_hash($password, PASSWORD_DEFAULT),
+                            'role_password'      => null,
+                            'mfa_code_hash'      => null,
+                            'mfa_expires_at'     => null,
+                            'failed_login_count' => 0,
+                            'cancel_attempts'    => 0,
+                            'cancel_reset_at'    => null,
+                            'lock_until'         => null,
+                            'last_login_at'      => null,
+                            'password_changed_at'=> null,
+                            'is_email_verified'  => 1,
+                        ]);
+                    }
+
                     applyDenyOverridesForNewUser((int) $created, $role);
                 }
 

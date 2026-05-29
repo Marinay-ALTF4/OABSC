@@ -607,9 +607,10 @@ class Api extends BaseController
         $doctors = [];
         foreach ($doctorUsers as $d) {
             $schedules = $scheduleModel->getScheduleByDoctor((int) $d['id']);
+            $doctorName = preg_replace('/^Dr\.\s*/i', '', trim((string) ($d['name'] ?? '')));
             $doctors[] = [
                 'id'             => $d['id'],
-                'name'           => 'Dr. ' . $d['name'],
+                'name'           => 'Dr. ' . $doctorName,
                 'specialization' => $d['specialization'] ?? 'Specialist',
                 'experience'     => $d['experience'] ?? 'N/A',
                 'degree'         => $d['degree'] ?? 'MD',

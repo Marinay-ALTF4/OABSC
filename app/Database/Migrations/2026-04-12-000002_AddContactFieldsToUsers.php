@@ -28,6 +28,15 @@ class AddContactFieldsToUsers extends Migration
 
     public function down()
     {
-        $this->forge->dropColumn('users', ['phone', 'city', 'address']);
+        $db = \Config\Database::connect();
+        $columns = array_values(array_filter([
+            $db->fieldExists('phone', 'users') ? 'phone' : null,
+            $db->fieldExists('city', 'users') ? 'city' : null,
+            $db->fieldExists('address', 'users') ? 'address' : null,
+        ]));
+
+        if (! empty($columns)) {
+            $this->forge->dropColumn('users', $columns);
+        }
     }
 }

@@ -52,10 +52,11 @@ class Auth extends BaseController
                                         u.email,
                                         COALESCE(up.phone, "") AS phone,
                                         u.role,
-                                        ua.password_hash,
-                                        ua.failed_login_count,
-                                        ua.lock_until,
-                                        ua.last_login_at,
+                                        ua.password_hash AS password_hash,
+                                        COALESCE(ua.failed_login_count, 0) AS failed_login_count,
+                                        ua.lock_until AS lock_until,
+                                        ua.last_login_at AS last_login_at,
+                                        ua.user_id AS auth_user_id,
                                         u.deleted_at
                          FROM users u
                          LEFT JOIN user_profiles up ON up.user_id = u.id
@@ -84,6 +85,8 @@ class Auth extends BaseController
         if (! password_verify($password, (string) ($user['password_hash'] ?? ''))) {
             $failCount = ((int) ($user['failed_login_count'] ?? 0)) + 1;
             $lockUntil = null;
+            $authTable = ! empty($user['auth_user_id']) ? 'user_auth' : 'users';
+            $authKey   = $authTable === 'user_auth' ? 'user_id' : 'id';
 
             if ($failCount >= 5) {
                 $lockUntil = date('Y-m-d H:i:s', strtotime('+5 minutes'));
@@ -93,7 +96,7 @@ class Auth extends BaseController
 
             // Prepared statement update
             $db->query(
-                'UPDATE user_auth SET failed_login_count = ?, lock_until = ? WHERE user_id = ?',
+                "UPDATE {$authTable} SET failed_login_count = ?, lock_until = ? WHERE {$authKey} = ?",
                 [$failCount, $lockUntil, $userId]
             );
 
@@ -103,7 +106,9 @@ class Auth extends BaseController
 
         // Successful login — reset lockout fields + update last_login_at
         $db->query(
-            'UPDATE user_auth SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE user_id = ?',
+            ! empty($user['auth_user_id'])
+                ? 'UPDATE user_auth SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE user_id = ?'
+                : 'UPDATE users SET failed_login_count = 0, lock_until = NULL, last_login_at = ? WHERE id = ?',
             [date('Y-m-d H:i:s'), $userId]
         );
 
@@ -268,7 +273,7 @@ class Auth extends BaseController
                     COALESCE(up.name, u.username, "") AS name,
                     u.email,
                     u.role,
-                    ua.password_hash
+                    ua.password_hash AS password_hash
              FROM users u
              LEFT JOIN user_profiles up ON up.user_id = u.id
              LEFT JOIN user_auth ua ON ua.user_id = u.id

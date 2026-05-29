@@ -18,7 +18,7 @@
                         <div style="width:48px;height:48px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#2e7d32;"><i class="bi bi-person-circle"></i></div>
                     <?php endif; ?>
                     <div>
-                        <div style="font-weight:700;color:#1b3a1e;">Dr. <?= esc($d['name'] ?? $d['username'] ?? 'Unknown') ?></div>
+                        <div style="font-weight:700;color:#1b3a1e;">Dr. <?= esc(preg_replace('/^Dr\.\s*/i', '', trim((string) ($d['name'] ?? $d['username'] ?? 'Unknown')))) ?></div>
                         <div style="font-size:0.78rem;color:#6aaa70;"><?= esc($d['specialization'] ?? 'General') ?></div>
                         <?php
                             $docSched = $d['schedules'] ?? [];
@@ -72,10 +72,11 @@
                             $color = $avatarColors[$i % count($avatarColors)];
                             $words = explode(' ', trim($d['name'] ?? ($d['username'] ?? '')));
                             $initials = strtoupper(implode('', array_map(fn($w) => $w[0], array_slice($words, 0, 2))));
+                            $doctorDisplayName = preg_replace('/^Dr\.\s*/i', '', trim((string) ($d['name'] ?? $d['username'] ?? 'Unknown')));
                         ?>
                         <button class="btn-view"
                             onclick="openSchedModal(
-                                <?= htmlspecialchars(json_encode('Dr. ' . ($d['name'] ?? $d['username'] ?? 'Unknown')), ENT_QUOTES) ?>,
+                                <?= htmlspecialchars(json_encode('Dr. ' . $doctorDisplayName), ENT_QUOTES) ?>,
                                 <?= htmlspecialchars(json_encode($d['specialization'] ?? 'Doctor'), ENT_QUOTES) ?>,
                                 <?= htmlspecialchars(json_encode($color), ENT_QUOTES) ?>,
                                 <?= htmlspecialchars(json_encode($initials), ENT_QUOTES) ?>,

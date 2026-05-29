@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use Config\Database;
 use App\Models\UserModel;
 
 class Settings extends BaseController
@@ -64,14 +65,25 @@ class Settings extends BaseController
         $currentPassword = $this->request->getPost('current_password');
 
         if ($newPassword) {
-            $user = $model->find($userId);
-            if (! password_verify($currentPassword, $user['password_hash'])) {
+            $db = Database::connect();
+            $authRow = $db->table('user_auth')->where('user_id', $userId)->get()->getRowArray();
+
+            if (! $authRow || ! password_verify($currentPassword, (string) ($authRow['password_hash'] ?? ''))) {
                 return redirect()->back()->withInput()->with('errors', ['current_password' => 'Current password is incorrect.']);
             }
             if (strlen($newPassword) < 8) {
                 return redirect()->back()->withInput()->with('errors', ['new_password' => 'New password must be at least 8 characters.']);
             }
-            $data['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
+
+            $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+            if ($authRow) {
+                $db->table('user_auth')->where('user_id', $userId)->update(['password_hash' => $newHash]);
+            } else {
+                $db->table('user_auth')->insert([
+                    'user_id'       => $userId,
+                    'password_hash' => $newHash,
+                ]);
+            }
         }
 
         $model->update($userId, $data);

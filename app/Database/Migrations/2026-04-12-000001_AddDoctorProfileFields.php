@@ -34,6 +34,17 @@ class AddDoctorProfileFields extends Migration
 
     public function down()
     {
-        $this->forge->dropColumn('users', ['profile_photo', 'specialization', 'experience', 'degree', 'bio']);
+        $db = \Config\Database::connect();
+        $columns = array_values(array_filter([
+            $db->fieldExists('profile_photo', 'users') ? 'profile_photo' : null,
+            $db->fieldExists('specialization', 'users') ? 'specialization' : null,
+            $db->fieldExists('experience', 'users') ? 'experience' : null,
+            $db->fieldExists('degree', 'users') ? 'degree' : null,
+            $db->fieldExists('bio', 'users') ? 'bio' : null,
+        ]));
+
+        if (! empty($columns)) {
+            $this->forge->dropColumn('users', $columns);
+        }
     }
 }

@@ -331,6 +331,10 @@ $name = session('user_name') ?? 'User';
 
     <?php elseif ($role === 'doctor') : ?>
     <!-- ==================== DOCTOR ==================== -->
+    <?php
+        $doctorDisplayName = preg_replace('/^Dr\.\s*/i', '', trim((string) ($name ?? 'Doctor')));
+        $doctorLookupName  = trim((string) ($name ?? ''));
+    ?>
     <div class="doc-page">
 
         <!-- Sidebar -->
@@ -338,7 +342,7 @@ $name = session('user_name') ?? 'User';
             <div class="doc-sidebar-user">
                 <div class="doc-sidebar-avatar"><i class="bi bi-person-circle"></i></div>
                 <div>
-                    <div class="doc-sidebar-name">Dr. <?= esc($name) ?></div>
+                    <div class="doc-sidebar-name">Dr. <?= esc($doctorDisplayName !== '' ? $doctorDisplayName : 'Doctor') ?></div>
                     <div class="doc-sidebar-role">Doctor</div>
                 </div>
             </div>
@@ -431,7 +435,7 @@ $name = session('user_name') ?? 'User';
                 </svg>
                 <div style="position:relative;z-index:2;">
                     <div class="welcome-label">Doctor Panel</div>
-                    <h4 class="welcome-name">Welcome, Dr. <?= esc($name) ?></h4>
+                    <h4 class="welcome-name">Welcome, Dr. <?= esc($doctorDisplayName !== '' ? $doctorDisplayName : 'Doctor') ?></h4>
                     <p class="welcome-sub">Here is your clinical overview for today.</p>
                 </div>
                 <div class="welcome-date" style="position:relative;z-index:2;">

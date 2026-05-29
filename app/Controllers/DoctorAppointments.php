@@ -15,9 +15,16 @@ class DoctorAppointments extends BaseController
         return null;
     }
 
+    private function currentDoctorName(): string
+    {
+        $baseName = preg_replace('/^Dr\.\s*/i', '', trim((string) session('user_name')));
+
+        return $baseName !== '' ? 'Dr. ' . $baseName : 'Dr. Doctor';
+    }
+
     private function loadDoctorAppointments(string $filter = 'all'): array
     {
-        $doctorName = 'Dr. ' . session('user_name');
+        $doctorName = $this->currentDoctorName();
         $doctorId   = (int) session('user_id');
         $model      = new AppointmentModel();
         $userModel  = new UserModel();
@@ -180,7 +187,7 @@ class DoctorAppointments extends BaseController
         $access = $this->ensureDoctor();
         if ($access !== null) return $access;
 
-        $doctorName = 'Dr. ' . session('user_name');
+        $doctorName = $this->currentDoctorName();
         $doctorId   = (int) session('user_id');
         $model      = new AppointmentModel();
         $userModel  = new UserModel();
@@ -334,7 +341,7 @@ class DoctorAppointments extends BaseController
             'patient_id' => $patientId > 0 ? $patientId : null,
             'patient_name' => $patientName !== '' ? mb_substr($patientName, 0, 120) : null,
             'created_at' => date('Y-m-d H:i:s'),
-            'author' => 'Dr. ' . session('user_name'),
+            'author' => $this->currentDoctorName(),
         ];
 
         $this->saveDoctorNotes($doctorId, $notes);
@@ -342,7 +349,7 @@ class DoctorAppointments extends BaseController
         // Notify the specific patient
         if ($patientId > 0) {
             $notifModel = new \App\Models\NotificationModel();
-            $doctorName = 'Dr. ' . session('user_name');
+            $doctorName = $this->currentDoctorName();
             $notifModel->send(
                 $patientId,
                 'New Consultation Note',
@@ -417,7 +424,7 @@ class DoctorAppointments extends BaseController
             'duration' => mb_substr($duration, 0, 120),
             'instructions' => mb_substr($instructions, 0, 2000),
             'created_at' => date('Y-m-d H:i:s'),
-            'doctor_name' => 'Dr. ' . session('user_name'),
+            'doctor_name' => $this->currentDoctorName(),
         ];
 
         $this->saveDoctorPrescriptions($doctorId, $prescriptions);
@@ -425,7 +432,7 @@ class DoctorAppointments extends BaseController
         // Notify the specific patient
         if ($patientId > 0) {
             $notifModel = new \App\Models\NotificationModel();
-            $doctorName = 'Dr. ' . session('user_name');
+            $doctorName = $this->currentDoctorName();
             $msg = "{$doctorName} has added a prescription for you: \"{$medicine}\"\n"
                  . "• Dosage: {$dosage}\n"
                  . "• Frequency: {$frequency}\n"

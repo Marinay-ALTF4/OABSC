@@ -70,7 +70,8 @@ class Home extends BaseController
         }
 
         if (session('user_role') === 'doctor') {
-            $doctorName = 'Dr. ' . session('user_name');
+            $doctorBaseName = preg_replace('/^Dr\.\s*/i', '', trim((string) session('user_name')));
+            $doctorName = 'Dr. ' . $doctorBaseName;
             $doctorId   = (int) session('user_id');
             $model      = new AppointmentModel();
             $today      = date('Y-m-d');
