@@ -20,6 +20,7 @@ $bookedSlots = $bookedSlots ?? [];
     <title>Book Appointment</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"> -->
 </head>
 <body>
 <?= view('header') ?>
@@ -60,6 +61,24 @@ $bookedSlots = $bookedSlots ?? [];
                         <?= csrf_field() ?>
 
                         <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="appointment_date" class="form-label">Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control <?= $dateErr ? 'is-invalid' : '' ?>"
+                                    id="appointment_date"
+                                    name="appointment_date"
+                                    value="<?= esc(old('appointment_date')) ?>"
+                                    min="<?= esc(date('Y-m-d')) ?>"
+                                    required
+                                >
+                                <?php if ($dateErr): ?>
+                                    <div class="invalid-feedback d-block"><?= esc($dateErr) ?></div>
+                                <?php else: ?>
+                                    <div class="invalid-feedback" id="dateClientError">Pick a valid date (today or later).</div>
+                                <?php endif; ?>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label">Select Your Doctor</label>
                                 <input type="hidden" id="doctor_name" name="doctor_name" value="<?= esc(old('doctor_name')) ?>" required>
@@ -106,24 +125,6 @@ $bookedSlots = $bookedSlots ?? [];
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="appointment_date" class="form-label">Date</label>
-                                <input
-                                    type="date"
-                                    class="form-control <?= $dateErr ? 'is-invalid' : '' ?>"
-                                    id="appointment_date"
-                                    name="appointment_date"
-                                    value="<?= esc(old('appointment_date')) ?>"
-                                    min="<?= esc(date('Y-m-d')) ?>"
-                                    required
-                                >
-                                <?php if ($dateErr): ?>
-                                    <div class="invalid-feedback d-block"><?= esc($dateErr) ?></div>
-                                <?php else: ?>
-                                    <div class="invalid-feedback" id="dateClientError">Pick a valid date (today or later).</div>
-                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -280,6 +281,7 @@ $bookedSlots = $bookedSlots ?? [];
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
 <script>
 (function () {
     const doctorProfiles = <?= json_encode(array_combine(
@@ -315,12 +317,17 @@ $bookedSlots = $bookedSlots ?? [];
     let currentProfileDoctor = null;
 
     window.selectDoctor = function(card) {
+        if (card.classList.contains('doctor-card-disabled')) {
+            return;
+        }
+
         document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         document.getElementById('doctor_name').value = card.dataset.doctor;
         document.getElementById('doctorClientError').style.display = 'none';
         doctorInput.classList.remove('is-invalid');
         timeInput.value = '';
+        updateDoctorCardAvailability();
         renderSlots();
         updateSummary();
     };
@@ -393,6 +400,89 @@ $bookedSlots = $bookedSlots ?? [];
 
     const oldTime = <?= json_encode((string) old('appointment_time')) ?>;
     const bookedFromServer = <?= json_encode($bookedSlots, JSON_UNESCAPED_UNICODE) ?>;
+
+    const dayNameToIndex = {
+        sunday: 0,
+        monday: 1,
+        tuesday: 2,
+        wednesday: 3,
+        thursday: 4,
+        friday: 5,
+        saturday: 6,
+    };
+
+    // let datePicker = null;
+    // window.openAppointmentDatePicker = function() {
+    //     if (datePicker && !dateInput.readOnly) {
+    //         datePicker.open();
+    //     }
+    // };
+    function getAllowedDayIndexes(doctor) {
+        const profile = doctorProfiles[doctor];
+        if (!profile || !profile.schedules || profile.schedules.length === 0) {
+            return null;
+        }
+
+        return profile.schedules
+            .map(function (schedule) {
+                return dayNameToIndex[String(schedule.day || '').toLowerCase()];
+            })
+            .filter(function (value) {
+                return Number.isInteger(value);
+            });
+    }
+
+    function getSelectedDayIndex() {
+        if (!dateInput.value) {
+            return null;
+        }
+
+        return new Date(dateInput.value + 'T00:00:00').getDay();
+    }
+
+    function isDoctorAvailableOnSelectedDate(doctor) {
+        const selectedDayIndex = getSelectedDayIndex();
+        if (selectedDayIndex === null) {
+            return true;
+        }
+
+        const allowedDays = getAllowedDayIndexes(doctor);
+        if (allowedDays === null) {
+            return true;
+        }
+
+        return allowedDays.includes(selectedDayIndex);
+    }
+
+    function updateDoctorCardAvailability() {
+        const selectedDayIndex = getSelectedDayIndex();
+        const selectedDoctor = doctorInput.value.trim();
+        let selectedDoctorStillValid = true;
+
+        document.querySelectorAll('.doctor-card').forEach(function (card) {
+            const doctor = String(card.dataset.doctor || '');
+            const available = selectedDayIndex === null ? true : isDoctorAvailableOnSelectedDate(doctor);
+
+            card.classList.toggle('doctor-card-disabled', !available);
+            card.setAttribute('aria-disabled', available ? 'false' : 'true');
+            card.title = available ? '' : 'This doctor is off duty on the selected date';
+
+            if (doctor === selectedDoctor && !available) {
+                selectedDoctorStillValid = false;
+            }
+        });
+
+        if (!selectedDoctorStillValid) {
+            doctorInput.value = '';
+            document.querySelectorAll('.doctor-card.selected').forEach(function (card) {
+                card.classList.remove('selected');
+            });
+            document.getElementById('doctorClientError').style.display = 'block';
+            doctorInput.classList.add('is-invalid');
+            timeInput.value = '';
+        }
+    }
+
 
     const slotTimes = [
         '09:00', '09:30', '10:00', '10:30',
@@ -622,12 +712,14 @@ $bookedSlots = $bookedSlots ?? [];
 
     doctorInput.addEventListener('change', function () {
         timeInput.value = '';
+        updateDoctorCardAvailability();
         renderSlots();
         updateSummary();
     });
 
     dateInput.addEventListener('change', function () {
         timeInput.value = '';
+        updateDoctorCardAvailability();
         renderSlots();
         updateSummary();
     });
@@ -671,7 +763,7 @@ $bookedSlots = $bookedSlots ?? [];
     if (oldTime) {
         timeInput.value = normalizeTime(oldTime);
     }
-
+    updateDoctorCardAvailability();
     renderSlots();
     updateSummary();
 })();
@@ -815,6 +907,18 @@ $bookedSlots = $bookedSlots ?? [];
         border-color: #1d4ed8;
         background: #eff6ff;
         box-shadow: 0 4px 14px rgba(30,64,175,0.18);
+    }
+    .doctor-card-disabled {
+        opacity: 0.45;
+        background: #f8fafc;
+        border-style: dashed;
+        box-shadow: none;
+    }
+    .doctor-card-disabled:hover {
+        transform: none;
+        border-color: #dbe4ef;
+        box-shadow: none;
+        cursor: not-allowed;
     }
     .doctor-avatar {
         width: 72px;
