@@ -6,12 +6,91 @@ use App\Models\LoginEventModel;
 
 class AuditReport extends BaseController
 {
+    private array $userNameCache = [];
+
     private function ensureAdminAccess()
     {
         if (! session()->get('isLoggedIn') || ! in_array(session('user_role'), ['admin', 'assistant_admin'], true)) {
             return redirect()->to('/dashboard');
         }
         return null;
+    }
+
+    private function resolveUserName(
+        \CodeIgniter\Database\BaseConnection $db,
+        string $roleLabel,
+        string $value
+    ): string {
+        $trimmedValue = trim($value);
+        if ($trimmedValue === '') {
+            return $roleLabel;
+        }
+
+        if (ctype_digit($trimmedValue)) {
+            $userId = (int) $trimmedValue;
+            if (! isset($this->userNameCache[$userId])) {
+                $row = $db->query(
+                    'SELECT COALESCE(up.name, u.username, "") AS name
+                     FROM users u
+                     LEFT JOIN user_profiles up ON up.user_id = u.id
+                     WHERE u.id = ?
+                     LIMIT 1',
+                    [$userId]
+                )->getRowArray();
+                $this->userNameCache[$userId] = trim((string) ($row['name'] ?? ''));
+            }
+
+            return $this->userNameCache[$userId] !== ''
+                ? $this->userNameCache[$userId]
+                : $roleLabel . ' #' . $trimmedValue;
+        }
+
+        return $trimmedValue;
+    }
+
+    private function prettyAuditCode(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '' || $value === '—') {
+            return '—';
+        }
+
+        $value = str_replace(['_', '-'], ' ', $value);
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return ucwords($value);
+    }
+
+    private function formatReasonCode(\CodeIgniter\Database\BaseConnection $db, ?string $reasonCode): string
+    {
+        $reasonCode = trim((string) $reasonCode);
+        if ($reasonCode === '') {
+            return '—';
+        }
+
+        $parts = array_values(array_filter(array_map('trim', explode('|', $reasonCode)), static fn ($part) => $part !== ''));
+        if ($parts === []) {
+            return '—';
+        }
+
+        $formatted = [];
+        foreach ($parts as $part) {
+            [$key, $value] = array_pad(explode(':', $part, 2), 2, '');
+            $key = trim($key);
+            $value = trim($value);
+
+            $formatted[] = match ($key) {
+                'patient_registered' => 'Patient Registered: ' . $value,
+                'user_added'         => 'User Added: ' . $value,
+                'user_edited'        => 'User Edited: ' . $value,
+                'by_admin'           => 'By: Admin ' . $this->resolveUserName($db, 'Admin', $value),
+                'by_secretary'       => 'By: Secretary ' . $this->resolveUserName($db, 'Secretary', $value),
+                'role'               => 'Role: ' . $this->prettyAuditCode($value),
+                default              => $this->prettyAuditCode($part),
+            };
+        }
+
+        return implode(' | ', $formatted);
     }
 
     public function index()
@@ -63,7 +142,7 @@ class AuditReport extends BaseController
                 $e['event_type'] ?? '',
                 $e['user_id'] ?? '',
                 $e['email_attempted'] ?? '',
-                $e['reason_code'] ?? '',
+                $e['reason_display'] ?? $e['reason_code'] ?? '',
             ]);
         }
 
@@ -136,6 +215,11 @@ class AuditReport extends BaseController
              LIMIT 100',
             [$since]
         )->getResultArray();
+
+        foreach ($events as &$event) {
+            $event['reason_display'] = $this->formatReasonCode($db, $event['reason_code'] ?? null);
+        }
+        unset($event);
 
         // Notifications/alerts count
         $alertCount = (int) $db->query(

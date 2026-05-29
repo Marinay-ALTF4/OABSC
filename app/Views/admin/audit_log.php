@@ -194,7 +194,13 @@ if (! function_exists('prettyAuditCode')) {
                 </td>
                 <td><?= $statusHtml ?></td>
                 <td>
-                    <div style="font-weight:600;color:#0f172a;"><?= esc($durationText) ?></div>
+                    <div
+                        class="session-duration"
+                        style="font-weight:600;color:#0f172a;"
+                        data-issued-at="<?= esc($s['issued_at'] ?? '') ?>"
+                        data-revoked-at="<?= esc($s['revoked_at'] ?? '') ?>"
+                        data-expires-at="<?= esc($s['expires_at'] ?? '') ?>"
+                    ><?= esc($durationText) ?></div>
                 </td>
             </tr>
             <?php endforeach; ?>
@@ -213,7 +219,7 @@ if (! function_exists('prettyAuditCode')) {
     <div style="overflow-x:auto;">
     <table class="audit-table">
         <thead>
-            <tr><th>#</th><th>Time</th><th>Event</th><th>User ID</th><th>Email Attempted</th><th>Reason</th></tr>
+            <tr><th>#</th><th>Time</th><th>Event</th><th>User ID</th><th>Role</th><th>Email</th><th>Time Active</th><th>Location/IP</th><th>Reason</th></tr>
         </thead>
         <tbody>
             <?php foreach ($events as $i => $e): ?>
@@ -230,8 +236,11 @@ if (! function_exists('prettyAuditCode')) {
                 <td style="white-space:nowrap;"><?= esc($e['created_at'] ?? '—') ?></td>
                 <td><span class="event-badge <?= $badgeClass ?>"><?= esc(prettyAuditCode($e['event_type'] ?? '')) ?></span></td>
                 <td><?= esc((string) ($e['user_id'] ?? '—')) ?></td>
-                <td><?= esc($e['email_attempted'] ?? '—') ?></td>
-                <td><?= esc(prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
+                <td><?= esc($e['display_role'] ?? '—') ?></td>
+                <td><?= esc($e['display_email'] ?? $e['email_attempted'] ?? '—') ?></td>
+                <td><?= esc(($e['event_type'] ?? '') === 'logout' ? ($e['time_active'] ?? '—') : '—') ?></td>
+                <td><?= esc($e['display_location'] ?? '—') ?></td>
+                <td><?= esc($e['reason_display'] ?? prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
@@ -239,6 +248,52 @@ if (! function_exists('prettyAuditCode')) {
     </div>
     <?php endif; ?>
 </div>
+
+<script>
+(function () {
+    function formatDuration(seconds) {
+        seconds = Math.max(0, Math.floor(seconds));
+        var minutes = Math.floor(seconds / 60);
+        var hours = Math.floor(minutes / 60);
+        var days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            return days + ' day' + (days === 1 ? '' : 's') + ' ' + (hours % 24) + ' hr' + ((hours % 24) === 1 ? '' : 's');
+        }
+        if (hours > 0) {
+            return hours + ' hr' + (hours === 1 ? '' : 's') + ' ' + (minutes % 60) + ' min' + ((minutes % 60) === 1 ? '' : 's');
+        }
+        return minutes + ' min' + (minutes === 1 ? '' : 's');
+    }
+
+    function parseTime(value) {
+        var ts = Date.parse(value);
+        return isNaN(ts) ? null : ts;
+    }
+
+    function updateDurations() {
+        document.querySelectorAll('.session-duration').forEach(function (el) {
+            var issuedAt = parseTime(el.dataset.issuedAt || '');
+            if (issuedAt === null) {
+                return;
+            }
+
+            var revokedAt = parseTime(el.dataset.revokedAt || '');
+            var expiresAt = parseTime(el.dataset.expiresAt || '');
+            var now = Date.now();
+            var endAt = revokedAt !== null ? revokedAt : (expiresAt !== null ? Math.min(now, expiresAt) : now);
+
+            el.textContent = formatDuration((endAt - issuedAt) / 1000);
+        });
+    }
+
+    updateDurations();
+    setInterval(updateDurations, 1000);
+    setInterval(function () {
+        window.location.reload();
+    }, 30000);
+})();
+</script>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');

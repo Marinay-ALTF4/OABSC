@@ -640,6 +640,7 @@ class Admin extends BaseController
             }
 
             $verificationCode = (string) random_int(100000, 999999);
+            $adminName = trim((string) (session('user_name') ?? 'Admin'));
             $pendingRegistration = [
                 'name'                   => $name,
                 'email'                  => $email,
@@ -652,7 +653,7 @@ class Admin extends BaseController
                 'redirect_to'            => '/admin/patients/list',
                 'reset_url'              => '/admin/patients/add',
                 'created_by'             => (int) session('user_id'),
-                'audit_note'             => 'user_added:' . $email . ' | by_admin:' . (int) session('user_id') . ' | role:' . $role,
+                'audit_note'             => 'user_added:' . $email . ' | by_admin:' . $adminName . ' | role:' . $role,
             ];
 
             if (! $this->sendVerificationCode($email, $name, $verificationCode)) {

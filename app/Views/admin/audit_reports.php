@@ -195,7 +195,7 @@ if (! function_exists('prettyAuditCode')) {
                     <td><span class="ar-badge <?= $badge ?>"><?= esc(prettyAuditCode($e['event_type'] ?? '')) ?></span></td>
                     <td><?= esc((string) ($e['user_id'] ?? '—')) ?></td>
                     <td><?= esc($e['email_attempted'] ?? '—') ?></td>
-                    <td><?= esc(prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
+                    <td><?= esc($e['reason_display'] ?? prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

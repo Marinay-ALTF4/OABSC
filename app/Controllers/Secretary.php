@@ -181,6 +181,7 @@ class Secretary extends BaseController
             $phone = trim((string) $this->request->getPost('phone') ?? '');
             $password = (string) $this->request->getPost('password');
             $verificationCode = (string) random_int(100000, 999999);
+            $secretaryName = trim((string) (session('user_name') ?? 'Secretary'));
 
             $pendingRegistration = [
                 'name'                   => $name,
@@ -194,7 +195,7 @@ class Secretary extends BaseController
                 'redirect_to'            => '/secretary/register',
                 'reset_url'              => '/secretary/register',
                 'created_by'             => (int) session('user_id'),
-                'audit_note'             => 'patient_registered:' . $email . ' | by_secretary:' . (int) session('user_id'),
+                'audit_note'             => 'patient_registered:' . $email . ' | by_secretary:' . $secretaryName,
             ];
 
             if (! $this->sendVerificationCode($email, $name, $verificationCode)) {
