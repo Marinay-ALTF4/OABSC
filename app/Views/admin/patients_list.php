@@ -28,7 +28,7 @@ $name = session('user_name') ?? 'User';
                         <h4 class="pl-title mb-1">Users List</h4>
                         <p class="pl-sub mb-0">All registered users including admin accounts.</p>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 align-items-center">
                         <a href="<?= site_url('/admin/patients/add') ?>" class="pl-btn pl-btn-filled"><i class="bi bi-person-plus me-1"></i>Add User</a>
                     </div>
                 </div>
@@ -39,6 +39,24 @@ $name = session('user_name') ?? 'User';
                 <?php if (session()->getFlashdata('error')): ?>
                     <div class="alert alert-danger py-2 mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
                 <?php endif; ?>
+
+                <div class="role-tabs-wrap users-role-tabs-wrap mb-4">
+                    <ul class="role-tabs users-role-tabs">
+                        <?php foreach (($roleTabs ?? ['all' => 'All', 'admin' => 'Admin', 'assistant_admin' => 'Assistant Admin', 'doctor' => 'Doctor', 'secretary' => 'Secretary', 'client' => 'Client / Patient']) as $tabRole => $tabLabel): ?>
+                            <?php
+                                $isActive = (($selectedRole ?? '') === $tabRole) || ($tabRole === 'all' && empty($selectedRole ?? ''));
+                                $count = (int) (($roleCounts[$tabRole] ?? 0));
+                                $href = $tabRole === 'all' ? site_url('/admin/patients/list') : site_url('/admin/patients/list?role=' . $tabRole);
+                            ?>
+                            <li>
+                                <a href="<?= esc($href) ?>" class="role-tab <?= $isActive ? 'active' : '' ?>">
+                                    <?= esc($tabLabel) ?>
+                                    <span class="role-tab-count"><?= $count ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
 
                 <div class="pl-card">
                     <?php $users = $users ?? []; ?>
@@ -255,6 +273,63 @@ $name = session('user_name') ?? 'User';
     .pl-action-delete:disabled { opacity: 0.45; cursor: not-allowed; }
     .pl-action-restore { background: #d1fae5; color: #065f46; }
     .pl-action-restore:hover { background: #a7f3d0; color: #064e3b; }
+
+    .role-tabs-wrap {
+        background: #eef4fb;
+        border: 1px solid #d9e6f5;
+        border-radius: 16px;
+        padding: 6px;
+        flex: 1;
+        min-width: 0;
+    }
+    .users-role-tabs {
+        display: flex;
+        gap: 6px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        align-items: stretch;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .users-role-tabs .role-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #475569;
+        background: transparent;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+    }
+    .users-role-tabs .role-tab:hover {
+        background: rgba(255,255,255,0.72);
+        color: #1e40af;
+    }
+    .users-role-tabs .role-tab.active {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+        box-shadow: inset 0 -2px 0 #2563eb;
+    }
+    .users-role-tabs .role-tab-count {
+        min-width: 22px;
+        height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.95);
+        color: #334155;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
 </style>
 <?php echo view('layouts/_chat_widget'); ?>
 </body>

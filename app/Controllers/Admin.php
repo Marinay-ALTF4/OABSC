@@ -453,15 +453,47 @@ class Admin extends BaseController
         if ($access !== null) return $access;
 
         $db = \Config\Database::connect();
-        $users = $db->query(
-            'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, u.role, u.deleted_at, u.created_at
-             FROM users u
-             LEFT JOIN user_profiles up ON up.user_id = u.id
-             ORDER BY u.id DESC'
-        )->getResultArray();
+        $selectedRole = strtolower(trim((string) $this->request->getGet('role')));
+        $allowedRoles = ['admin', 'assistant_admin', 'doctor', 'secretary', 'client'];
+        $roleTabs = [
+            'all'             => 'All',
+            'admin'           => 'Admin',
+            'assistant_admin' => 'Assistant Admin',
+            'doctor'          => 'Doctor',
+            'secretary'       => 'Secretary',
+            'client'          => 'Client / Patient',
+        ];
+
+        $counts = [
+            'all' => (int) $db->table('users')->where('deleted_at IS NULL', null, false)->countAllResults(),
+        ];
+
+        foreach ($allowedRoles as $role) {
+            $counts[$role] = (int) $db->table('users')
+                ->where('role', $role)
+                ->where('deleted_at IS NULL', null, false)
+                ->countAllResults();
+        }
+
+        $sql = 'SELECT u.id, COALESCE(up.name, u.username, "") AS name, u.email, u.role, u.deleted_at, u.created_at
+                FROM users u
+                LEFT JOIN user_profiles up ON up.user_id = u.id';
+        $params = [];
+
+        if ($selectedRole !== '' && in_array($selectedRole, $allowedRoles, true)) {
+            $sql .= ' WHERE u.role = ?';
+            $params[] = $selectedRole;
+        }
+
+        $sql .= ' ORDER BY u.id DESC';
+
+        $users = $db->query($sql, $params)->getResultArray();
 
         return view('admin/patients_list', [
-            'users' => $users,
+            'users'        => $users,
+            'selectedRole' => $selectedRole,
+            'roleTabs'     => $roleTabs,
+            'roleCounts'   => $counts,
         ]);
     }
 
