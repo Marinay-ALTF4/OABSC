@@ -1,6 +1,8 @@
 <?php
 $todayQueue    = $todayQueue ?? [];
 $upcomingQueue = $upcomingQueue ?? [];
+$confirmedCount = $confirmedCount ?? 0;
+$doneCount      = $doneCount ?? 0;
 $today         = $today ?? date('Y-m-d');
 
 function queueBadgeClass(string $status): string {
@@ -31,7 +33,7 @@ function queueBadgeClass(string $status): string {
 
     <!-- Stat Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <div class="doc-stat-card">
                 <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-calendar-day"></i></div>
                 <div class="doc-stat-label">Today</div>
@@ -39,7 +41,7 @@ function queueBadgeClass(string $status): string {
                 <div class="doc-stat-sub">Appointments for <?= esc(date('M j, Y', strtotime($today))) ?></div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <div class="doc-stat-card">
                 <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-arrow-right-circle"></i></div>
                 <div class="doc-stat-label">Upcoming</div>
@@ -47,12 +49,20 @@ function queueBadgeClass(string $status): string {
                 <div class="doc-stat-sub">Future approved and pending</div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <div class="doc-stat-card">
-                <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-list-check"></i></div>
-                <div class="doc-stat-label">Total</div>
-                <div class="doc-stat-value"><?= count($todayQueue) + count($upcomingQueue) ?></div>
-                <div class="doc-stat-sub">All active entries</div>
+                <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-check-circle"></i></div>
+                <div class="doc-stat-label">Confirmed</div>
+                <div class="doc-stat-value"><?= (int) $confirmedCount ?></div>
+                <div class="doc-stat-sub">Appointments confirmed by staff</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="doc-stat-card">
+                <div class="doc-stat-icon" style="background:#eaf6ea;color:#2e5c32;"><i class="bi bi-check2-square"></i></div>
+                <div class="doc-stat-label">Done</div>
+                <div class="doc-stat-value"><?= (int) $doneCount ?></div>
+                <div class="doc-stat-sub">Completed appointments</div>
             </div>
         </div>
     </div>

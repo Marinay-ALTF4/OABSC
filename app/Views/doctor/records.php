@@ -70,10 +70,10 @@ $search       = $search ?? '';
                         <tr>
                             <th>#</th>
                             <th>Patient</th>
-                            <th>Email</th>
                             <th>Phone</th>
                             <th>Appointments</th>
-                            <th>Latest Visit</th>
+                            <th>Last Visit</th>
+                            <th>Time</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -86,6 +86,9 @@ $search       = $search ?? '';
                             <?php foreach ($patients as $i => $p): ?>
                                 <?php
                                     $status = strtolower((string) ($p['latest_status'] ?? ''));
+                                    if ($status === 'confirmed') {
+                                        $status = '';
+                                    }
                                     $statusClass = match ($status) {
                                         'approved'  => 'doc-badge-approved',
                                         'pending'   => 'doc-badge-pending',
@@ -96,12 +99,14 @@ $search       = $search ?? '';
                                 ?>
                                 <tr>
                                     <td class="text-muted fw-semibold"><?= $i + 1 ?></td>
-                                    <td><div class="fw-semibold"><?= esc($p['name'] ?? 'Unknown') ?></div></td>
-                                    <td><?= esc($p['email'] ?? '—') ?></td>
+                                    <td>
+                                        <div class="fw-semibold"><?= esc($p['name'] ?? 'Unknown') ?></div>
+                                        <div class="small text-muted"><?= esc($p['email'] ?? '—') ?></div>
+                                    </td>
                                     <td><?= esc($p['phone'] ?? '—') ?></td>
                                     <td><span class="doc-count-badge"><?= esc((string) ($p['appointment_count'] ?? 0)) ?></span></td>
+                                    <td class="fw-semibold"><?= esc(($p['latest_date'] ?? '-') !== '' ? date('M j, Y', strtotime((string) $p['latest_date'])) : '-') ?></td>
                                     <td>
-                                        <div class="small fw-semibold"><?= esc(($p['latest_date'] ?? '-') !== '' ? date('M j, Y', strtotime((string) $p['latest_date'])) : '-') ?></div>
                                         <div class="small text-muted">
                                             <?= esc(substr((string) ($p['latest_time'] ?? ''), 0, 5) ?: '-') ?>
                                             <?php if ($status !== ''): ?>

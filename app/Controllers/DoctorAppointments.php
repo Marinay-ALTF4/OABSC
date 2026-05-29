@@ -39,17 +39,18 @@ class DoctorAppointments extends BaseController
         $appointments = array_values($appointments);
 
         if ($filter === 'today') {
-            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] === $today);
+            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] === $today && ($a['status'] ?? '') !== 'completed');
         } elseif ($filter === 'upcoming') {
             $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] > $today && in_array($a['status'], ['pending', 'approved'], true));
-        } elseif ($filter === 'past') {
-            $appointments = array_filter($appointments, fn($a) => $a['appointment_date'] < $today);
+        } elseif ($filter === 'complete') {
+            $appointments = array_filter($appointments, fn($a) => ($a['status'] ?? '') === 'completed');
         } elseif ($filter === 'approved') {
-            $appointments = array_filter($appointments, fn($a) => in_array($a['status'] ?? '', ['approved', 'confirmed'], true));
+            $appointments = array_filter($appointments, fn($a) => ($a['status'] ?? '') === 'approved');
         } elseif ($filter === 'cancelled') {
             $appointments = array_filter($appointments, fn($a) => ($a['status'] ?? '') === 'cancelled');
         } elseif ($filter === 'all') {
-            $appointments = array_filter($appointments, fn($a) => ! in_array($a['status'] ?? '', ['approved', 'confirmed', 'cancelled'], true));
+        } elseif ($filter === 'queue') {
+            $appointments = array_filter($appointments, fn($a) => ! in_array($a['status'] ?? '', ['cancelled'], true));
         }
 
         $appointments = array_values($appointments);
@@ -146,16 +147,24 @@ class DoctorAppointments extends BaseController
         $access = $this->ensureDoctor();
         if ($access !== null) return $access;
 
-        $filter = $this->request->getGet('filter') ?? 'upcoming';
-        $allowedFilters = ['upcoming', 'today', 'past', 'approved', 'cancelled', 'all'];
+        $filter = $this->request->getGet('filter') ?? 'today';
+        $allowedFilters = ['today', 'upcoming', 'complete', 'approved', 'cancelled', 'all'];
         if (! in_array($filter, $allowedFilters, true)) {
-            $filter = 'upcoming';
+            $filter = 'today';
         }
         $appointments = $this->loadDoctorAppointments($filter);
+        $todayCount   = count($this->loadDoctorAppointments('today'));
+        $upcomingCount = count($this->loadDoctorAppointments('upcoming'));
+        $completeCount = count($this->loadDoctorAppointments('complete'));
+        $allCount      = count($this->loadDoctorAppointments('all'));
 
         return view('doctor/appointments', [
             'appointments' => $appointments,
             'filter'       => $filter,
+            'todayCount'   => $todayCount,
+            'upcomingCount'=> $upcomingCount,
+            'completeCount'=> $completeCount,
+            'allCount'     => $allCount,
         ]);
     }
 
@@ -165,19 +174,24 @@ class DoctorAppointments extends BaseController
         if ($access !== null) return $access;
 
         $today = date('Y-m-d');
-        $appointments = $this->loadDoctorAppointments('all');
+        $appointments = $this->loadDoctorAppointments('queue');
 
         $todayQueue = array_values(array_filter($appointments, function (array $appt) use ($today): bool {
-            return $appt['appointment_date'] === $today && in_array($appt['status'], ['pending', 'approved']);
+            return $appt['appointment_date'] === $today && in_array($appt['status'], ['pending', 'approved', 'confirmed'], true);
         }));
 
         $upcomingQueue = array_values(array_filter($appointments, function (array $appt) use ($today): bool {
-            return $appt['appointment_date'] > $today && in_array($appt['status'], ['pending', 'approved']);
+            return $appt['appointment_date'] > $today && in_array($appt['status'], ['pending', 'approved', 'confirmed'], true);
         }));
+
+        $confirmedCount = count(array_filter($appointments, fn (array $appt): bool => ($appt['status'] ?? '') === 'confirmed'));
+        $doneCount      = count(array_filter($appointments, fn (array $appt): bool => ($appt['status'] ?? '') === 'completed'));
 
         return view('doctor/queue', [
             'todayQueue'    => $todayQueue,
             'upcomingQueue' => $upcomingQueue,
+            'confirmedCount'=> $confirmedCount,
+            'doneCount'     => $doneCount,
             'today'         => $today,
         ]);
     }

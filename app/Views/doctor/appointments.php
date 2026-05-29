@@ -1,6 +1,12 @@
 <?= view('doctor/_layout_top', ['pageTitle' => 'My Appointments', 'active' => 'appointments']) ?>
 
-<?php $filter = $filter ?? 'upcoming'; ?>
+<?php
+$filter = $filter ?? 'today';
+$todayCount = $todayCount ?? 0;
+$upcomingCount = $upcomingCount ?? 0;
+$completeCount = $completeCount ?? 0;
+$allCount = $allCount ?? 0;
+?>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success py-2"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -18,11 +24,18 @@
 
     <!-- Filter Tabs -->
     <div class="d-flex flex-wrap gap-2 mb-4">
-        <a href="?filter=upcoming"  class="doc-filter-btn <?= $filter === 'upcoming'  ? 'active' : '' ?>">Upcoming</a>
-        <a href="?filter=today"     class="doc-filter-btn <?= $filter === 'today'     ? 'active' : '' ?>">Today</a>
-        <a href="?filter=past"      class="doc-filter-btn <?= $filter === 'past'      ? 'active' : '' ?>">Past</a>
+        <a href="?filter=today"     class="doc-filter-btn doc-filter-btn-count <?= $filter === 'today'     ? 'active' : '' ?>">
+            <span>Today</span>
+            <span class="doc-filter-badge">&nbsp;<?= (int) $todayCount ?></span>
+        </a>
+        <a href="?filter=upcoming"  class="doc-filter-btn doc-filter-btn-count <?= $filter === 'upcoming'  ? 'active' : '' ?>">
+            <span>Upcoming</span>
+            <span class="doc-filter-badge">&nbsp;<?= (int) $upcomingCount ?></span>
+        </a>
+        <a href="?filter=complete"  class="doc-filter-btn <?= $filter === 'complete'  ? 'active' : '' ?>">Complete</a>
         <a href="?filter=approved"  class="doc-filter-btn <?= $filter === 'approved'  ? 'active' : '' ?>">Approved</a>
         <a href="?filter=cancelled" class="doc-filter-btn <?= $filter === 'cancelled' ? 'active' : '' ?>">Cancelled</a>
+        <a href="?filter=all"       class="doc-filter-btn <?= $filter === 'all'       ? 'active' : '' ?>">All</a>
     </div>
 
     <div class="doc-table-card">
@@ -34,7 +47,8 @@
                     'cancelled' => 'No cancelled appointments.',
                     'upcoming'  => 'No upcoming appointments.',
                     'today'     => 'No appointments scheduled for today.',
-                    'past'      => 'No past appointments.',
+                    'complete'  => 'No completed appointments.',
+                    'all'       => 'No appointments found.',
                     default     => 'No appointments in this view.',
                 };
                 ?>
@@ -114,3 +128,29 @@
     </div>
 
 <?= view('doctor/_layout_bottom') ?>
+
+<style>
+    .doc-filter-btn-count {
+        position: relative;
+        padding-right: 2.25rem;
+    }
+    .doc-filter-badge {
+        position: absolute;
+        top: 0.35rem;
+        right: 0.45rem;
+        min-width: 1.1rem;
+        height: 1.1rem;
+        padding: 0 0.28rem;
+        border-radius: 999px;
+        background: #e5f2e7;
+        color: #2f6b3b;
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.1rem;
+        text-align: center;
+    }
+    .doc-filter-btn.active .doc-filter-badge {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+    }
+</style>

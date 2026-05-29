@@ -66,10 +66,11 @@ $appointments = $appointments ?? [];
     </div>
 <?php else: ?>
     <div class="row g-2 mb-3">
-        <div class="col-6 col-md-3"><div class="p-3 border rounded bg-white"><div class="small text-muted">Total</div><div class="fw-bold fs-5"><?= $total ?></div></div></div>
-        <div class="col-6 col-md-3"><div class="p-3 border rounded bg-white"><div class="small text-muted">Pending</div><div class="fw-bold fs-5"><?= $pending ?></div></div></div>
-        <div class="col-6 col-md-3"><div class="p-3 border rounded bg-white"><div class="small text-muted">Confirmed / Done</div><div class="fw-bold fs-5"><?= $confirmed + $completed ?></div></div></div>
-        <div class="col-6 col-md-3"><div class="p-3 border rounded bg-white"><div class="small text-muted">Cancelled</div><div class="fw-bold fs-5"><?= $cancelled ?></div></div></div>
+        <div class="col-6 col-lg-2"><div class="p-3 border rounded bg-white"><div class="small text-muted">Total</div><div class="fw-bold fs-5"><?= $total ?></div></div></div>
+        <div class="col-6 col-lg-2"><div class="p-3 border rounded bg-white"><div class="small text-muted">Pending</div><div class="fw-bold fs-5"><?= $pending ?></div></div></div>
+        <div class="col-6 col-lg-2"><div class="p-3 border rounded bg-white"><div class="small text-muted">Confirmed</div><div class="fw-bold fs-5"><?= $confirmed ?></div></div></div>
+        <div class="col-6 col-lg-2"><div class="p-3 border rounded bg-white"><div class="small text-muted">Done</div><div class="fw-bold fs-5"><?= $completed ?></div></div></div>
+        <div class="col-6 col-lg-2"><div class="p-3 border rounded bg-white"><div class="small text-muted">Cancelled</div><div class="fw-bold fs-5"><?= $cancelled ?></div></div></div>
     </div>
 
     <div class="sec-table-card">

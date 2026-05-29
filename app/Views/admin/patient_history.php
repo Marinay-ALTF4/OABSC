@@ -10,6 +10,8 @@
 <body>
 <?= view('header') ?>
 
+<?php $patient = $patient ?? null; ?>
+
 <div class="dashboard-wrapper">
     <div class="adm-page">
         <?= view('admin/_sidebar', ['sidebarActive' => 'patients']) ?>
@@ -130,25 +132,31 @@
 
                 <!-- ── Stats row ── -->
                 <div class="row g-2 mb-3">
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-lg-2">
                         <div class="stat-pill" style="border-left:3px solid #94a3b8;">
                             <div class="stat-val"><?= $total ?></div>
                             <div class="stat-lbl">Total</div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-lg-2">
                         <div class="stat-pill" style="border-left:3px solid #f59e0b;">
                             <div class="stat-val"><?= $pending ?></div>
                             <div class="stat-lbl">Pending</div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="stat-pill" style="border-left:3px solid #10b981;">
-                            <div class="stat-val"><?= $confirmed + $completed ?></div>
-                            <div class="stat-lbl">Confirmed / Done</div>
+                    <div class="col-6 col-lg-2">
+                        <div class="stat-pill" style="border-left:3px solid #3b82f6;">
+                            <div class="stat-val"><?= $confirmed ?></div>
+                            <div class="stat-lbl">Confirmed</div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-lg-2">
+                        <div class="stat-pill" style="border-left:3px solid #10b981;">
+                            <div class="stat-val"><?= $completed ?></div>
+                            <div class="stat-lbl">Done</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-2">
                         <div class="stat-pill" style="border-left:3px solid #ef4444;">
                             <div class="stat-val"><?= $cancelled ?></div>
                             <div class="stat-lbl">Cancelled</div>
