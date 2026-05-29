@@ -31,6 +31,7 @@ $routes->post('/settings/update', 'Settings::update');
 $routes->get('/secretary/appointments',   'Secretary::appointments',   ['filter' => 'permission']);
 $routes->get('/secretary/queue',          'Secretary::queue',          ['filter' => 'permission']);
 $routes->get('/secretary/records',        'Secretary::records',        ['filter' => 'permission']);
+$routes->get('/secretary/records/(:num)',  'Secretary::patientHistory/$1', ['filter' => 'permission']);
 $routes->get('/secretary/register',       'Secretary::register',       ['filter' => 'permission']);
 $routes->post('/secretary/register',      'Secretary::register',       ['filter' => 'permission']);
 $routes->get('/secretary/schedules',      'Secretary::schedules',      ['filter' => 'permission']);

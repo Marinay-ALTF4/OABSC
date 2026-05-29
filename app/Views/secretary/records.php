@@ -12,11 +12,11 @@
     <div class="table-responsive">
         <table class="sec-table">
             <thead>
-                <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr>
+                <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th><th>Action</th></tr>
             </thead>
             <tbody>
                 <?php if (empty($patients)): ?>
-                    <tr><td colspan="5" class="text-center text-muted py-4">No patients found.</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted py-4">No patients found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($patients as $i => $p): ?>
                     <tr>
@@ -25,6 +25,11 @@
                         <td><?= esc($p['email']) ?></td>
                         <td><?= esc($p['phone'] ?? '—') ?></td>
                         <td><?= esc(date('M j, Y', strtotime($p['created_at']))) ?></td>
+                        <td>
+                            <a href="<?= site_url('/secretary/records/' . (int) $p['id']) ?>" class="btn btn-sm btn-outline-success">
+                                View History
+                            </a>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

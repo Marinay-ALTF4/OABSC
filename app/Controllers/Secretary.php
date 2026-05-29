@@ -65,6 +65,42 @@ class Secretary extends BaseController
         return view('secretary/records', ['patients' => $patients, 'search' => $search]);
     }
 
+    public function patientHistory(int $id = 0)
+    {
+        if ($r = $this->checkAccess()) return $r;
+
+        $userModel = new UserModel();
+        $appointmentModel = new AppointmentModel();
+
+        if ($id > 0) {
+            $patient = $userModel->where('role', 'client')->find($id);
+            if (! $patient) {
+                return redirect()->to('/secretary/records')->with('error', 'Patient not found.');
+            }
+
+            $db = \Config\Database::connect();
+            $ownerCol = $db->fieldExists('client_id', 'appointments') ? 'client_id' : 'user_id';
+
+            $appointments = $appointmentModel
+                ->where($ownerCol, $id)
+                ->orderBy('appointment_date', 'DESC')
+                ->findAll();
+
+            return view('secretary/patient_history', [
+                'patient'      => $patient,
+                'appointments' => $appointments,
+            ]);
+        }
+
+        $patients = $userModel->where('role', 'client')->orderBy('name', 'ASC')->findAll();
+
+        return view('secretary/patient_history', [
+            'patient'      => null,
+            'patients'     => $patients,
+            'appointments' => [],
+        ]);
+    }
+
     public function register()
     {
         if ($r = $this->checkAccess()) return $r;
