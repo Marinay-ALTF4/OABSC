@@ -422,6 +422,8 @@ class CreateSecureUserStorageSchema extends Migration
     private function createLoginEventsTable($db): void
     {
         if ($db->tableExists('login_events')) {
+            $this->normalizeLoginEventsUserId($db);
+            $this->ensureLoginEventsForeignKey($db);
             return;
         }
 
@@ -471,6 +473,74 @@ class CreateSecureUserStorageSchema extends Migration
         $this->forge->addKey('user_id');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('login_events', true);
+    }
+
+    private function normalizeLoginEventsUserId($db): void
+    {
+        if (! $db->tableExists('users') || ! $db->fieldExists('user_id', 'login_events')) {
+            return;
+        }
+
+        try {
+            $db->query('ALTER TABLE login_events MODIFY COLUMN user_id INT(11) UNSIGNED NULL');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        try {
+            $db->query(
+                'UPDATE login_events le\n'
+                . 'LEFT JOIN users u ON u.id = le.user_id\n'
+                . 'SET le.user_id = NULL\n'
+                . 'WHERE le.user_id IS NOT NULL AND u.id IS NULL'
+            );
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
+    private function ensureLoginEventsForeignKey($db): void
+    {
+        if (! $db->tableExists('users') || ! $db->fieldExists('user_id', 'login_events')) {
+            return;
+        }
+
+        if ($this->foreignKeyExists($db, 'login_events', 'login_events_user_id_foreign')) {
+            return;
+        }
+
+        $orphans = $db->query(
+            'SELECT COUNT(*) AS cnt FROM login_events le\n'
+            . 'LEFT JOIN users u ON u.id = le.user_id\n'
+            . 'WHERE le.user_id IS NOT NULL AND u.id IS NULL'
+        )->getRowArray();
+
+        if (! empty($orphans) && (int) $orphans['cnt'] > 0) {
+            return;
+        }
+
+        try {
+            $db->query(
+                'ALTER TABLE login_events\n'
+                . 'ADD CONSTRAINT `login_events_user_id_foreign`\n'
+                . 'FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)\n'
+                . 'ON DELETE CASCADE ON UPDATE CASCADE'
+            );
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
+    private function foreignKeyExists($db, string $table, string $constraint): bool
+    {
+        $rows = $db->query(
+            'SELECT CONSTRAINT_NAME\n'
+            . 'FROM information_schema.KEY_COLUMN_USAGE\n'
+            . 'WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND CONSTRAINT_NAME = ?',
+            [$table, $constraint]
+        )->getResultArray();
+
+        return ! empty($rows);
     }
 
     private function seedDefaultRoles($db): void
