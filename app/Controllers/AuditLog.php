@@ -38,6 +38,19 @@ class AuditLog extends BaseController
         return $minutes . ' min' . ($minutes === 1 ? '' : 's');
     }
 
+    private function prettyLabel(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '' || $value === '—') {
+            return '—';
+        }
+
+        $value = str_replace(['_', '-'], ' ', $value);
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return ucwords($value);
+    }
+
     private function getUserDetails(UserModel $userModel, int $userId): array
     {
         if ($userId <= 0) {
@@ -68,41 +81,45 @@ class AuditLog extends BaseController
             $userId = (int) ($event['user_id'] ?? 0);
             $user   = $this->getUserDetails($userModel, $userId);
 
-            $event['display_role'] = $user['role'] !== '' ? $user['role'] : '—';
+            $event['display_role'] = $user['role'] !== '' ? $this->prettyLabel($user['role']) : '—';
             $event['display_email'] = $user['email'] !== ''
                 ? $user['email']
                 : (string) ($event['email_attempted'] ?? '—');
 
-            $ipAddress = trim((string) ($event['ip_address'] ?? ''));
-            if ($ipAddress === '') {
-                $ipAddress = '—';
-            } elseif ($ipAddress === '::1') {
-                $ipAddress = 'Localhost (::1)';
-            }
-            $event['display_location'] = $ipAddress;
-
             $event['display_device'] = $event['user_agent'] ?? '—';
 
             $event['time_active'] = '—';
+            $event['time_active_issued_at'] = '';
+            $event['time_active_revoked_at'] = '';
             if (($event['event_type'] ?? '') === LoginEventModel::EVENT_LOGOUT && $userId > 0) {
-                $logoutTime = strtotime((string) ($event['created_at'] ?? '')) ?: null;
-                if ($logoutTime !== null) {
+                $session = $db->table('auth_sessions')
+                    ->select('issued_at, revoked_at, revoke_reason')
+                    ->where('user_id', $userId)
+                    ->where('revoked_at IS NOT NULL', null, false)
+                    ->where('revoke_reason', 'logout')
+                    ->orderBy('revoked_at', 'DESC')
+                    ->limit(1)
+                    ->get()
+                    ->getRowArray();
+
+                if (! $session) {
                     $session = $db->table('auth_sessions')
-                        ->select('issued_at, revoked_at')
+                        ->select('issued_at, revoked_at, revoke_reason')
                         ->where('user_id', $userId)
                         ->where('revoked_at IS NOT NULL', null, false)
-                        ->where('revoked_at <=', date('Y-m-d H:i:s', $logoutTime))
                         ->orderBy('revoked_at', 'DESC')
                         ->limit(1)
                         ->get()
                         ->getRowArray();
+                }
 
-                    if ($session) {
-                        $issuedAt = strtotime((string) ($session['issued_at'] ?? '')) ?: null;
-                        $revokedAt = strtotime((string) ($session['revoked_at'] ?? '')) ?: null;
-                        if ($issuedAt !== null && $revokedAt !== null) {
-                            $event['time_active'] = $this->formatDuration($revokedAt - $issuedAt);
-                        }
+                if ($session) {
+                    $issuedAt = strtotime((string) ($session['issued_at'] ?? '')) ?: null;
+                    $revokedAt = strtotime((string) ($session['revoked_at'] ?? '')) ?: null;
+                    if ($issuedAt !== null && $revokedAt !== null) {
+                        $event['time_active'] = $this->formatDuration($revokedAt - $issuedAt);
+                        $event['time_active_issued_at'] = $session['issued_at'] ?? '';
+                        $event['time_active_revoked_at'] = $session['revoked_at'] ?? '';
                     }
                 }
             }
@@ -144,19 +161,6 @@ class AuditLog extends BaseController
         }
 
         return implode(' | ', $formatted);
-    }
-
-    private function prettyLabel(string $value): string
-    {
-        $value = trim($value);
-        if ($value === '' || $value === '—') {
-            return '—';
-        }
-
-        $value = str_replace(['_', '-'], ' ', $value);
-        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
-
-        return ucwords($value);
     }
 
     public function index()

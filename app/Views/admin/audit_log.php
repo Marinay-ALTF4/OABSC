@@ -179,7 +179,7 @@ if (! function_exists('prettyAuditCode')) {
                     <div style="font-weight:600;color:#0f172a;"><?= esc($s['name']) ?></div>
                     <div style="font-size:0.75rem;color:#64748b;"><?= esc($s['email']) ?></div>
                 </td>
-                <td><span class="role-badge"><?= esc($s['role']) ?></span></td>
+                <td><span class="role-badge"><?= esc(prettyAuditCode($s['role'] ?? '')) ?></span></td>
                 <td>
                     <div style="font-weight:500;color:#334155;"><i class="bi bi-geo-alt me-1 text-muted"></i><?= esc($ipAddress) ?></div>
                 </td>
@@ -219,7 +219,7 @@ if (! function_exists('prettyAuditCode')) {
     <div style="overflow-x:auto;">
     <table class="audit-table">
         <thead>
-            <tr><th>#</th><th>Time</th><th>Event</th><th>User ID</th><th>Role</th><th>Email</th><th>Time Active</th><th>Location/IP</th><th>Reason</th></tr>
+            <tr><th>#</th><th>Time</th><th>Event</th><th>User ID</th><th>Role</th><th>Email</th><th>Time Active</th><th>Reason</th></tr>
         </thead>
         <tbody>
             <?php foreach ($events as $i => $e): ?>
@@ -230,6 +230,7 @@ if (! function_exists('prettyAuditCode')) {
                     'suspicious_activity', 'login_locked'    => 'badge-warning',
                     default                                  => 'badge-info',
                 };
+                $timeActiveId = 'time-active-' . $i;
             ?>
             <tr>
                 <td><?= $i + 1 ?></td>
@@ -238,8 +239,30 @@ if (! function_exists('prettyAuditCode')) {
                 <td><?= esc((string) ($e['user_id'] ?? '—')) ?></td>
                 <td><?= esc($e['display_role'] ?? '—') ?></td>
                 <td><?= esc($e['display_email'] ?? $e['email_attempted'] ?? '—') ?></td>
-                <td><?= esc(($e['event_type'] ?? '') === 'logout' ? ($e['time_active'] ?? '—') : '—') ?></td>
-                <td><?= esc($e['display_location'] ?? '—') ?></td>
+                <td>
+                    <?php if (($e['event_type'] ?? '') === 'logout' && ! empty($e['time_active_issued_at']) && ! empty($e['time_active_revoked_at'])): ?>
+                        <button
+                            class="btn btn-sm btn-outline-primary"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#<?= esc($timeActiveId) ?>"
+                            aria-expanded="false"
+                            aria-controls="<?= esc($timeActiveId) ?>"
+                        >
+                            View
+                        </button>
+                        <div class="collapse mt-2" id="<?= esc($timeActiveId) ?>">
+                            <div
+                                class="session-duration small text-muted"
+                                style="display:inline-block;font-weight:600;color:#0f172a;"
+                                data-issued-at="<?= esc($e['time_active_issued_at']) ?>"
+                                data-revoked-at="<?= esc($e['time_active_revoked_at']) ?>"
+                            ><?= esc($e['time_active'] ?? '—') ?></div>
+                        </div>
+                    <?php else: ?>
+                        —
+                    <?php endif; ?>
+                </td>
                 <td><?= esc($e['reason_display'] ?? prettyAuditCode($e['reason_code'] ?? '—')) ?></td>
             </tr>
             <?php endforeach; ?>
@@ -357,7 +380,17 @@ if (! function_exists('prettyAuditCode')) {
     .audit-table td { padding:10px 14px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
     .audit-table tbody tr:last-child td { border-bottom:none; }
     .audit-table tbody tr:hover { background:#f8fafc; }
-    .event-badge { padding:3px 8px; border-radius:999px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+    .event-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
     .badge-success { background:#d1fae5; color:#065f46; }
     .badge-danger  { background:#fee2e2; color:#dc2626; }
     .badge-warning { background:#fef3c7; color:#d97706; }

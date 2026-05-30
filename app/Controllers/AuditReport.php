@@ -2,11 +2,24 @@
 
 namespace App\Controllers;
 
+use App\Libraries\LoginEventCrypt;
 use App\Models\LoginEventModel;
+use App\Models\UserModel;
 
 class AuditReport extends BaseController
 {
     private array $userNameCache = [];
+    private array $userEmailCache = [];
+
+    private function decryptEmailAttempted(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '—';
+        }
+
+        return (new LoginEventCrypt())->decrypt($value) ?? $value;
+    }
 
     private function ensureAdminAccess()
     {
@@ -14,6 +27,25 @@ class AuditReport extends BaseController
             return redirect()->to('/dashboard');
         }
         return null;
+    }
+
+    private function resolveUserEmail(
+        UserModel $userModel,
+        int $userId
+    ): string {
+        if ($userId <= 0) {
+            return '';
+        }
+
+        if (! isset($this->userEmailCache[$userId])) {
+            $row = $userModel->select('users.id, users.email')
+                ->where('users.id', $userId)
+                ->first();
+
+            $this->userEmailCache[$userId] = trim((string) ($row['email'] ?? ''));
+        }
+
+        return $this->userEmailCache[$userId];
     }
 
     private function resolveUserName(
@@ -141,7 +173,7 @@ class AuditReport extends BaseController
                 $e['created_at'] ?? '',
                 $e['event_type'] ?? '',
                 $e['user_id'] ?? '',
-                $e['email_attempted'] ?? '',
+                $e['email_attempted_display'] ?? '',
                 $e['reason_display'] ?? $e['reason_code'] ?? '',
             ]);
         }
@@ -216,7 +248,16 @@ class AuditReport extends BaseController
             [$since]
         )->getResultArray();
 
+        $userModel = new UserModel();
+
         foreach ($events as &$event) {
+            $userId = (int) ($event['user_id'] ?? 0);
+
+            $event['email_attempted_display'] = $this->decryptEmailAttempted($event['email_attempted'] ?? null);
+            if (($event['event_type'] ?? '') === LoginEventModel::EVENT_LOGOUT && trim((string) $event['email_attempted_display']) === '—') {
+                $email = $this->resolveUserEmail($userModel, $userId);
+                $event['email_attempted_display'] = $email !== '' ? $email : '—';
+            }
             $event['reason_display'] = $this->formatReasonCode($db, $event['reason_code'] ?? null);
         }
         unset($event);
